@@ -2,9 +2,7 @@
 
 <template>
   <h1>You did it!</h1>
-
-
-
+  <p> test ini adalah praktik pertama menggunakan github collaborative</p>
 </template>
 
 <style scoped></style>

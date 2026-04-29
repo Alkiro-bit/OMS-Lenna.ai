@@ -1,10 +1,7 @@
 <script setup></script>
 
 <template>
-  <h1>You did it!</h1>
-  <p> test ini adalah praktik pertama menggunakan github collaborative</p>
-  <p>test lagi</p>
-  
+  <h1>You did it!</h1>  
 </template>
 
 <style scoped></style>

@@ -12,7 +12,7 @@
         </div>
 
         <h1>
-          Log, acknowledge,<br> 
+          Log, acknowledge,<br>
           approve – All in one place.
         </h1>
 
@@ -36,25 +36,25 @@
       </div>
     </div>
 
-    <!--- panel kanan -->
+    <!-- panel kanan -->
     <div class="right-panel">
       <div class="login-card">
 
-        <h1 class = "welcome"> Welcome</h1>
+        <h1>Welcome</h1>
         <p class="subtitle">
           Sign with your Lenna.ai account to continue.
         </p>
 
         <form @submit.prevent="login">
 
-          <label class="mail">Email</label>
+          <label>Work email</label>
           <input
             type="email"
             v-model="email"
             placeholder=""
           >
 
-          <label class="password">Password</label>
+          <label>Password</label>
           <input
             type="password"
             v-model="password"
@@ -63,7 +63,7 @@
 
           <div class="remember">
             <input type="checkbox" v-model="remember">
-            <span class="keep">Keep me signed in on this device</span>
+            <span>Keep me signed in on this device</span>
           </div>
 
           <button type="submit">Sign in</button>
@@ -81,9 +81,6 @@
 
 <script setup>
 import { ref } from 'vue'
-import { useRouter } from 'vue-router'
-
-const router = useRouter()
 
 const email = ref('')
 const password = ref('')
@@ -95,7 +92,7 @@ const login = () => {
     return
   }
 
-  router.push('/Dashboard')
+  alert('Login berhasil!')
 }
 </script>
 
@@ -116,20 +113,19 @@ body {
 .container {
   display: flex;
   min-height: 100vh;
-  height: 100vh;
 }
 
-/* style panel kiri */
+/* style buat panel kiri */
 .left-panel {
   width: 55%;
-  background: linear-gradient(250deg, #2f2bcf, #3f46ff);
+  background: linear-gradient(135deg, #2f2bcf, #3f46ff);
   border-top-right-radius: 50%;
   border-bottom-right-radius: 50%;
   display: flex;
   justify-content: center;
   align-items: center;
   color: white;
-  padding:70px;
+  padding: 60px;
 }
 
 .hero {
@@ -142,17 +138,17 @@ body {
   justify-content: center;
   gap: 40px;
   font-size: 38px;
-  margin-bottom: 20px;
+  margin-bottom: 35px;
 }
 
 .hero h1 {
-  font-size: 50px;
+  font-size: 58px;
   line-height: 1.15;
   margin-bottom: 20px;
 }
 
 .hero p {
-  font-size: 17px;
+  font-size: 18px;
   margin-bottom: 45px;
   opacity: .95;
 }
@@ -164,12 +160,12 @@ body {
 }
 
 .stat {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(255,255,255,0.15);
   backdrop-filter: blur(12px);
-  padding: 20px 30px;
+  padding: 24px 34px;
   border-radius: 20px;
   min-width: 220px;
-  box-shadow: 0 8px 10px rgba(0,0,0,0.18);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.18);
 }
 
 .stat h2 {
@@ -177,7 +173,7 @@ body {
   margin-bottom: 8px;
 }
 
-/* style panel kanan */
+/* kalo ini style buat panel kanan */
 .right-panel {
   width: 45%;
   display: flex;
@@ -199,27 +195,9 @@ body {
 }
 
 .subtitle {
-  color: #000000;
+  color: #666;
   margin-bottom: 35px;
 }
-
-.welcome {
-  color: #000000;
-  margin-bottom: 35px;
-}
-
-.mail {
-  color: #000000;
-}
-
-.password {
-  color: #000000;
-}
-
-.keep {
-  color: #000000;
-}
-
 
 label {
   display: block;
@@ -262,7 +240,8 @@ button:hover {
 
 .footer {
   margin-top: 22px;
-  color: #000000;
+  color: #666;
   font-size: 14px;
+  
 }
 </style>

@@ -1,180 +1,268 @@
 <template>
-  <div class="login-page">
+  <div class="container">
 
-    <div class="form-card">
-      <div class="form-header">
-        <h2>Welcome</h2>
-        <p>Sign with your Lenna.ai account to continue.</p>
+    <!-- panel kiri -->
+    <div class="left-panel">
+      <div class="hero">
+
+        <div class="icons">
+          <i class="fa-regular fa-clock"></i>
+          <i class="fa-regular fa-file-lines"></i>
+          <i class="fa-regular fa-message"></i>
+        </div>
+
+        <h1>
+          Log, acknowledge,<br> 
+          approve – All in one place.
+        </h1>
+
+        <p>
+          Dari form kertas ke satu platform. Pengajuan lembur yang
+          lebih mudah, lebih cepat, dan tidak ada yang terlewat.
+        </p>
+
+        <div class="stats">
+          <div class="stat">
+            <h2>150 hrs</h2>
+            <span>Tracked this month</span>
+          </div>
+
+          <div class="stat">
+            <h2>1.5 days</h2>
+            <span>Avg approval time</span>
+          </div>
+        </div>
+
       </div>
+    </div>
 
-      <form @submit.prevent="handleSubmit">
-        <label>
-          Email
+    <!--- panel kanan -->
+    <div class="right-panel">
+      <div class="login-card">
+
+        <h1 class = "welcome"> Welcome</h1>
+        <p class="subtitle">
+          Sign with your Lenna.ai account to continue.
+        </p>
+
+        <form @submit.prevent="login">
+
+          <label class="mail">Email</label>
           <input
             type="email"
-            v-model="form.email"
-            placeholder="your@company.com"
-            required
-          />
-        </label>
+            v-model="email"
+            placeholder=""
+          >
 
-        <label>
-          Password  
+          <label class="password">Password</label>
           <input
             type="password"
-            v-model="form.password"
-            placeholder="Enter password"
-            required
-          />
-        </label>
+            v-model="password"
+            placeholder=""
+          >
 
-        <label class="checkbox-row">
-          <input type="checkbox" v-model="form.remember" />
-          Keep me signed in on this device
-        </label>
+          <div class="remember">
+            <input type="checkbox" v-model="remember">
+            <span class="keep">Keep me signed in on this device</span>
+          </div>
 
-        <button type="submit">Sign in</button>
-      </form>
+          <button type="submit">Sign in</button>
+        </form>
 
-      <p class="hint">Your role (PM, HR Finance, Management) is set by HR.</p>
-      <p class="hint">LOVE FAREL & SHEILA</p>
+        <p class="footer">
+          Your role (PM, HR Finance, Management) is set by HR.
+        </p>
+
+      </div>
     </div>
+
   </div>
 </template>
 
 <script setup>
-import { reactive } from 'vue'
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 
-const form = reactive({
-  email: '',
-  password: '',
-  remember: false,
-})
+const router = useRouter()
 
-function handleSubmit() {
-  //nanti ganti sama API / database integrationnya
-  console.log('login attempt', { ...form })
-  alert('Login submitted.')
+const email = ref('')
+const password = ref('')
+const remember = ref(false)
+
+const login = () => {
+  if (!email.value || !password.value) {
+    alert('Isi email dan password dulu')
+    return
+  }
+
+  router.push('/Dashboard')
 }
 </script>
 
-<style scoped>
-.login-page {
-  min-height: 100vh;
-  display: grid;
-  place-items: center;
-  padding: 40px;
-  background: radial-gradient(circle at top left, #3b5bff 0%, #1d3d9f 45%, #090f2e 100%);
-  color: white;
-}
+<style>
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css');
 
-
-.form-card {
-  width: min(420px, 100%);
-  margin: 0 auto;
-  padding: 38px;
-  background: #ffffff;
-  color: #15161f;
-  border-radius: 28px;
-  box-shadow: 0 0 80px rgba(255, 255, 255, 0.262)
-}
-
-.form-header h2 {
+* {
   margin: 0;
-  font-size: 2rem;
-  color: #111827;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Segoe UI", sans-serif;
 }
 
-.form-header p {
-  margin: 10px 0 28px;
-  color: #4b5563;
-  line-height: 1.6;
+body {
+  background: #f5f5f5;
 }
 
-form {
-  display: grid;
-  gap: 18px;
-  width: 100%;
+.container {
+  display: flex;
+  min-height: 100vh;
+  height: 100vh;
 }
+
+/* style panel kiri */
+.left-panel {
+  width: 55%;
+  background: linear-gradient(250deg, #2f2bcf, #3f46ff);
+  border-top-right-radius: 50%;
+  border-bottom-right-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  padding:70px;
+}
+
+.hero {
+  text-align: center;
+  max-width: 650px;
+}
+
+.icons {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  font-size: 38px;
+  margin-bottom: 20px;
+}
+
+.hero h1 {
+  font-size: 50px;
+  line-height: 1.15;
+  margin-bottom: 20px;
+}
+
+.hero p {
+  font-size: 17px;
+  margin-bottom: 45px;
+  opacity: .95;
+}
+
+.stats {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+}
+
+.stat {
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(12px);
+  padding: 20px 30px;
+  border-radius: 20px;
+  min-width: 220px;
+  box-shadow: 0 8px 10px rgba(0,0,0,0.18);
+}
+
+.stat h2 {
+  font-size: 34px;
+  margin-bottom: 8px;
+}
+
+/* style panel kanan */
+.right-panel {
+  width: 45%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.login-card {
+  width: 500px;
+  background: white;
+  padding: 55px;
+  border-radius: 24px;
+  border: 1px solid #ddd;
+}
+
+.login-card h1 {
+  font-size: 52px;
+  margin-bottom: 15px;
+}
+
+.subtitle {
+  color: #000000;
+  margin-bottom: 35px;
+}
+
+.welcome {
+  color: #000000;
+  margin-bottom: 35px;
+}
+
+.mail {
+  color: #000000;
+}
+
+.password {
+  color: #000000;
+}
+
+.keep {
+  color: #000000;
+}
+
 
 label {
-  display: grid;
-  gap: 10px;
+  display: block;
+  margin-bottom: 10px;
+  font-weight: 500;
+}
+
+input[type="email"],
+input[type="password"] {
   width: 100%;
-  font-size: 0.95rem;
-  color: #111827;
+  padding: 15px;
+  border: 1px solid #bbb;
+  border-radius: 12px;
+  margin-bottom: 25px;
+  font-size: 16px;
 }
 
-input[type='email'],
-input[type='password'] {
-  width: 100%;
-  max-width: 100%;
-  box-sizing: border-box;
-  padding: 14px 16px;
-  border: 1px solid #d1d5db;
-  border-radius: 14px;
-  background: #f8fafc;
-  color: #111827;
-  font-size: 0.98rem;
-}
-
-input[type='email']::placeholder,
-input[type='password']::placeholder {
-  color: #9ca3af;
-}
-
-.checkbox-row {
+.remember {
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 0.92rem;
-  color: #4b5563;
+  margin-bottom: 28px;
 }
 
 button {
   width: 100%;
-  padding: 14px 16px;
-  border: none;
-  border-radius: 14px;
-  background: #2563eb;
+  background: #4374f7;
   color: white;
-  font-size: 1rem;
-  font-weight: 700;
+  border: none;
+  padding: 16px;
+  border-radius: 12px;
+  font-size: 17px;
   cursor: pointer;
-  transition: transform 0.2s ease, background 0.2s ease;
+  transition: .3s;
 }
 
 button:hover {
-  background: #1d4ed8;
-  transform: translateY(-1px);
+  background: #2f60eb;
 }
 
-.hint {
-  margin-top: 18px;
-  font-size: 0.9rem;
-  color: #6b7280;
-}
-
-@media (max-width: 1024px) {
-  .login-page {
-    grid-template-columns: 1fr;
-    padding: 28px;
-  }
-
-  .hero-panel {
-    order: 2;
-  }
-}
-
-@media (max-width: 720px) {
-  .login-page {
-    padding: 20px;
-  }
-
-  .hero-panel,
-  .form-card {
-    padding: 28px;
-    border-radius: 24px;
-  }
+.footer {
+  margin-top: 22px;
+  color: #000000;
+  font-size: 14px;
 }
 </style>

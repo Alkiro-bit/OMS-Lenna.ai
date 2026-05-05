@@ -479,7 +479,6 @@ function handleLogout() {
 
 .stat-card {
   background: #fff;
-  border: 1.5px solid #111;
   border-radius: 10px;
   padding: 12px;
   position: relative;

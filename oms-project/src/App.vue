@@ -1,23 +1,22 @@
-<script setup>
-import LoginPage from './components/main/LoginPage.vue'
-</script>
-
 <template>
-  <LoginPage />
+  <router-view />
 </template>
 
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Open+Jakarta:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Inter:wght@400;500&display=swap');
 
-:root {
-  font-family: 'Open Jakarta', sans-serif;
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
 html,
 body,
 #app {
-  min-height: 100%;
-  margin: 0;
-  font-family: 'Open Jakarta', sans-serif;
+  height: 100%;
+  width: 100%;
 }
 </style>

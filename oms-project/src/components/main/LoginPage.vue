@@ -47,14 +47,14 @@
 
         <form @submit.prevent="login">
 
-          <label>Work email</label>
+          <label class="form-label">Work email</label>
           <input
             type="email"
             v-model="email"
             placeholder=""
           >
 
-          <label>Password</label>
+          <label class="form-label">Password</label>
           <input
             type="password"
             v-model="password"
@@ -66,7 +66,7 @@
             <span>Keep me signed in on this device</span>
           </div>
 
-          <button type="submit">Sign in</button>
+          <button type="submit" class="submit-btn">Sign in</button>
         </form>
 
         <p class="footer">
@@ -81,44 +81,37 @@
 
 <script setup>
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 
+const router = useRouter()
 const email = ref('')
 const password = ref('')
 const remember = ref(false)
 
 const login = () => {
   if (!email.value || !password.value) {
-    alert('Isi email dan password dulu')
+    alert('Please fill in both email and password.')
     return
   }
 
-  alert('Login berhasil!')
+  // masuk ke dashboard employee
+  router.push('/dashboard')
 }
 </script>
 
-<style>
-@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css');
+<style scoped>
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: "Segoe UI", sans-serif;
-}
-
-body {
-  background: #f5f5f5;
-}
 
 .container {
   display: flex;
   min-height: 100vh;
+  font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
 }
 
 /* style buat panel kiri */
 .left-panel {
   width: 55%;
-  background: linear-gradient(135deg, #2f2bcf, #3f46ff);
+  background: linear-gradient(135deg, #202184,#383BEA );
   border-top-right-radius: 50%;
   border-bottom-right-radius: 50%;
   display: flex;
@@ -187,6 +180,7 @@ body {
   padding: 55px;
   border-radius: 24px;
   border: 1px solid #ddd;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.28);
 }
 
 .login-card h1 {
@@ -199,7 +193,7 @@ body {
   margin-bottom: 35px;
 }
 
-label {
+.form-label {
   display: block;
   margin-bottom: 10px;
   font-weight: 500;
@@ -222,7 +216,7 @@ input[type="password"] {
   margin-bottom: 28px;
 }
 
-button {
+.submit-btn {
   width: 100%;
   background: #4374f7;
   color: white;
@@ -233,8 +227,7 @@ button {
   cursor: pointer;
   transition: .3s;
 }
-
-button:hover {
+.submit-btn:hover {
   background: #2f60eb;
 }
 

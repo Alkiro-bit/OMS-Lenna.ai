@@ -560,6 +560,7 @@ function handleLogout() {
   width: 28px;
   height: 28px;
   object-fit: contain;
+  cursor: pointer;
 }
 
 .brand-text {
@@ -572,12 +573,14 @@ function handleLogout() {
   color: #111;
   font-family: 'Plus Jakarta Sans', sans-serif;
   line-height: 1.3;
+  cursor: pointer;
 }
 
 .brand-sub {
   font-size: 10px;
   color: #888;
   line-height: 1.3;
+  cursor: pointer;
 }
 
 /* Sidebar Navigation */
@@ -681,6 +684,7 @@ function handleLogout() {
   font-weight: 700;
   flex-shrink: 0;
   font-family: 'Plus Jakarta Sans', sans-serif;
+  cursor: pointer;
 }
 
 .avatar-sm {

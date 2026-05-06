@@ -280,9 +280,9 @@ const currentRoute = computed(() => router.currentRoute.value.path)
 // STATS CARDS
 // ============================================================
 const statsCards = ref([
-  { key: 'totalJam', value: 50, label: 'Total Jam Lembur' },
-  { key: 'pengajuan', value: 12, label: 'Pengajuan Lembur' },
-  { key: 'approved', value: 8, label: 'Lembur di Approve' },
+  { key: 'totalJam', value: 52, label: 'Total Jam Lembur' },
+  { key: 'pengajuan', value: 10, label: 'Pengajuan Lembur' },
+  { key: 'approved', value: 6, label: 'Lembur di Approve' },
   { key: 'pending', value: 3, label: 'Pending' },
   { key: 'declined', value: 1, label: 'Declined' }
 ])

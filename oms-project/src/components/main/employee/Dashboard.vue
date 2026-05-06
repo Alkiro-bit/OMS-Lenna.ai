@@ -283,7 +283,7 @@ const statsCards = ref([
   { key: 'totalJam', value: 50, label: 'Total Jam Lembur' },
   { key: 'pengajuan', value: 12, label: 'Pengajuan Lembur' },
   { key: 'approved', value: 8, label: 'Lembur di Approve' },
-  { key: 'pending', value: 1, label: 'Pending' },
+  { key: 'pending', value: 3, label: 'Pending' },
   { key: 'declined', value: 1, label: 'Declined' }
 ])
 

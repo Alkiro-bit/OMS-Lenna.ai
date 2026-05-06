@@ -61,7 +61,7 @@
         </button>
       </header>
 
-      <!-- STATS HERO SECTION  full width, terpisah dari konten bawah -->
+      <!-- STATS HERO SECTION -->
       <section class="stats-section">
         <div class="stats-grid">
           <div v-for="card in statsCards" :key="card.key" class="stat-card">
@@ -72,7 +72,7 @@
         </div>
       </section>
 
-      <!-- CONTENT BODY  My Overtime + Table -->
+      <!-- CONTENT BODY: My Overtime + Table -->
       <div class="content-body">
         <div class="overtime-bar">My Overtime</div>
 
@@ -88,7 +88,14 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="(row, i) in overtimeList" :key="i">
+                <tr
+                  v-for="(row, i) in overtimeList"
+                  :key="i"
+                  class="table-row-clickable"
+                  @click="openDetailModal(row)"
+                  tabindex="0"
+                  @keydown.enter="openDetailModal(row)"
+                >
                   <td>{{ row.task }}</td>
                   <td>{{ formatDate(row.date) }}</td>
                   <td>{{ row.hours }} Hour</td>
@@ -107,20 +114,131 @@
 
     </div>
   </div>
+
+  <!-- ============================================================
+        DETAIL PENGAJUAN LEMBUR 
+       ============================================================ -->
+  <Teleport to="body">
+    <Transition name="overlay-fade">
+      <div
+        v-if="isDetailModalOpen"
+        class="detail-overlay"
+        @click="handleOverlayClick"
+      >
+        <Transition name="modal-slide">
+          <div
+            v-if="isDetailModalOpen"
+            class="detail-modal"
+            role="dialog"
+            aria-modal="true"
+            @click.stop
+          >
+            <!-- DETAIL HEADER -->
+            <div class="detail-header">
+              <p class="detail-title">DETAIL PENGAJUAN LEMBUR</p>
+              <span
+                class="detail-status-badge"
+                :style="getStatusStyle(selectedOvertime.status)"
+              >
+                {{ selectedOvertime.status }}
+              </span>
+            </div>
+
+            <!-- DETAIL BODY -->
+            <div class="detail-body">
+
+              <!-- SECTION 1: Informasi Pengaju -->
+              <div class="detail-section">
+                <p class="section-label">
+                  <i class="fa-solid fa-user"></i> Informasi Pengaju
+                </p>
+                <div class="field-grid">
+                  <div class="field-group full">
+                    <span class="field-label">Nama Karyawan</span>
+                    <span class="field-value">{{ account.name }}</span>
+                  </div>
+                  <div class="field-group">
+                    <span class="field-label">Jabatan</span>
+                    <span class="field-value">{{ account.position }}</span>
+                  </div>
+                  <div class="field-group">
+                    <span class="field-label">Project Manager</span>
+                    <span class="field-value">{{ selectedOvertime.pic || '-' }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="detail-divider"></div>
+
+              <!-- SECTION 2: Waktu Lembur -->
+              <div class="detail-section">
+                <p class="section-label">
+                  <i class="fa-solid fa-clock"></i> Waktu Lembur
+                </p>
+                <div class="field-grid">
+                  <div class="field-group">
+                    <span class="field-label">Tanggal</span>
+                    <span class="field-value">{{ formatDate(selectedOvertime.date) }}</span>
+                  </div>
+                  <div class="field-group">
+                    <span class="field-label">Jam Mulai</span>
+                    <span class="field-value">{{ selectedOvertime.jamMulai || '19:00' }} WIB</span>
+                  </div>
+                  <div class="field-group full">
+                    <span class="field-label">Durasi</span>
+                    <span class="field-value">{{ selectedOvertime.hours }} Jam</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="detail-divider"></div>
+
+              <!-- SECTION 3: Detail Pekerjaan -->
+              <div class="detail-section">
+                <p class="section-label">
+                  <i class="fa-solid fa-align-left"></i> Detail Pekerjaan
+                </p>
+                <div class="field-grid">
+                  <div class="field-group full">
+                    <span class="field-label">Task</span>
+                    <span class="field-value">{{ selectedOvertime.task }}</span>
+                  </div>
+                  <div class="field-group full">
+                    <span class="field-label">Deskripsi</span>
+                    <span class="field-value field-desc">{{ selectedOvertime.desc || 'Tidak ada deskripsi' }}</span>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- MODAL FOOTER -->
+            <div class="detail-footer">
+              <button class="btn-close-modal" @click="closeDetailModal">
+                <i class="fa-solid fa-xmark"></i> Close
+              </button>
+            </div>
+          </div>
+        </Transition>
+      </div>
+    </Transition>
+  </Teleport>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter, RouterLink } from 'vue-router'
 
 const router = useRouter()
+
+// ============================================================
+// SIDEBAR STATE
+// ============================================================
 const sidebarExpanded = ref(false)
 let sidebarHoverTimer = null
 
 function handleSidebarMouseEnter() {
-  if (sidebarHoverTimer) {
-    clearTimeout(sidebarHoverTimer)
-  }
+  if (sidebarHoverTimer) clearTimeout(sidebarHoverTimer)
   sidebarExpanded.value = true
 }
 
@@ -130,12 +248,17 @@ function handleSidebarMouseLeave() {
   }, 100)
 }
 
-// Data user - digunakan di topbar dan sidebar
+// ============================================================
+// USER ACCOUNT DATA
+// ============================================================
 const account = ref({
   name: 'John Doe',
   position: 'Engineer ~ Fullstack'
 })
 
+// ============================================================
+// NAVIGATION
+// ============================================================
 const navItems = ref([
   {
     name: 'dashboard',
@@ -153,6 +276,9 @@ const navItems = ref([
 
 const currentRoute = computed(() => router.currentRoute.value.path)
 
+// ============================================================
+// STATS CARDS
+// ============================================================
 const statsCards = ref([
   { key: 'totalJam', value: 50, label: 'Total Jam Lembur' },
   { key: 'pengajuan', value: 12, label: 'Pengajuan Lembur' },
@@ -160,19 +286,165 @@ const statsCards = ref([
   { key: 'pending', value: 1, label: 'Pending' }
 ])
 
+// ============================================================
+// OVERTIME LIST - dengan data dummy lengkap untuk detail modal
+// ============================================================
 const overtimeList = ref([
-  { task: 'Debugging', date: new Date(2026, 3, 24), hours: 7, status: 'Pending' },
-  { task: 'Deployment', date: new Date(2026, 3, 23), hours: 5, status: 'Approved' },
-  { task: 'Developing', date: new Date(2026, 3, 20), hours: 4, status: 'Approved' },
-  { task: 'Testing', date: new Date(2026, 3, 18), hours: 4, status: 'Declined' },
-  { task: 'Deployment', date: new Date(2026, 3, 15), hours: 5, status: 'Pending' },
-  { task: 'Debugging', date: new Date(2026, 3, 11), hours: 6, status: 'Approved' },
-  { task: 'Deployment', date: new Date(2026, 3, 9), hours: 8, status: 'Approved' },
-  { task: 'Debugging', date: new Date(2026, 3, 7), hours: 6, status: 'Approved' },
-  { task: 'Code Review', date: new Date(2026, 3, 5), hours: 3, status: 'Approved' },
-  { task: 'Bug Fix', date: new Date(2026, 3, 2), hours: 4, status: 'Pending' }
+  {
+    task: 'Debugging',
+    date: new Date(2026, 3, 24),
+    hours: 7,
+    status: 'Pending',
+    jamMulai: '19:00',
+    jenis: 'Bug Fixing',
+    pic: 'Budi Santoso',
+    desc: 'Investigasi dan perbaikan critical bug pada endpoint autentikasi yang menyebabkan gagal login pada sejumlah user di environment production.'
+  },
+  {
+    task: 'Deployment',
+    date: new Date(2026, 3, 23),
+    hours: 5,
+    status: 'Approved',
+    jamMulai: '19:30',
+    jenis: 'Deployment',
+    pic: 'Rina Marlina',
+    desc: 'Deploy versi 2.4.1 ke production server, mencakup migrasi database schema, konfigurasi environment variable, dan validasi rollback plan.'
+  },
+  {
+    task: 'Developing',
+    date: new Date(2026, 3, 20),
+    hours: 4,
+    status: 'Approved',
+    jamMulai: '20:00',
+    jenis: 'Feature Development',
+    pic: 'Budi Santoso',
+    desc: 'Pengembangan fitur notifikasi real-time menggunakan WebSocket untuk modul overtime management, termasuk unit test dan dokumentasi.'
+  },
+  {
+    task: 'Testing',
+    date: new Date(2026, 3, 18),
+    hours: 4,
+    status: 'Declined',
+    jamMulai: '19:00',
+    jenis: 'QA Testing',
+    pic: 'Doni Pratama',
+    desc: 'Regression testing untuk sprint 12, mencakup 45 test case pada modul approval dan reporting. Ditolak karena overlap jadwal dengan lembur sebelumnya.'
+  },
+  {
+    task: 'Deployment',
+    date: new Date(2026, 3, 15),
+    hours: 5,
+    status: 'Pending',
+    jamMulai: '21:00',
+    jenis: 'Deployment',
+    pic: 'Rina Marlina',
+    desc: 'Hotfix deployment untuk patch keamanan pada dependency library yang teridentifikasi memiliki celah keamanan kritikal di environment production.'
+  },
+  {
+    task: 'Debugging',
+    date: new Date(2026, 3, 11),
+    hours: 6,
+    status: 'Approved',
+    jamMulai: '19:00',
+    jenis: 'Bug Fixing',
+    pic: 'Doni Pratama',
+    desc: 'Debug performa query database yang lambat pada halaman laporan bulanan. Ditemukan missing index pada tabel overtime_requests, dilakukan optimasi query plan.'
+  },
+  {
+    task: 'Deployment',
+    date: new Date(2026, 3, 9),
+    hours: 8,
+    status: 'Approved',
+    jamMulai: '20:00',
+    jenis: 'Deployment',
+    pic: 'Budi Santoso',
+    desc: 'Major release v3.0.0 menggunakan strategi blue-green deployment. Meliputi zero-downtime deployment, konfigurasi load balancer, dan smoke testing post-deploy.'
+  },
+  {
+    task: 'Debugging',
+    date: new Date(2026, 3, 7),
+    hours: 6,
+    status: 'Approved',
+    jamMulai: '19:00',
+    jenis: 'Bug Fixing',
+    pic: 'Doni Pratama',
+    desc: 'Perbaikan bug pada fitur export PDF laporan lembur. Issue terletak pada library rendering yang tidak kompatibel dengan data format tertentu.'
+  },
+  {
+    task: 'Code Review',
+    date: new Date(2026, 3, 5),
+    hours: 3,
+    status: 'Approved',
+    jamMulai: '19:30',
+    jenis: 'Code Review',
+    pic: 'Budi Santoso',
+    desc: 'Review pull request dari 2 developer junior mencakup 10 file dan sekitar 600 baris perubahan kode pada modul form pengajuan lembur.'
+  },
+  {
+    task: 'Bug Fix',
+    date: new Date(2026, 3, 2),
+    hours: 4,
+    status: 'Pending',
+    jamMulai: '20:00',
+    jenis: 'Bug Fixing',
+    pic: 'Rina Marlina',
+    desc: 'Fix issue pada validasi form pengajuan lembur dimana durasi tidak terhitung dengan benar saat jam mulai melewati tengah malam.'
+  }
 ])
 
+// ============================================================
+// MODAL STATE & FUNCTIONS
+// ============================================================
+const isDetailModalOpen = ref(false)
+const selectedOvertime = ref({})
+
+/**
+ * Buka modal detail dengan data overtime yang dipilih
+ */
+const openDetailModal = (rowData) => {
+  selectedOvertime.value = rowData
+  isDetailModalOpen.value = true
+  document.body.style.overflow = 'hidden'
+}
+
+/**
+ * Tutup modal detail
+ */
+const closeDetailModal = () => {
+  isDetailModalOpen.value = false
+  selectedOvertime.value = {}
+  document.body.style.overflow = ''
+}
+
+/**
+ * Tutup modal saat klik overlay (di luar modal)
+ */
+const handleOverlayClick = (event) => {
+  if (event.target === event.currentTarget) {
+    closeDetailModal()
+  }
+}
+
+// ============================================================
+// KEYBOARD HANDLER (Escape untuk tutup modal)
+// ============================================================
+const handleKeydown = (event) => {
+  if (event.key === 'Escape' && isDetailModalOpen.value) {
+    closeDetailModal()
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('keydown', handleKeydown)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('keydown', handleKeydown)
+})
+
+// ============================================================
+// UTILITY FUNCTIONS
+// ============================================================
 const MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
 
 function getInitials(name) {
@@ -186,9 +458,11 @@ function getInitials(name) {
 }
 
 function formatDate(date) {
-  const day = date.getDate()
-  const month = MONTHS[date.getMonth()]
-  const year = String(date.getFullYear()).slice(-2)
+  if (!date) return '-'
+  const d = new Date(date)
+  const day = d.getDate()
+  const month = MONTHS[d.getMonth()]
+  const year = String(d.getFullYear()).slice(-2)
   return `${day}-${month}-${year}`
 }
 
@@ -208,6 +482,18 @@ function getStatusClass(status) {
   return statusMap[status] ?? 'status-default'
 }
 
+/**
+ * Mengembalikan inline style untuk status badge di header modal
+ */
+function getStatusStyle(status) {
+  const styles = {
+    'Approved': 'background:#E8F5E9;border-color:#81C784;color:#1b5e20',
+    'Declined': 'background:#FFEBEE;border-color:#E57373;color:#b71c1c',
+    'Pending':  'background:#FFF8E1;border-color:#FFD54F;color:#7a5c00'
+  }
+  return styles[status] || styles['Pending']
+}
+
 function handleLogout() {
   router.push('/')
 }
@@ -217,7 +503,9 @@ function handleLogout() {
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700&family=Inter:wght@400;500&display=swap');
 @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css');
 
-/* LAYOUT UTAMA */
+/* ============================================================
+   LAYOUT UTAMA
+   ============================================================ */
 .dashboard-layout {
   display: flex;
   height: 100vh;
@@ -227,7 +515,9 @@ function handleLogout() {
   overflow: hidden;
 }
 
-/* ===== SIDEBAR ===== */
+/* ============================================================
+   SIDEBAR
+   ============================================================ */
 .sidebar {
   width: 52px;
   background: #fff;
@@ -395,16 +685,18 @@ function handleLogout() {
 .avatar-sm {
   width: 32px;
   height: 32px;
-  font-size: 11px;
+  font-size: 14px;
 }
 
 .avatar-md {
   width: 34px;
   height: 34px;
-  font-size: 12px;
+  font-size: 14px;
 }
 
-/* ===== MAIN CONTENT ===== */
+/* ============================================================
+   MAIN CONTENT
+   ============================================================ */
 .main-content {
   flex: 1;
   display: flex;
@@ -543,7 +835,7 @@ function handleLogout() {
 .overtime-table-card {
   background: #fff;
   border-radius: 10px;
-  outline : 1px solid #0000;
+  outline: 1px solid #0000;
   border: 1px solid #e0e0e0;
   overflow: hidden;
   flex: 1;
@@ -577,33 +869,28 @@ thead th {
   font-family: 'Plus Jakarta Sans', sans-serif;
 }
 
-thead th:nth-child(1) {
-  width: 30%;
-}
-
-thead th:nth-child(2) {
-  width: 25%;
-}
-
-thead th:nth-child(3) {
-  width: 20%;
-}
-
-thead th:nth-child(4) {
-  width: 25%;
-}
+thead th:nth-child(1) { width: 30%; }
+thead th:nth-child(2) { width: 25%; }
+thead th:nth-child(3) { width: 20%; }
+thead th:nth-child(4) { width: 25%; }
 
 tbody tr {
   border-bottom: 1px solid #ececec;
   transition: background 0.1s;
 }
 
-tbody tr:last-child {
-  border-bottom: none;
+tbody tr:last-child { border-bottom: none; }
+
+tbody tr:hover { background: #f8f9ff; }
+
+/* ROW CLICKABLE */
+.table-row-clickable {
+  cursor: pointer;
 }
 
-tbody tr:hover {
-  background: #f8f9ff;
+.table-row-clickable:focus {
+  outline: 2px solid #397CFA;
+  outline-offset: -2px;
 }
 
 tbody td {
@@ -638,54 +925,230 @@ tbody td {
   border-color: #FFD54F;
   color: #7a5c00;
 }
-
-.status-pending .status-dot {
-  background: #FFD54F;
-}
+.status-pending .status-dot { background: #FFD54F; }
 
 .status-approved {
   background: #E8F5E9;
   border-color: #81C784;
   color: #1b5e20;
 }
-
-.status-approved .status-dot {
-  background: #66BB6A;
-}
+.status-approved .status-dot { background: #66BB6A; }
 
 .status-declined {
   background: #FFEBEE;
   border-color: #E57373;
   color: #b71c1c;
 }
-
-.status-declined .status-dot {
-  background: #EF5350;
-}
+.status-declined .status-dot { background: #EF5350; }
 
 .status-default {
   background: #f0f0f0;
   border-color: #ccc;
   color: #888;
 }
+.status-default .status-dot { background: #ccc; }
 
-.status-default .status-dot {
-  background: #ccc;
+/* ============================================================
+   MODAL DETAIL PENGAJUAN LEMBUR
+   ============================================================ */
+
+/* Overlay */
+.detail-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.52);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+  padding: 20px;
 }
 
-/* TRANSITIONS */
+/* Modal Container */
+.detail-modal {
+  background: #fff;
+  border-radius: 14px;
+  width: 540px;
+  max-width: 94vw;
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+/* Modal Header */
+.detail-header {
+  background: linear-gradient(90deg, #1D127D, #397CFA);
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.detail-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.detail-status-badge {
+  padding: 3px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  border: 1.5px solid transparent;
+  font-family: 'Inter', sans-serif;
+}
+
+/* Modal Body */
+.detail-body {
+  padding: 20px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+/* Section Label */
+.section-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: #999;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  margin-bottom: 10px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.section-label i {
+  font-size: 11px;
+}
+
+/* Field Grid */
+.field-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.field-group.full {
+  grid-column: 1 / -1;
+}
+
+.field-label {
+  font-size: 10px;
+  color: #999;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 500;
+  font-family: 'Inter', sans-serif;
+}
+
+.field-value {
+  font-size: 13px;
+  color: #111;
+  font-weight: 500;
+  background: #f7f7f8;
+  border-radius: 7px;
+  padding: 9px 12px;
+  min-height: 36px;
+  line-height: 1.5;
+  font-family: 'Inter', sans-serif;
+}
+
+.field-desc {
+  min-height: 76px;
+  font-size: 12px;
+  line-height: 1.65;
+  font-weight: 400;
+  white-space: pre-wrap;
+}
+
+/* Divider */
+.detail-divider {
+  height: 1px;
+  background: #e0e0e0;
+  margin: 16px 0;
+}
+
+/* Modal Footer */
+.detail-footer {
+  padding: 14px 20px;
+  border-top: 1px solid #e0e0e0;
+  display: flex;
+  justify-content: flex-end;
+  flex-shrink: 0;
+}
+
+.btn-close-modal {
+  padding: 0 24px;
+  height: 36px;
+  border-radius: 8px;
+  background: #1D127D;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: background 0.15s;
+}
+
+.btn-close-modal:hover {
+  background: #2b1cb0;
+}
+
+/* ============================================================
+   TRANSITIONS
+   ============================================================ */
 .fade-slide-enter-active,
 .fade-slide-leave-active {
   transition: opacity 0.2s ease, transform 0.2s ease;
 }
-
 .fade-slide-enter-from {
   opacity: 0;
   transform: translateX(-6px);
 }
-
 .fade-slide-leave-to {
   opacity: 0;
   transform: translateX(-6px);
+}
+
+.overlay-fade-enter-active,
+.overlay-fade-leave-active {
+  transition: opacity 0.25s ease;
+}
+.overlay-fade-enter-from,
+.overlay-fade-leave-to {
+  opacity: 0;
+}
+
+.modal-slide-enter-active,
+.modal-slide-leave-active {
+  transition: transform 0.25s ease, opacity 0.25s ease;
+}
+.modal-slide-enter-from {
+  transform: translateY(20px) scale(0.97);
+  opacity: 0;
+}
+.modal-slide-leave-to {
+  transform: translateY(20px) scale(0.97);
+  opacity: 0;
 }
 </style>

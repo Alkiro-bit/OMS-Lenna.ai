@@ -113,14 +113,13 @@
       </div>
 
     </div>
-  </div>
 
-  <!-- ============================================================
-        DETAIL PENGAJUAN LEMBUR 
-       ============================================================ -->
-  <Teleport to="body">
-    <Transition name="overlay-fade">
-      <div
+    <!-- ============================================================
+          DETAIL PENGAJUAN LEMBUR 
+         ============================================================ -->
+    <Teleport to="body">
+      <Transition name="overlay-fade">
+        <div
         v-if="isDetailModalOpen"
         class="detail-overlay"
         @click="handleOverlayClick"

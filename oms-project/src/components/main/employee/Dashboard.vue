@@ -144,7 +144,7 @@
               </span>
             </div>
 
-            <!-- DETAIL BODY -->
+            <!-- "DETAIL" BODY -->
             <div class="detail-body">
 
               <!-- SECTION 1: Informasi Pengaju -->
@@ -283,7 +283,8 @@ const statsCards = ref([
   { key: 'totalJam', value: 50, label: 'Total Jam Lembur' },
   { key: 'pengajuan', value: 12, label: 'Pengajuan Lembur' },
   { key: 'approved', value: 8, label: 'Lembur di Approve' },
-  { key: 'pending', value: 1, label: 'Pending' }
+  { key: 'pending', value: 1, label: 'Pending' },
+  { key: 'declined', value: 1, label: 'Declined' }
 ])
 
 // ============================================================
@@ -764,7 +765,7 @@ function handleLogout() {
 
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(4, auto);
+  grid-template-columns: repeat(5, auto);
   gap: 12px;
   justify-content: center;
 }

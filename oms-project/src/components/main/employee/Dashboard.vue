@@ -162,7 +162,7 @@
                     <span class="field-value">{{ account.position }}</span>
                   </div>
                   <div class="field-group">
-                    <span class="field-label">Project Manager</span>
+                    <span class="field-label">PIC</span>
                     <span class="field-value">{{ selectedOvertime.pic || '-' }}</span>
                   </div>
                 </div>

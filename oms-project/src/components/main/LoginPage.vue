@@ -84,9 +84,29 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
+
 const email = ref('')
 const password = ref('')
 const remember = ref(false)
+
+// dummy users
+const users = [
+  {
+    email: 'employee@lenna.com',
+    password: '123',
+    role: 'employee'
+  },
+  {
+    email: 'pm@lenna.com',
+    password: '123',
+    role: 'product_manager'
+  },
+  {
+    email: 'hr@lenna.com',
+    password: '123',
+    role: 'hr'
+  }
+]
 
 const login = () => {
   if (!email.value || !password.value) {
@@ -94,8 +114,24 @@ const login = () => {
     return
   }
 
-  // masuk ke dashboard employee
-  router.push('/dashboard')
+  const user = users.find(
+    u =>
+      u.email === email.value &&
+      u.password === password.value
+  )
+
+  if (!user) {
+    alert('Email or password is incorrect.')
+    return
+  }
+
+  localStorage.setItem('role', user.role)
+
+  if (user.role === 'employee') {
+    router.push('/dashboard')
+  } else {
+    alert('Dashboard for this role is not available yet.')
+  }
 }
 </script>
 

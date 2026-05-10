@@ -24,7 +24,7 @@
       <div class="stats">
 
           <div class="stat-wrapper">
-            <div class="floating-emoji">👨‍💻</div>
+            <div class="floating-emoji">👨‍💻👩‍💻</div>
             <div class="stat">
               <h2>Employees</h2>
               <span>Request overtime seamlessly</span>
@@ -32,7 +32,7 @@
           </div>
 
           <div class="stat-wrapper">
-            <div class="floating-emoji">📊</div>
+            <div class="floating-emoji">✅📊</div>
             <div class="stat">
               <h2>PM & HR</h2>
               <span>Approve with full visibility</span>

@@ -12,8 +12,8 @@
         </div>
 
         <h1>
-          Log, acknowledge,<br>
-          approve – All in one place.
+          Track. Approve. Optimize<br>
+          Employee, PM, HR
         </h1>
 
         <p>
@@ -21,18 +21,24 @@
           lebih mudah, lebih cepat, dan tidak ada yang terlewat.
         </p>
 
-        <div class="stats">
-          <div class="stat">
-            <h2>150 hrs</h2>
-            <span>Tracked this month</span>
+      <div class="stats">
+
+          <div class="stat-wrapper">
+            <div class="floating-emoji">👨‍💻👩‍💻</div>
+            <div class="stat">
+              <h2>Employees</h2>
+              <span>Request overtime seamlessly</span>
+            </div>
           </div>
 
-          <div class="stat">
-            <h2>1.5 days</h2>
-            <span>Avg approval time</span>
+          <div class="stat-wrapper">
+            <div class="floating-emoji">✅📊</div>
+            <div class="stat">
+              <h2>PM & HR</h2>
+              <span>Approve with full visibility</span>
+            </div>
           </div>
         </div>
-
       </div>
     </div>
 
@@ -142,25 +148,44 @@ const login = () => {
 .container {
   display: flex;
   min-height: 100vh;
+  width: 100%;
+  overflow: hidden;
   font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
 }
 
 /* style buat panel kiri */
+@media (max-width: 1200px) {
+  .left-panel {
+    max-width: 50%;
+    min-width: 460px;
+  }
+
+  .hero h1 {
+    font-size: 32px;
+  }
+
+  .login-card {
+    width: min(100%, 420px);
+  }
+}
+
 .left-panel {
-  width: 55%;
-  background: linear-gradient(135deg, #202184,#383BEA );
-  border-top-right-radius: 50%;
-  border-bottom-right-radius: 50%;
+  flex: 1;
+  max-width: 48%;
+  min-width: 460px;
+  background: linear-gradient(135deg, #202184, #383BEA);
+  border-top-right-radius: 280px;
+  border-bottom-right-radius: 280px;
   display: flex;
   justify-content: center;
   align-items: center;
   color: white;
-  padding: 60px;
+  padding: clamp(40px, 5vw, 70px);
 }
 
 .hero {
   text-align: center;
-  max-width: 650px;
+  max-width: 520px;
 }
 
 .icons {
@@ -172,13 +197,13 @@ const login = () => {
 }
 
 .hero h1 {
-  font-size: 58px;
+  font-size: clamp(30px, 3vw, 44px);
   line-height: 1.15;
   margin-bottom: 20px;
 }
 
 .hero p {
-  font-size: 18px;
+  font-size: 17px;
   margin-bottom: 45px;
   opacity: .95;
 }
@@ -187,32 +212,48 @@ const login = () => {
   display: flex;
   justify-content: center;
   gap: 20px;
+  margin-top: 25px;
 }
 
 .stat {
   background: rgba(255,255,255,0.15);
   backdrop-filter: blur(12px);
-  padding: 24px 34px;
+  padding: 20px 30px;
   border-radius: 20px;
-  min-width: 220px;
+  min-width: 200px;
   box-shadow: 0 8px 20px rgba(0,0,0,0.18);
+  width: clamp(170px, 18vw, 220px);
 }
 
 .stat h2 {
-  font-size: 34px;
+  font-size: 25px;
   margin-bottom: 8px;
 }
 
 /* kalo ini style buat panel kanan */
 .right-panel {
-  width: 45%;
+  flex: 1;
   display: flex;
   justify-content: center;
   align-items: center;
+  padding: 40px;
+}
+
+.stat-wrapper {
+  position: relative;
+}
+
+.floating-emoji {
+  position: absolute;
+  top: -38px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 34px;
+  z-index: 2;
 }
 
 .login-card {
-  width: 500px;
+  width: min(100%, 460px);
   background: white;
   padding: 55px;
   border-radius: 24px;
@@ -221,7 +262,7 @@ const login = () => {
 }
 
 .login-card h1 {
-  font-size: 52px;
+  font-size: clamp(34px, 4vw, 52px);
   margin-bottom: 15px;
 }
 

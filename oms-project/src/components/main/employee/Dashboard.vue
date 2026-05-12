@@ -1,285 +1,177 @@
 ﻿<template>
-  <div class="dashboard-layout">
-
-    <!-- SIDEBAR -->
-    <aside
-      class="sidebar"
-      :class="{ 'is-expanded': sidebarExpanded }"
-      @mouseenter="handleSidebarMouseEnter"
-      @mouseleave="handleSidebarMouseLeave"
-    >
-
-      <div class="sidebar-brand">
-        <div class="brand-logo">
-          <img src="/icons/LOGO Lenna.ai.png" alt="Lenna.ai" class="brand-logo-img" />
-        </div>
-        <Transition name="fade-slide">
-          <div v-if="sidebarExpanded" class="brand-text">
-            <p class="brand-name">Lenna.ai</p>
-            <p class="brand-sub">Overtime Management System</p>
-          </div>
-        </Transition>
-      </div>
-
-      <nav class="sidebar-nav">
-        <p v-if="sidebarExpanded" class="nav-section-label">HOME</p>
-        <RouterLink v-for="item in navItems" :key="item.name" :to="item.path"
-          class="nav-item" :class="{ active: currentRoute === item.path }">
-          <img :src="item.icon" class="nav-icon-img" :alt="item.label" />
-          <Transition name="fade-slide">
-            <span v-if="sidebarExpanded" class="nav-text">{{ item.label }}</span>
-          </Transition>
-        </RouterLink>
-      </nav>
-
-      <div class="sidebar-account">
-        <div class="avatar avatar-sm">{{ getInitials(account.name) }}</div>
-        <Transition name="fade-slide">
-          <div v-if="sidebarExpanded" class="account-info">
-            <p class="account-name">{{ account.name }}</p>
-            <p class="account-pos">{{ account.position }}</p>
-          </div>
-        </Transition>
-        <Transition name="fade-slide">
-          <span v-if="sidebarExpanded" class="account-more">&#8943;</span>
-        </Transition>
-      </div>
-    </aside>
-
-    <!-- MAIN CONTENT -->
-    <div class="main-content">
-
-      <!-- TOPBAR -->
-      <header class="topbar">
-        <div class="topbar-left">
-          <div class="avatar avatar-md">{{ getInitials(account.name) }}</div>
-          <span class="greeting">Hello, <strong>{{ account.name }}</strong></span>
-        </div>
-        <button class="logout-btn" @click="handleLogout">
-          <i class="fa-solid fa-arrow-right-from-bracket"></i>
-          Logout
-        </button>
-      </header>
-
-      <!-- STATS HERO SECTION -->
-      <section class="stats-section">
-        <div class="stats-grid">
-          <div v-for="card in statsCards" :key="card.key" class="stat-card">
-            <p class="stat-number">{{ card.value }}</p>
-            <p class="stat-label">{{ card.label }}</p>
-            <p class="stat-period">{{ currentPeriod }}</p>
-          </div>
-        </div>
-      </section>
-
-      <!-- CONTENT BODY: My Overtime + Table -->
-      <div class="content-body">
-        <div class="overtime-bar">My Overtime</div>
-
-        <div class="overtime-table-card">
-          <div class="overtime-table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Task</th>
-                  <th>Date</th>
-                  <th>Duration</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr
-                  v-for="(row, i) in overtimeList"
-                  :key="i"
-                  class="table-row-clickable"
-                  @click="openDetailModal(row)"
-                  tabindex="0"
-                  @keydown.enter="openDetailModal(row)"
-                >
-                  <td>{{ row.task }}</td>
-                  <td>{{ formatDate(row.date) }}</td>
-                  <td>{{ row.hours }} Hour</td>
-                  <td>
-                    <span class="status-badge" :class="getStatusClass(row.status)">
-                      <span class="status-dot"></span>
-                      {{ row.status }}
-                    </span>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+  <div class="dashboard-page">
+    <!-- STATS HERO SECTION -->
+    <section class="stats-section">
+      <div class="stats-grid">
+        <div v-for="card in statsCards" :key="card.key" class="stat-card">
+          <p class="stat-number">{{ card.value }}</p>
+          <p class="stat-label">{{ card.label }}</p>
+          <p class="stat-period">{{ currentPeriod }}</p>
         </div>
       </div>
+    </section>
 
+    <!-- CONTENT BODY: My Overtime + Table -->
+    <div class="content-body">
+      <div class="overtime-bar">My Overtime</div>
+
+      <div class="overtime-table-card">
+        <div class="overtime-table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Task</th>
+                <th>Date</th>
+                <th>Duration</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="(row, i) in overtimeList"
+                :key="i"
+                class="table-row-clickable"
+                @click="openDetailModal(row)"
+                tabindex="0"
+                @keydown.enter="openDetailModal(row)"
+              >
+                <td>{{ row.task }}</td>
+                <td>{{ formatDate(row.date) }}</td>
+                <td>{{ row.hours }} Hour</td>
+                <td>
+                  <span class="status-badge" :class="getStatusClass(row.status)">
+                    <span class="status-dot"></span>
+                    {{ row.status }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
 
-    <!-- ============================================================
-          DETAIL PENGAJUAN LEMBUR 
-         ============================================================ -->
+    <!-- MODAL DETAIL (tetap di sini karena spesifik halaman Dashboard) -->
     <Teleport to="body">
       <Transition name="overlay-fade">
         <div
-        v-if="isDetailModalOpen"
-        class="detail-overlay"
-        @click="handleOverlayClick"
-      >
-        <Transition name="modal-slide">
-          <div
-            v-if="isDetailModalOpen"
-            class="detail-modal"
-            role="dialog"
-            aria-modal="true"
-            @click.stop
-          >
-            <!-- DETAIL HEADER -->
-            <div class="detail-header">
-              <p class="detail-title">DETAIL PENGAJUAN LEMBUR</p>
-              <span
-                class="detail-status-badge"
-                :style="getStatusStyle(selectedOvertime.status)"
-              >
-                {{ selectedOvertime.status }}
-              </span>
-            </div>
+          v-if="isDetailModalOpen"
+          class="detail-overlay"
+          @click="handleOverlayClick"
+        >
+          <Transition name="modal-slide">
+            <div
+              v-if="isDetailModalOpen"
+              class="detail-modal"
+              role="dialog"
+              aria-modal="true"
+              @click.stop
+            >
+              <div class="detail-header">
+                <p class="detail-title">DETAIL PENGAJUAN LEMBUR</p>
+                <span
+                  class="detail-status-badge"
+                  :style="getStatusStyle(selectedOvertime.status)"
+                >
+                  {{ selectedOvertime.status }}
+                </span>
+              </div>
 
-            <!-- "DETAIL" BODY -->
-            <div class="detail-body">
+              <div class="detail-body">
+                <div class="detail-section">
+                  <p class="section-label">
+                    <i class="fa-solid fa-user"></i> Informasi Pengaju
+                  </p>
+                  <div class="field-grid">
+                    <div class="field-group full">
+                      <span class="field-label">Nama Karyawan</span>
+                      <span class="field-value">{{ account.name }}</span>
+                    </div>
+                    <div class="field-group">
+                      <span class="field-label">Jabatan</span>
+                      <span class="field-value">{{ account.position }}</span>
+                    </div>
+                    <div class="field-group">
+                      <span class="field-label">PIC</span>
+                      <span class="field-value">{{ selectedOvertime.pic || '-' }}</span>
+                    </div>
+                  </div>
+                </div>
 
-              <!-- SECTION 1: Informasi Pengaju -->
-              <div class="detail-section">
-                <p class="section-label">
-                  <i class="fa-solid fa-user"></i> Informasi Pengaju
-                </p>
-                <div class="field-grid">
-                  <div class="field-group full">
-                    <span class="field-label">Nama Karyawan</span>
-                    <span class="field-value">{{ account.name }}</span>
+                <div class="detail-divider"></div>
+
+                <div class="detail-section">
+                  <p class="section-label">
+                    <i class="fa-solid fa-clock"></i> Waktu Lembur
+                  </p>
+                  <div class="field-grid">
+                    <div class="field-group">
+                      <span class="field-label">Tanggal</span>
+                      <span class="field-value">{{ formatDate(selectedOvertime.date) }}</span>
+                    </div>
+                    <div class="field-group">
+                      <span class="field-label">Jam Mulai</span>
+                      <span class="field-value">{{ selectedOvertime.jamMulai || '19:00' }} WIB</span>
+                    </div>
+                    <div class="field-group full">
+                      <span class="field-label">Durasi</span>
+                      <span class="field-value">{{ selectedOvertime.hours }} Jam</span>
+                    </div>
                   </div>
-                  <div class="field-group">
-                    <span class="field-label">Jabatan</span>
-                    <span class="field-value">{{ account.position }}</span>
-                  </div>
-                  <div class="field-group">
-                    <span class="field-label">PIC</span>
-                    <span class="field-value">{{ selectedOvertime.pic || '-' }}</span>
+                </div>
+
+                <div class="detail-divider"></div>
+
+                <div class="detail-section">
+                  <p class="section-label">
+                    <i class="fa-solid fa-align-left"></i> Detail Pekerjaan
+                  </p>
+                  <div class="field-grid">
+                    <div class="field-group full">
+                      <span class="field-label">Task</span>
+                      <span class="field-value">{{ selectedOvertime.task }}</span>
+                    </div>
+                    <div class="field-group full">
+                      <span class="field-label">Deskripsi</span>
+                      <span class="field-value field-desc">{{ selectedOvertime.desc || 'Tidak ada deskripsi' }}</span>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              <div class="detail-divider"></div>
-
-              <!-- SECTION 2: Waktu Lembur -->
-              <div class="detail-section">
-                <p class="section-label">
-                  <i class="fa-solid fa-clock"></i> Waktu Lembur
-                </p>
-                <div class="field-grid">
-                  <div class="field-group">
-                    <span class="field-label">Tanggal</span>
-                    <span class="field-value">{{ formatDate(selectedOvertime.date) }}</span>
-                  </div>
-                  <div class="field-group">
-                    <span class="field-label">Jam Mulai</span>
-                    <span class="field-value">{{ selectedOvertime.jamMulai || '19:00' }} WIB</span>
-                  </div>
-                  <div class="field-group full">
-                    <span class="field-label">Durasi</span>
-                    <span class="field-value">{{ selectedOvertime.hours }} Jam</span>
-                  </div>
-                </div>
+              <div class="detail-footer">
+                <button class="btn-close-modal" @click="closeDetailModal">
+                  <i class="fa-solid fa-xmark"></i> Close
+                </button>
               </div>
-
-              <div class="detail-divider"></div>
-
-              <!-- SECTION 3: Detail Pekerjaan -->
-              <div class="detail-section">
-                <p class="section-label">
-                  <i class="fa-solid fa-align-left"></i> Detail Pekerjaan
-                </p>
-                <div class="field-grid">
-                  <div class="field-group full">
-                    <span class="field-label">Task</span>
-                    <span class="field-value">{{ selectedOvertime.task }}</span>
-                  </div>
-                  <div class="field-group full">
-                    <span class="field-label">Deskripsi</span>
-                    <span class="field-value field-desc">{{ selectedOvertime.desc || 'Tidak ada deskripsi' }}</span>
-                  </div>
-                </div>
-              </div>
-
             </div>
-
-            <!-- MODAL FOOTER -->
-            <div class="detail-footer">
-              <button class="btn-close-modal" @click="closeDetailModal">
-                <i class="fa-solid fa-xmark"></i> Close
-              </button>
-            </div>
-          </div>
-        </Transition>
-      </div>
-    </Transition>
-  </Teleport>
-
+          </Transition>
+        </div>
+      </Transition>
+    </Teleport>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { useRouter, RouterLink } from 'vue-router'
+import { useRoute } from 'vue-router'
 
-const router = useRouter()
+// Kita perlu akses account dari parent? Atau gunakan state management / provide-inject?
+// Solusi sederhana: defineProps atau bisa juga pake composable.
+// Tapi karena account ada di App.vue (parent), kita bisa terima via props.
+// Atau pindahkan account ke store Pinia. Untuk sekarang, kita buat props dulu.
 
-// ============================================================
-// SIDEBAR STATE
-// ============================================================
-const sidebarExpanded = ref(false)
-let sidebarHoverTimer = null
-
-function handleSidebarMouseEnter() {
-  if (sidebarHoverTimer) clearTimeout(sidebarHoverTimer)
-  sidebarExpanded.value = true
-}
-
-function handleSidebarMouseLeave() {
-  sidebarHoverTimer = setTimeout(() => {
-    sidebarExpanded.value = false
-  }, 100)
-}
-
-// ============================================================
-// USER ACCOUNT DATA
-// ============================================================
-const account = ref({
-  name: 'John Doe',
-  position: 'Engineer ~ Fullstack'
+const props = defineProps({
+  account: {
+    type: Object,
+    required: true,
+    default: () => ({ name: 'John Doe', position: 'Engineer ~ Fullstack' })
+  }
 })
 
-// ============================================================
-// NAVIGATION
-// ============================================================
-const navItems = ref([
-  {
-    name: 'dashboard',
-    label: 'Dashboard',
-    path: '/dashboard',
-    icon: '/icons/material-symbols_dashboard-rounded.png'
-  },
-  {
-    name: 'form',
-    label: 'Form',
-    path: '/form',
-    icon: '/icons/mdi_form-outline.png'
-  }
-])
+const route = useRoute()
 
-const currentRoute = computed(() => router.currentRoute.value.path)
-
-// ============================================================
-// STATS CARDS
-// ============================================================
+// Stats cards
 const statsCards = ref([
   { key: 'totalJam', value: 52, label: 'Total Jam Lembur' },
   { key: 'pengajuan', value: 10, label: 'Pengajuan Lembur' },
@@ -288,9 +180,7 @@ const statsCards = ref([
   { key: 'declined', value: 1, label: 'Declined' }
 ])
 
-// ============================================================
-// OVERTIME LIST - dengan data dummy lengkap untuk detail modal
-// ============================================================
+// Overtime list (sama seperti sebelumnya)
 const overtimeList = ref([
   {
     task: 'Debugging',
@@ -394,42 +284,28 @@ const overtimeList = ref([
   }
 ])
 
-// ============================================================
-// MODAL STATE & FUNCTIONS
-// ============================================================
+// Modal state
 const isDetailModalOpen = ref(false)
 const selectedOvertime = ref({})
 
-/**
- * Buka modal detail dengan data overtime yang dipilih
- */
 const openDetailModal = (rowData) => {
   selectedOvertime.value = rowData
   isDetailModalOpen.value = true
   document.body.style.overflow = 'hidden'
 }
 
-/**
- * Tutup modal detail
- */
 const closeDetailModal = () => {
   isDetailModalOpen.value = false
   selectedOvertime.value = {}
   document.body.style.overflow = ''
 }
 
-/**
- * Tutup modal saat klik overlay (di luar modal)
- */
 const handleOverlayClick = (event) => {
   if (event.target === event.currentTarget) {
     closeDetailModal()
   }
 }
 
-// ============================================================
-// KEYBOARD HANDLER (Escape untuk tutup modal)
-// ============================================================
 const handleKeydown = (event) => {
   if (event.key === 'Escape' && isDetailModalOpen.value) {
     closeDetailModal()
@@ -444,20 +320,8 @@ onUnmounted(() => {
   window.removeEventListener('keydown', handleKeydown)
 })
 
-// ============================================================
-// UTILITY FUNCTIONS
-// ============================================================
+// Utilities
 const MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
-
-function getInitials(name) {
-  return name
-    .trim()
-    .split(' ')
-    .map(w => w[0])
-    .join('')
-    .substring(0, 2)
-    .toUpperCase()
-}
 
 function formatDate(date) {
   if (!date) return '-'
@@ -484,9 +348,6 @@ function getStatusClass(status) {
   return statusMap[status] ?? 'status-default'
 }
 
-/**
- * Mengembalikan inline style untuk status badge di header modal
- */
 function getStatusStyle(status) {
   const styles = {
     'Approved': 'background:#E8F5E9;border-color:#81C784;color:#1b5e20',
@@ -495,273 +356,18 @@ function getStatusStyle(status) {
   }
   return styles[status] || styles['Pending']
 }
-
-function handleLogout() {
-  router.push('/')
-}
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700&family=Inter:wght@400;500&display=swap');
-@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css');
-
 /* ============================================================
-   LAYOUT UTAMA
+   STYLE KHUSUS DASHBOARD (hanya yang belum ada di App.vue)
    ============================================================ */
-.dashboard-layout {
-  display: flex;
-  height: 100vh;
-  background: #f4f5f7;
-  font-family: 'Inter', sans-serif;
-  font-size: 13px;
-  overflow: hidden;
-}
-
-/* ============================================================
-   SIDEBAR
-   ============================================================ */
-.sidebar {
-  width: 52px;
-  background: #fff;
-  border-right: 0.5px solid #e0e0e0;
+.dashboard-page {
   display: flex;
   flex-direction: column;
-  transition: width 0.25s ease;
-  overflow: hidden;
-  flex-shrink: 0;
-  z-index: 100;
+  height: 100%;
 }
 
-.sidebar.is-expanded {
-  width: 220px;
-}
-
-/* Sidebar Brand */
-.sidebar-brand {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 14px 12px;
-  border-bottom: 0.5px solid #e0e0e0;
-  min-height: 60px;
-  white-space: nowrap;
-  overflow: hidden;
-}
-
-.brand-logo {
-  width: 28px;
-  height: 28px;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.brand-logo-img {
-  width: 28px;
-  height: 28px;
-  object-fit: contain;
-  cursor: pointer;
-}
-
-.brand-text {
-  overflow: hidden;
-}
-
-.brand-name {
-  font-size: 12px;
-  font-weight: 700;
-  color: #111;
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  line-height: 1.3;
-  cursor: pointer;
-}
-
-.brand-sub {
-  font-size: 10px;
-  color: #888;
-  line-height: 1.3;
-  cursor: pointer;
-}
-
-/* Sidebar Navigation */
-.sidebar-nav {
-  flex: 1;
-  padding: 10px 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  overflow: hidden;
-}
-
-.nav-section-label {
-  font-size: 10px;
-  font-weight: 600;
-  color: #aaa;
-  letter-spacing: 0.5px;
-  padding: 6px 4px 4px;
-  white-space: nowrap;
-  font-family: 'Plus Jakarta Sans', sans-serif;
-}
-
-.nav-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 7px 8px;
-  border-radius: 8px;
-  cursor: pointer;
-  white-space: nowrap;
-  color: #666;
-  text-decoration: none;
-  transition: background 0.15s;
-}
-
-.nav-item:hover {
-  background: #f0f0f0;
-}
-
-.nav-item.active {
-  background: #f0f0f0;
-  color: #111;
-}
-
-.nav-icon-img {
-  width: 18px;
-  height: 18px;
-  flex-shrink: 0;
-}
-
-.nav-text {
-  font-size: 12px;
-  font-weight: 600;
-  font-family: 'Plus Jakarta Sans', sans-serif;
-}
-
-/* Sidebar Account */
-.sidebar-account {
-  border-top: 0.5px solid #e0e0e0;
-  padding: 10px 8px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  white-space: nowrap;
-  overflow: hidden;
-}
-
-.account-info {
-  flex: 1;
-  overflow: hidden;
-}
-
-.account-name {
-  font-size: 12px;
-  font-weight: 600;
-  color: #111;
-  font-family: 'Plus Jakarta Sans', sans-serif;
-}
-
-.account-pos {
-  font-size: 10px;
-  color: #888;
-}
-
-.account-more {
-  margin-left: auto;
-  color: #bbb;
-  font-size: 16px;
-  cursor: pointer;
-  flex-shrink: 0;
-}
-
-/* Avatar Component */
-.avatar {
-  border-radius: 50%;
-  background: linear-gradient(135deg, #1D127D, #397CFA);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-  font-weight: 700;
-  flex-shrink: 0;
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  cursor: pointer;
-}
-
-.avatar-sm {
-  width: 32px;
-  height: 32px;
-  font-size: 14px;
-}
-
-.avatar-md {
-  width: 34px;
-  height: 34px;
-  font-size: 14px;
-}
-
-/* ============================================================
-   MAIN CONTENT
-   ============================================================ */
-.main-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-/* TOPBAR */
-.topbar {
-  background: #fff;
-  border-bottom: 0.5px solid #e0e0e0;
-  padding: 0 24px;
-  height: 60px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-shrink: 0;
-}
-
-.topbar-left {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.greeting {
-  font-size: 14px;
-  color: #111;
-  font-family: 'Plus Jakarta Sans', sans-serif;
-}
-
-.greeting strong {
-  font-weight: 700;
-}
-
-.logout-btn {
-  width: 120px;
-  height: 30px;
-  border: 1px solid #8d8d8d;
-  border-radius: 6px;
-  background: transparent;
-  color: #6c6c6c;
-  font-size: 12px;
-  font-weight: 500;
-  font-family: 'Inter', sans-serif;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
-  transition: background 0.15s, color 0.15s;
-}
-
-.logout-btn:hover {
-  background: #8d8d8d;
-  color: #fff;
-}
-
-/* STATS SECTION */
 .stats-section {
   background: linear-gradient(135deg, #1D127D, #397CFA);
   padding: 20px 20px 32px;
@@ -811,7 +417,6 @@ function handleLogout() {
   margin-top: 0;
 }
 
-/* CONTENT BODY */
 .content-body {
   flex: 1;
   overflow-y: auto;
@@ -822,7 +427,6 @@ function handleLogout() {
   background: #f4f5f7;
 }
 
-/* MY OVERTIME BAR */
 .overtime-bar {
   background: linear-gradient(90deg, #1D127D, #397CFA);
   padding: 11px 20px;
@@ -837,7 +441,6 @@ function handleLogout() {
   flex-shrink: 0;
 }
 
-/* TABLE CARD */
 .overtime-table-card {
   background: #fff;
   border-radius: 10px;
@@ -855,7 +458,6 @@ function handleLogout() {
   flex: 1;
 }
 
-/* TABLE STYLING */
 table {
   width: 100%;
   border-collapse: collapse;
@@ -886,10 +488,8 @@ tbody tr {
 }
 
 tbody tr:last-child { border-bottom: none; }
-
 tbody tr:hover { background: #f8f9ff; }
 
-/* ROW CLICKABLE */
 .table-row-clickable {
   cursor: pointer;
 }
@@ -906,7 +506,6 @@ tbody td {
   font-family: 'Inter', sans-serif;
 }
 
-/* STATUS BADGE */
 .status-badge {
   display: inline-flex;
   align-items: center;
@@ -947,18 +546,7 @@ tbody td {
 }
 .status-declined .status-dot { background: #EF5350; }
 
-.status-default {
-  background: #f0f0f0;
-  border-color: #ccc;
-  color: #888;
-}
-.status-default .status-dot { background: #ccc; }
-
-/* ============================================================
-   MODAL DETAIL PENGAJUAN LEMBUR
-   ============================================================ */
-
-/* Overlay */
+/* MODAL STYLE (sama seperti sebelumnya) */
 .detail-overlay {
   position: fixed;
   inset: 0;
@@ -970,7 +558,6 @@ tbody td {
   padding: 20px;
 }
 
-/* Modal Container */
 .detail-modal {
   background: #fff;
   border-radius: 14px;
@@ -983,7 +570,6 @@ tbody td {
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
 }
 
-/* Modal Header */
 .detail-header {
   background: linear-gradient(90deg, #1D127D, #397CFA);
   padding: 16px 20px;
@@ -1012,14 +598,12 @@ tbody td {
   font-family: 'Inter', sans-serif;
 }
 
-/* Modal Body */
 .detail-body {
   padding: 20px;
   overflow-y: auto;
   flex: 1;
 }
 
-/* Section Label */
 .section-label {
   font-size: 10px;
   font-weight: 600;
@@ -1033,11 +617,6 @@ tbody td {
   gap: 5px;
 }
 
-.section-label i {
-  font-size: 11px;
-}
-
-/* Field Grid */
 .field-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -1083,14 +662,12 @@ tbody td {
   white-space: pre-wrap;
 }
 
-/* Divider */
 .detail-divider {
   height: 1px;
   background: #e0e0e0;
   margin: 16px 0;
 }
 
-/* Modal Footer */
 .detail-footer {
   padding: 14px 20px;
   border-top: 1px solid #e0e0e0;
@@ -1118,22 +695,6 @@ tbody td {
 
 .btn-close-modal:hover {
   background: #2b1cb0;
-}
-
-/* ============================================================
-   TRANSITIONS
-   ============================================================ */
-.fade-slide-enter-active,
-.fade-slide-leave-active {
-  transition: opacity 0.2s ease, transform 0.2s ease;
-}
-.fade-slide-enter-from {
-  opacity: 0;
-  transform: translateX(-6px);
-}
-.fade-slide-leave-to {
-  opacity: 0;
-  transform: translateX(-6px);
 }
 
 .overlay-fade-enter-active,

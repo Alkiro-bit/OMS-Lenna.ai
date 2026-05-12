@@ -128,7 +128,8 @@ const login = () => {
   localStorage.setItem('role', user.role)
 
   if (user.role === 'employee') {
-    router.push('/dashboard')
+    window.localStorage.setItem('token', 'blalblalva');
+    window.location.href ='/dashboard'
   } else {
     alert('Dashboard for this role is not available yet.')
   }

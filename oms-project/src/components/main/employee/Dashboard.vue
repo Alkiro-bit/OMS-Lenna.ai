@@ -126,7 +126,8 @@
                   <p class="section-label">
                     <i class="fa-solid fa-align-left"></i> Detail Pekerjaan
                   </p>
-                  <div class="field-grid">
+                  <!-- Fallback jika hanya menggunakan format lama (desc) -->
+                  <div class="field-grid" v-if="!selectedOvertime.tasks || selectedOvertime.tasks.length === 0">
                     <div class="field-group full">
                       <span class="field-label">Task</span>
                       <span class="field-value">{{ selectedOvertime.task }}</span>
@@ -134,6 +135,14 @@
                     <div class="field-group full">
                       <span class="field-label">Deskripsi</span>
                       <span class="field-value field-desc">{{ selectedOvertime.desc || 'Tidak ada deskripsi' }}</span>
+                    </div>
+                  </div>
+
+                  <!-- Format iterasi jika ada subtasks -->
+                  <div class="field-grid" v-if="selectedOvertime.tasks && selectedOvertime.tasks.length > 0">
+                    <div class="field-group full" v-for="(subtask, idx) in selectedOvertime.tasks" :key="idx">
+                      <span class="field-label" style="color: #1D127D; font-weight: 700;">Task {{ idx + 1 }}: {{ subtask.name }}</span>
+                      <span class="field-value field-desc">{{ subtask.description }}</span>
                     </div>
                   </div>
                 </div>
@@ -155,6 +164,7 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
+import { overtimeList } from '../../../store/overtimeStore'
 
 // Kita perlu akses account dari parent? Atau gunakan state management / provide-inject?
 // Solusi sederhana: defineProps atau bisa juga pake composable.
@@ -180,109 +190,7 @@ const statsCards = ref([
   { key: 'declined', value: 1, label: 'Declined' }
 ])
 
-// Overtime list (sama seperti sebelumnya)
-const overtimeList = ref([
-  {
-    task: 'Debugging',
-    date: new Date(2026, 3, 24),
-    hours: 7,
-    status: 'Pending',
-    jamMulai: '19:00',
-    jenis: 'Bug Fixing',
-    pic: 'Budi Santoso',
-    desc: 'Investigasi dan perbaikan critical bug pada endpoint autentikasi yang menyebabkan gagal login pada sejumlah user di environment production.'
-  },
-  {
-    task: 'Deployment',
-    date: new Date(2026, 3, 23),
-    hours: 5,
-    status: 'Approved',
-    jamMulai: '19:30',
-    jenis: 'Deployment',
-    pic: 'Rina Marlina',
-    desc: 'Deploy versi 2.4.1 ke production server, mencakup migrasi database schema, konfigurasi environment variable, dan validasi rollback plan.'
-  },
-  {
-    task: 'Developing',
-    date: new Date(2026, 3, 20),
-    hours: 4,
-    status: 'Approved',
-    jamMulai: '20:00',
-    jenis: 'Feature Development',
-    pic: 'Budi Santoso',
-    desc: 'Pengembangan fitur notifikasi real-time menggunakan WebSocket untuk modul overtime management, termasuk unit test dan dokumentasi.'
-  },
-  {
-    task: 'Testing',
-    date: new Date(2026, 3, 18),
-    hours: 4,
-    status: 'Declined',
-    jamMulai: '19:00',
-    jenis: 'QA Testing',
-    pic: 'Doni Pratama',
-    desc: 'Regression testing untuk sprint 12, mencakup 45 test case pada modul approval dan reporting. Ditolak karena overlap jadwal dengan lembur sebelumnya.'
-  },
-  {
-    task: 'Deployment',
-    date: new Date(2026, 3, 15),
-    hours: 5,
-    status: 'Pending',
-    jamMulai: '21:00',
-    jenis: 'Deployment',
-    pic: 'Rina Marlina',
-    desc: 'Hotfix deployment untuk patch keamanan pada dependency library yang teridentifikasi memiliki celah keamanan kritikal di environment production.'
-  },
-  {
-    task: 'Debugging',
-    date: new Date(2026, 3, 11),
-    hours: 6,
-    status: 'Approved',
-    jamMulai: '19:00',
-    jenis: 'Bug Fixing',
-    pic: 'Doni Pratama',
-    desc: 'Debug performa query database yang lambat pada halaman laporan bulanan. Ditemukan missing index pada tabel overtime_requests, dilakukan optimasi query plan.'
-  },
-  {
-    task: 'Deployment',
-    date: new Date(2026, 3, 9),
-    hours: 8,
-    status: 'Approved',
-    jamMulai: '20:00',
-    jenis: 'Deployment',
-    pic: 'Budi Santoso',
-    desc: 'Major release v3.0.0 menggunakan strategi blue-green deployment. Meliputi zero-downtime deployment, konfigurasi load balancer, dan smoke testing post-deploy.'
-  },
-  {
-    task: 'Debugging',
-    date: new Date(2026, 3, 7),
-    hours: 6,
-    status: 'Approved',
-    jamMulai: '19:00',
-    jenis: 'Bug Fixing',
-    pic: 'Doni Pratama',
-    desc: 'Perbaikan bug pada fitur export PDF laporan lembur. Issue terletak pada library rendering yang tidak kompatibel dengan data format tertentu.'
-  },
-  {
-    task: 'Code Review',
-    date: new Date(2026, 3, 5),
-    hours: 3,
-    status: 'Approved',
-    jamMulai: '19:30',
-    jenis: 'Code Review',
-    pic: 'Budi Santoso',
-    desc: 'Review pull request dari 2 developer junior mencakup 10 file dan sekitar 600 baris perubahan kode pada modul form pengajuan lembur.'
-  },
-  {
-    task: 'Bug Fix',
-    date: new Date(2026, 3, 2),
-    hours: 4,
-    status: 'Pending',
-    jamMulai: '20:00',
-    jenis: 'Bug Fixing',
-    pic: 'Rina Marlina',
-    desc: 'Fix issue pada validasi form pengajuan lembur dimana durasi tidak terhitung dengan benar saat jam mulai melewati tengah malam.'
-  }
-])
+
 
 // Modal state
 const isDetailModalOpen = ref(false)

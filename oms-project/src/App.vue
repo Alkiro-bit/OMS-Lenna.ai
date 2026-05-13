@@ -6,7 +6,7 @@
       :class="{ 'is-expanded': sidebarExpanded }"
       @mouseenter="handleSidebarMouseEnter"
       @mouseleave="handleSidebarMouseLeave"
-      v-if="isLoggedIn"
+      v-if="currentRoute !== '/'"
     >
       <div class="sidebar-brand">
         <div class="brand-logo">
@@ -53,7 +53,7 @@
     <!-- MAIN CONTENT -->
     <div class="main-content">
       <!-- TOPBAR (dipindah dari Dashboard.vue) -->
-      <header class="topbar" v-if="isLoggedIn">
+      <header class="topbar" v-if="currentRoute !== '/'">
         <div class="topbar-left">
           <div class="avatar avatar-md">{{ getInitials(account.name) }}</div>
           <span class="greeting">Hello, <strong>{{ account.name }}</strong></span>

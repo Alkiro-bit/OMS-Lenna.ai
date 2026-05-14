@@ -52,7 +52,7 @@
 
     <!-- MAIN CONTENT -->
     <div class="main-content">
-      <!-- TOPBAR (dipindah dari Dashboard.vue) -->
+      <!-- TOPBAR-->
       <header class="topbar" v-if="currentRoute !== '/'">
         <div class="topbar-left">
           <div class="avatar avatar-md">{{ getInitials(account.name) }}</div>
@@ -64,7 +64,7 @@
         </button>
       </header>
 
-      <!-- TEMPAT KONTEN HALAMAN (Dashboard, Form, dll) -->
+      <!-- -->
       <div class="page-content">
         <router-view :account="account" />
       </div>
@@ -115,20 +115,34 @@ const account = ref({
 // ============================================================
 // NAVIGATION
 // ============================================================
-const navItems = ref([
-  {
-    name: 'dashboard',
-    label: 'Dashboard',
-    path: '/dashboard',
-    icon: '/icons/material-symbols_dashboard-rounded.png'
-  },
-  {
-    name: 'form',
-    label: 'Form',
-    path: '/form',
-    icon: '/icons/mdi_form-outline.png'
+const navItems = computed(() => {
+  const role = window.localStorage.getItem('role');
+  const items = [
+    {
+      name: 'dashboard',
+      label: 'Dashboard',
+      path: '/dashboard',
+      icon: '/icons/material-symbols_dashboard-rounded.png'
+    },
+    {
+      name: 'form',
+      label: 'Form',
+      path: '/form',
+      icon: '/icons/mdi_form-outline.png'
+    }
+  ];
+
+  if (role === 'product_manager') {
+    items.push({
+      name: 'review-approvals',
+      label: 'Review Approvals',
+      path: '/review-approvals',
+      icon: '/icons/material-symbols_dashboard-rounded.png' // You can change this icon later
+    });
   }
-])
+
+  return items;
+})
 
 const currentRoute = computed(() => route.path)
 

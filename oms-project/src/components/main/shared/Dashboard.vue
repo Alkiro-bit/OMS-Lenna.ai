@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="dashboard-page">
     <!-- STATS HERO SECTION -->
     <section class="stats-section">
@@ -20,6 +20,7 @@
           <table>
             <thead>
               <tr>
+                <th v-if="userRole === 'product_manager'">Name</th>
                 <th>Task</th>
                 <th>Date</th>
                 <th>Duration</th>
@@ -35,6 +36,7 @@
                 tabindex="0"
                 @keydown.enter="openDetailModal(row)"
               >
+                <td v-if="userRole === 'product_manager'">{{ row.employeeName || 'Karyawan' }}</td>
                 <td>{{ row.task }}</td>
                 <td>{{ formatDate(row.date) }}</td>
                 <td>{{ row.hours }} Hour</td>
@@ -51,7 +53,7 @@
       </div>
     </div>
 
-    <!-- MODAL DETAIL (tetap di sini karena spesifik halaman Dashboard) -->
+    <!-- MODAL DETAIL -->
     <Teleport to="body">
       <Transition name="overlay-fade">
         <div
@@ -166,6 +168,8 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { overtimeList } from '../../../store/overtimeStore'
 
+const userRole = ref(window.localStorage.getItem('role'));
+
 // Kita perlu akses account dari parent? Atau gunakan state management / provide-inject?
 // Solusi sederhana: defineProps atau bisa juga pake composable.
 // Tapi karena account ada di App.vue (parent), kita bisa terima via props.
@@ -181,14 +185,24 @@ const props = defineProps({
 
 const route = useRoute()
 
-// Stats cards
-const statsCards = ref([
-  { key: 'totalJam', value: 52, label: 'Total Jam Lembur' },
-  { key: 'pengajuan', value: 10, label: 'Pengajuan Lembur' },
-  { key: 'approved', value: 6, label: 'Lembur di Approve' },
-  { key: 'pending', value: 3, label: 'Pending' },
-  { key: 'declined', value: 1, label: 'Declined' }
-])
+// STATS CARD SUMMARIES (Logic Perhitungan Stats Card).
+const statsCards = computed(() => {
+  const list = overtimeList.value || [];
+  
+  const totalJam = list.reduce((sum, item) => sum + Number(item.hours || 0), 0);
+  const pengajuan = list.length;
+  const approved = list.filter(item => item.status === 'Approved').length;
+  const pending = list.filter(item => item.status === 'Pending').length;
+  const declined = list.filter(item => item.status === 'Declined').length;
+
+  return [
+    { key: 'totalJam', value: totalJam, label: 'Total Jam Lembur' },
+    { key: 'pengajuan', value: pengajuan, label: 'Pengajuan Lembur' },
+    { key: 'approved', value: approved, label: 'Lembur di Approve' },    
+    { key: 'pending', value: pending, label: 'Pending' },
+    { key: 'declined', value: declined, label: 'Declined' }
+  ];
+})
 
 
 

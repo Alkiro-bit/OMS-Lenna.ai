@@ -98,17 +98,17 @@ const remember = ref(false)
 // dummy users
 const users = [
   {
-    email: 'employee@lenna.com',
+    email: 'employee@lenna.ai',
     password: '123',
     role: 'employee'
   },
   {
-    email: 'pm@lenna.com',
+    email: 'pm@lenna.ai',
     password: '123',
     role: 'product_manager'
   },
   {
-    email: 'hr@lenna.com',
+    email: 'hr@lenna.ai',
     password: '123',
     role: 'hr'
   }
@@ -133,7 +133,7 @@ const login = () => {
 
   localStorage.setItem('role', user.role)
 
-  if (user.role === 'employee') {
+  if (user.role === 'employee' || user.role === 'product_manager') {
     window.localStorage.setItem('token', 'blalblalva');
     window.location.href ='/dashboard'
   } else {

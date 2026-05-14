@@ -427,10 +427,12 @@ thead th {
   font-family: 'Plus Jakarta Sans', sans-serif;
 }
 
-thead th:nth-child(1) { width: 30%; }
+/* For PM role (with Name column) */
+thead th:nth-child(1) { width: 15%; }
 thead th:nth-child(2) { width: 25%; }
 thead th:nth-child(3) { width: 20%; }
-thead th:nth-child(4) { width: 25%; }
+thead th:nth-child(4) { width: 20%; }
+thead th:nth-child(5) { width: 20%; }
 
 tbody tr {
   border-bottom: 1px solid #ececec;

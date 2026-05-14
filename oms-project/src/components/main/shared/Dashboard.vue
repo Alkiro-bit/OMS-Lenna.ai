@@ -1,15 +1,20 @@
 <template>
   <div class="dashboard-page">
-    <!-- STATS HERO SECTION -->
-    <section class="stats-section">
-      <div class="stats-grid">
-        <div v-for="card in statsCards" :key="card.key" class="stat-card">
-          <p class="stat-number">{{ card.value }}</p>
-          <p class="stat-label">{{ card.label }}</p>
-          <p class="stat-period">{{ currentPeriod }}</p>
+   <section class="welcome-banner">
+        <h1>
+          {{ isFirstLogin ? "Welcome" : "Welcome back" }}, {{ account.name }}
+        </h1>
+        <p>Here's your overtime overview.</p>
+      </section>
+      <section class="stats-section">
+        <div class="stats-grid">
+          <div v-for="card in statsCards" :key="card.key" class="stat-card">
+            <p class="stat-number">{{ card.value }}</p>
+            <p class="stat-label">{{ card.label }}</p>
+            <p class="stat-period">{{ currentPeriod }}</p>
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
 
     <!-- CONTENT BODY: My Overtime + Table -->
     <div class="content-body">
@@ -183,7 +188,8 @@ const props = defineProps({
   }
 })
 
-const route = useRoute()
+const router = useRoute()
+
 
 // STATS CARD SUMMARIES (Logic Perhitungan Stats Card).
 const statsCards = computed(() => {
@@ -234,7 +240,10 @@ const handleKeydown = (event) => {
   }
 }
 
+const isFirstLogin = ref(false);
+
 onMounted(() => {
+  isFirstLogin.value = localStorage.getItem("isFirstLogin") === "true";
   window.addEventListener('keydown', handleKeydown)
 })
 
@@ -288,6 +297,25 @@ function getStatusStyle(status) {
   display: flex;
   flex-direction: column;
   height: 100%;
+}
+
+.welcome-banner {
+  padding: 20px 24px 10px;
+  background: #f4f5f7;
+}
+
+.welcome-banner h1 {
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0;
+  color: #111;
+  font-family: "Plus Jakarta Sans", sans-serif;
+}
+
+.welcome-banner p {
+  margin-top: 6px;
+  color: #666;
+  font-size: 14px;
 }
 
 .stats-section {

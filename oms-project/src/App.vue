@@ -73,98 +73,113 @@
 </template>
 
 <script setup>
-import { ref, computed, onUnmounted } from 'vue'
-import { useRouter, useRoute, RouterLink } from 'vue-router'
+import { ref, computed, onUnmounted, onBeforeMount, provide } from "vue";
+import { useRouter, useRoute, RouterLink } from "vue-router";
+import axios from "axios";
 
-const router = useRouter()
-const route = useRoute()
+const router = useRouter();
+const route = useRoute();
 
-// ============================================================
-// SIDEBAR STATE (dipindah dari Dashboard.vue)
-// ============================================================
-const sidebarExpanded = ref(false)
-let sidebarHoverTimer = null
+const isLoggedIn = ref(false);
+const userData = ref(null);
+
+const getUserData = async () => {
+  const token = window.localStorage.getItem("token");
+
+  if (!token) {
+    isLoggedIn.value = false;
+    return;
+  }
+
+  try {
+    const response = await axios.get("http://127.0.0.1:8000/api/me", {
+      headers: {
+        Authorization: "Bearer " + token,
+      },
+    });
+
+    isLoggedIn.value = true;
+    userData.value = response.data.data;
+  } catch (err) {
+    isLoggedIn.value = false;
+    localStorage.removeItem("token");
+  }
+};
+
+onBeforeMount(() => {
+  getUserData();
+});
+
+provide("userData", userData);
+provide("isLoggedIn", isLoggedIn);
+
+// Sidebar
+const sidebarExpanded = ref(false);
+let sidebarHoverTimer = null;
 
 function handleSidebarMouseEnter() {
-  if (sidebarHoverTimer) clearTimeout(sidebarHoverTimer)
-  sidebarExpanded.value = true
+  if (sidebarHoverTimer) clearTimeout(sidebarHoverTimer);
+  sidebarExpanded.value = true;
 }
 
 function handleSidebarMouseLeave() {
   sidebarHoverTimer = setTimeout(() => {
-    sidebarExpanded.value = false
-  }, 100)
+    sidebarExpanded.value = false;
+  }, 100);
 }
 
 onUnmounted(() => {
-  if (sidebarHoverTimer) clearTimeout(sidebarHoverTimer)
-})
+  if (sidebarHoverTimer) clearTimeout(sidebarHoverTimer);
+});
 
-const isLoggedIn = computed( () => {
-  return window.localStorage.getItem('token') !== null
-})
+// pakai data asli
+const account = userData;
 
-// ============================================================
-// USER ACCOUNT DATA
-// ============================================================
-const account = ref({
-  name: 'John Doe',
-  position: 'Engineer ~ Fullstack'
-})
-
-// ============================================================
-// NAVIGATION
-// ============================================================
 const navItems = computed(() => {
-  const role = window.localStorage.getItem('role');
+  const role = window.localStorage.getItem("role");
+
   const items = [
     {
-      name: 'dashboard',
-      label: 'Dashboard',
-      path: '/dashboard',
-      icon: '/icons/material-symbols_dashboard-rounded.png'
+      name: "dashboard",
+      label: "Dashboard",
+      path: "/dashboard",
+      icon: "/icons/material-symbols_dashboard-rounded.png",
     },
     {
-      name: 'form',
-      label: 'Form',
-      path: '/form',
-      icon: '/icons/mdi_form-outline.png'
-    }
+      name: "form",
+      label: "Form",
+      path: "/form",
+      icon: "/icons/mdi_form-outline.png",
+    },
   ];
 
-  if (role === 'product_manager') {
+  if (role === "product_manager") {
     items.push({
-      name: 'review-approvals',
-      label: 'Review Approvals',
-      path: '/review-approvals',
-      icon: '/icons/mdi_checkbox-outline.png'
+      name: "review-approvals",
+      label: "Review Approvals",
+      path: "/review-approvals",
+      icon: "/icons/mdi_checkbox-outline.png",
     });
   }
 
   return items;
-})
+});
 
-const currentRoute = computed(() => route.path)
+const currentRoute = computed(() => route.path);
 
-// ============================================================
-// UTILITY FUNCTIONS
-// ============================================================
-function getInitials(name) {
+function getInitials(name = "") {
   return name
     .trim()
-    .split(' ')
-    .map(w => w[0])
-    .join('')
+    .split(" ")
+    .map((w) => w[0])
+    .join("")
     .substring(0, 2)
-    .toUpperCase()
+    .toUpperCase();
 }
 
-// ============================================================
-// LOGOUT
-// ============================================================
 function handleLogout() {
-  window.localStorage.removeItem('token');
-  window.location.href = '/';
+  localStorage.clear();
+  router.push("/");
 }
 </script>
 

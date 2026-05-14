@@ -137,7 +137,7 @@ const navItems = computed(() => {
       name: 'review-approvals',
       label: 'Review Approvals',
       path: '/review-approvals',
-      icon: '/icons/material-symbols_dashboard-rounded.png' // You can change this icon later
+      icon: '/icons/mdi_checkbox-outline.png'
     });
   }
 

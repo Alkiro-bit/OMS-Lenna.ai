@@ -35,7 +35,7 @@
             <div class="floating-emoji">✅📊</div>
             <div class="stat">
               <h2>PM & HR</h2>
-              <span>Approve with full visibility</span>
+              <span>Approve with full <br> visibility</span>
             </div>
           </div>
         </div>

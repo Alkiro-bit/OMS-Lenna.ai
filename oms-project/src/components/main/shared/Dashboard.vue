@@ -1,20 +1,20 @@
 <template>
   <div class="dashboard-page">
-   <section class="welcome-banner">
-        <h1>
-          {{ isFirstLogin ? "Welcome" : "Welcome back" }}, {{ account.name }}
-        </h1>
-        <p>Here's your overtime overview.</p>
-      </section>
-      <section class="stats-section">
-        <div class="stats-grid">
-          <div v-for="card in statsCards" :key="card.key" class="stat-card">
-            <p class="stat-number">{{ card.value }}</p>
-            <p class="stat-label">{{ card.label }}</p>
-            <p class="stat-period">{{ currentPeriod }}</p>
-          </div>
+    <section class="welcome-banner">
+      <h1>
+        {{ isFirstLogin ? "Welcome" : "Welcome back" }}, {{ account.name }}
+      </h1>
+      <p>Here's your overtime overview.</p>
+    </section>
+    <section class="stats-section">
+      <div class="stats-grid">
+        <div v-for="card in statsCards" :key="card.key" class="stat-card">
+          <p class="stat-number">{{ card.value }}</p>
+          <p class="stat-label">{{ card.label }}</p>
+          <p class="stat-period">{{ currentPeriod }}</p>
         </div>
-      </section>
+      </div>
+    </section>
 
     <!-- CONTENT BODY: My Overtime + Table -->
     <div class="content-body">
@@ -34,19 +34,24 @@
             </thead>
             <tbody>
               <tr
-                v-for="(row, i) in overtimeList"
+                v-for="(row, i) in dashboardData.overtime"
                 :key="i"
                 class="table-row-clickable"
                 @click="openDetailModal(row)"
                 tabindex="0"
                 @keydown.enter="openDetailModal(row)"
               >
-                <td v-if="userRole === 'product_manager'">{{ row.employeeName || 'Karyawan' }}</td>
-                <td>{{ row.task }}</td>
+                <td v-if="userRole === 'product_manager'">
+                  {{ row.user_name || "Karyawan" }}
+                </td>
+                <td><span v-html="row.tasks"></span></td>
                 <td>{{ formatDate(row.date) }}</td>
-                <td>{{ row.hours }} Hour</td>
+                <td>{{ row.duration }} Hour</td>
                 <td>
-                  <span class="status-badge" :class="getStatusClass(row.status)">
+                  <span
+                    class="status-badge"
+                    :class="getStatusClass(row.status)"
+                  >
                     <span class="status-dot"></span>
                     {{ row.status }}
                   </span>
@@ -92,15 +97,21 @@
                   <div class="field-grid">
                     <div class="field-group full">
                       <span class="field-label">Nama Karyawan</span>
-                      <span class="field-value">{{ account.name }}</span>
+                      <span class="field-value">{{
+                        selectedOvertime.user_name
+                      }}</span>
                     </div>
                     <div class="field-group">
                       <span class="field-label">Jabatan</span>
-                      <span class="field-value">{{ account.position }}</span>
+                      <span class="field-value">{{
+                        selectedOvertime.position
+                      }}</span>
                     </div>
                     <div class="field-group">
                       <span class="field-label">PIC</span>
-                      <span class="field-value">{{ selectedOvertime.pic || '-' }}</span>
+                      <span class="field-value">{{
+                        selectedOvertime.pic || "-"
+                      }}</span>
                     </div>
                   </div>
                 </div>
@@ -114,15 +125,27 @@
                   <div class="field-grid">
                     <div class="field-group">
                       <span class="field-label">Tanggal</span>
-                      <span class="field-value">{{ formatDate(selectedOvertime.date) }}</span>
+                      <span class="field-value">{{
+                        formatDate(selectedOvertime.date)
+                      }}</span>
                     </div>
                     <div class="field-group">
                       <span class="field-label">Jam Mulai</span>
-                      <span class="field-value">{{ selectedOvertime.jamMulai || '19:00' }} WIB</span>
+                      <span class="field-value"
+                        >{{ selectedOvertime.start_time || "" }} WIB</span
+                      >
                     </div>
-                    <div class="field-group full">
+                    <div class="field-group">
+                      <span class="field-label">Jam Selesai</span>
+                      <span class="field-value"
+                        >{{ selectedOvertime.end_time || "" }} WIB</span
+                      >
+                    </div>
+                    <div class="field-group">
                       <span class="field-label">Durasi</span>
-                      <span class="field-value">{{ selectedOvertime.hours }} Jam</span>
+                      <span class="field-value"
+                        >{{ selectedOvertime.duration }} Jam</span
+                      >
                     </div>
                   </div>
                 </div>
@@ -133,23 +156,27 @@
                   <p class="section-label">
                     <i class="fa-solid fa-align-left"></i> Detail Pekerjaan
                   </p>
-                  <!-- Fallback jika hanya menggunakan format lama (desc) -->
-                  <div class="field-grid" v-if="!selectedOvertime.tasks || selectedOvertime.tasks.length === 0">
-                    <div class="field-group full">
-                      <span class="field-label">Task</span>
-                      <span class="field-value">{{ selectedOvertime.task }}</span>
-                    </div>
-                    <div class="field-group full">
-                      <span class="field-label">Deskripsi</span>
-                      <span class="field-value field-desc">{{ selectedOvertime.desc || 'Tidak ada deskripsi' }}</span>
-                    </div>
-                  </div>
-
                   <!-- Format iterasi jika ada subtasks -->
-                  <div class="field-grid" v-if="selectedOvertime.tasks && selectedOvertime.tasks.length > 0">
-                    <div class="field-group full" v-for="(subtask, idx) in selectedOvertime.tasks" :key="idx">
-                      <span class="field-label" style="color: #1D127D; font-weight: 700;">Task {{ idx + 1 }}: {{ subtask.name }}</span>
-                      <span class="field-value field-desc">{{ subtask.description }}</span>
+                  <div
+                    class="field-grid"
+                    v-if="
+                      selectedOvertime.detail_task &&
+                      selectedOvertime.detail_task.length > 0
+                    "
+                  >
+                    <div
+                      class="field-group full"
+                      v-for="(subtask, idx) in selectedOvertime.detail_task"
+                      :key="idx"
+                    >
+                      <span
+                        class="field-label"
+                        style="color: #1d127d; font-weight: 700"
+                        >Task {{ idx + 1 }}: {{ subtask.task_title }}</span
+                      >
+                      <span class="field-value field-desc">{{
+                        subtask.task_description
+                      }}</span>
                     </div>
                   </div>
                 </div>
@@ -169,11 +196,19 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { useRoute } from 'vue-router'
-import { overtimeList } from '../../../store/overtimeStore'
+import {
+  ref,
+  reactive,
+  computed,
+  onMounted,
+  onUnmounted,
+  onBeforeMount,
+} from "vue";
+import { useRoute } from "vue-router";
+import { overtimeList } from "../../../store/overtimeStore";
+import axios from "axios";
 
-const userRole = ref(window.localStorage.getItem('role'));
+const userRole = ref(window.localStorage.getItem("role"));
 
 // Kita perlu akses account dari parent? Atau gunakan state management / provide-inject?
 // Solusi sederhana: defineProps atau bisa juga pake composable.
@@ -184,108 +219,167 @@ const props = defineProps({
   account: {
     type: Object,
     required: true,
-    default: () => ({ name: 'John Doe', position: 'Engineer ~ Fullstack' })
-  }
-})
+    default: () => ({ name: "John Doe", position: "Engineer ~ Fullstack" }),
+  },
+});
 
-const router = useRoute()
+const router = useRoute();
 
+const dashboardData = reactive({
+  summary: {
+    totalHours: 0,
+    totalSubmission: 0,
+    totalApproved: 0,
+    totalPending: 0,
+    totalDeclined: 0,
+  },
+  overtime: [],
+});
 
 // STATS CARD SUMMARIES (Logic Perhitungan Stats Card).
 const statsCards = computed(() => {
-  const list = overtimeList.value || [];
-  
-  const totalJam = list.reduce((sum, item) => sum + Number(item.hours || 0), 0);
-  const pengajuan = list.length;
-  const approved = list.filter(item => item.status === 'Approved').length;
-  const pending = list.filter(item => item.status === 'Pending').length;
-  const declined = list.filter(item => item.status === 'Declined').length;
-
   return [
-    { key: 'totalJam', value: totalJam, label: 'Total Jam Lembur' },
-    { key: 'pengajuan', value: pengajuan, label: 'Pengajuan Lembur' },
-    { key: 'approved', value: approved, label: 'Lembur di Approve' },    
-    { key: 'pending', value: pending, label: 'Pending' },
-    { key: 'declined', value: declined, label: 'Declined' }
+    {
+      key: "totalJam",
+      value: dashboardData.summary.totalHours,
+      label: "Total Jam Lembur",
+    },
+    {
+      key: "pengajuan",
+      value: dashboardData.summary.totalSubmission,
+      label: "Pengajuan Lembur",
+    },
+    {
+      key: "approved",
+      value: dashboardData.summary.totalApproved,
+      label: "Lembur di Approve",
+    },
+    {
+      key: "pending",
+      value: dashboardData.summary.totalPending,
+      label: "Pending",
+    },
+    {
+      key: "declined",
+      value: dashboardData.summary.totalDeclined,
+      label: "Declined",
+    },
   ];
-})
-
-
+});
 
 // Modal state
-const isDetailModalOpen = ref(false)
-const selectedOvertime = ref({})
+const isDetailModalOpen = ref(false);
+const selectedOvertime = ref({});
 
 const openDetailModal = (rowData) => {
-  selectedOvertime.value = rowData
-  isDetailModalOpen.value = true
-  document.body.style.overflow = 'hidden'
-}
+  selectedOvertime.value = rowData;
+  isDetailModalOpen.value = true;
+  document.body.style.overflow = "hidden";
+};
 
 const closeDetailModal = () => {
-  isDetailModalOpen.value = false
-  selectedOvertime.value = {}
-  document.body.style.overflow = ''
-}
+  isDetailModalOpen.value = false;
+  selectedOvertime.value = {};
+  document.body.style.overflow = "";
+};
 
 const handleOverlayClick = (event) => {
   if (event.target === event.currentTarget) {
-    closeDetailModal()
+    closeDetailModal();
   }
-}
+};
 
 const handleKeydown = (event) => {
-  if (event.key === 'Escape' && isDetailModalOpen.value) {
-    closeDetailModal()
+  if (event.key === "Escape" && isDetailModalOpen.value) {
+    closeDetailModal();
   }
-}
+};
 
 const isFirstLogin = ref(false);
 
+const fetchDashboardData = async () => {
+  const token = window.localStorage.getItem("token");
+
+  if (!token) {
+    return;
+  }
+
+  try {
+    const response = await axios.get("http://127.0.0.1:8000/api/dashboard", {
+      headers: {
+        Authorization: "Bearer " + token,
+      },
+    });
+
+    dashboardData.summary = response.data.summary;
+    dashboardData.overtime = response.data.overtime;
+    console.log("TESTT", dashboardData.overtime);
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+onBeforeMount(() => {
+  fetchDashboardData();
+});
+
 onMounted(() => {
   isFirstLogin.value = localStorage.getItem("isFirstLogin") === "true";
-  window.addEventListener('keydown', handleKeydown)
-})
+  window.addEventListener("keydown", handleKeydown);
+});
 
 onUnmounted(() => {
-  window.removeEventListener('keydown', handleKeydown)
-})
+  window.removeEventListener("keydown", handleKeydown);
+});
 
 // Utilities
-const MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
+const MONTHS = [
+  "JAN",
+  "FEB",
+  "MAR",
+  "APR",
+  "MAY",
+  "JUN",
+  "JUL",
+  "AUG",
+  "SEP",
+  "OCT",
+  "NOV",
+  "DEC",
+];
 
 function formatDate(date) {
-  if (!date) return '-'
-  const d = new Date(date)
-  const day = d.getDate()
-  const month = MONTHS[d.getMonth()]
-  const year = String(d.getFullYear()).slice(-2)
-  return `${day}-${month}-${year}`
+  if (!date) return "-";
+  const d = new Date(date);
+  const day = d.getDate();
+  const month = MONTHS[d.getMonth()];
+  const year = String(d.getFullYear()).slice(-2);
+  return `${day}-${month}-${year}`;
 }
 
 const currentPeriod = computed(() => {
-  const now = new Date()
-  const monthName = MONTHS[now.getMonth()]
-  const formattedMonth = monthName.charAt(0) + monthName.slice(1).toLowerCase()
-  return `${formattedMonth} ${now.getFullYear()}`
-})
+  const now = new Date();
+  const monthName = MONTHS[now.getMonth()];
+  const formattedMonth = monthName.charAt(0) + monthName.slice(1).toLowerCase();
+  return `${formattedMonth} ${now.getFullYear()}`;
+});
 
 function getStatusClass(status) {
   const statusMap = {
-    'Pending': 'status-pending',
-    'Approved': 'status-approved',
-    'Declined': 'status-declined'
-  }
-  return statusMap[status] ?? 'status-default'
+    Pending: "status-pending",
+    Approved: "status-approved",
+    Declined: "status-declined",
+  };
+  return statusMap[status] ?? "status-default";
 }
 
 function getStatusStyle(status) {
   const styles = {
-    'Approved': 'background:#E8F5E9;border-color:#81C784;color:#1b5e20',
-    'Declined': 'background:#FFEBEE;border-color:#E57373;color:#b71c1c',
-    'Pending':  'background:#FFF8E1;border-color:#FFD54F;color:#7a5c00'
-  }
-  return styles[status] || styles['Pending']
+    Approved: "background:#E8F5E9;border-color:#81C784;color:#1b5e20",
+    Declined: "background:#FFEBEE;border-color:#E57373;color:#b71c1c",
+    Pending: "background:#FFF8E1;border-color:#FFD54F;color:#7a5c00",
+  };
+  return styles[status] || styles["Pending"];
 }
 </script>
 
@@ -319,7 +413,7 @@ function getStatusStyle(status) {
 }
 
 .stats-section {
-  background: linear-gradient(135deg, #1D127D, #397CFA);
+  background: linear-gradient(135deg, #1d127d, #397cfa);
   padding: 20px 20px 32px;
   flex-shrink: 0;
 }
@@ -349,7 +443,7 @@ function getStatusStyle(status) {
   color: #111;
   line-height: 1.2;
   margin: 0 0 4px 0;
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: "Plus Jakarta Sans", sans-serif;
 }
 
 .stat-label {
@@ -378,7 +472,7 @@ function getStatusStyle(status) {
 }
 
 .overtime-bar {
-  background: linear-gradient(90deg, #1D127D, #397CFA);
+  background: linear-gradient(90deg, #1d127d, #397cfa);
   padding: 11px 20px;
   text-align: center;
   color: #fff;
@@ -387,7 +481,7 @@ function getStatusStyle(status) {
   letter-spacing: 0.4px;
   border-radius: 10px;
   user-select: none;
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: "Plus Jakarta Sans", sans-serif;
   flex-shrink: 0;
 }
 
@@ -424,30 +518,44 @@ thead th {
   position: sticky;
   top: 0;
   z-index: 2;
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: "Plus Jakarta Sans", sans-serif;
 }
 
 /* For PM role (with Name column) */
-thead th:nth-child(1) { width: 15%; }
-thead th:nth-child(2) { width: 25%; }
-thead th:nth-child(3) { width: 20%; }
-thead th:nth-child(4) { width: 20%; }
-thead th:nth-child(5) { width: 20%; }
+thead th:nth-child(1) {
+  width: 15%;
+}
+thead th:nth-child(2) {
+  width: 25%;
+}
+thead th:nth-child(3) {
+  width: 20%;
+}
+thead th:nth-child(4) {
+  width: 20%;
+}
+thead th:nth-child(5) {
+  width: 20%;
+}
 
 tbody tr {
   border-bottom: 1px solid #ececec;
   transition: background 0.1s;
 }
 
-tbody tr:last-child { border-bottom: none; }
-tbody tr:hover { background: #f8f9ff; }
+tbody tr:last-child {
+  border-bottom: none;
+}
+tbody tr:hover {
+  background: #f8f9ff;
+}
 
 .table-row-clickable {
   cursor: pointer;
 }
 
 .table-row-clickable:focus {
-  outline: 2px solid #397CFA;
+  outline: 2px solid #397cfa;
   outline-offset: -2px;
 }
 
@@ -455,7 +563,7 @@ tbody td {
   padding: 9px 14px;
   font-size: 12px;
   color: #222;
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
 }
 
 .status-badge {
@@ -467,7 +575,7 @@ tbody td {
   font-size: 11px;
   font-weight: 500;
   border: 1px solid transparent;
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
 }
 
 .status-dot {
@@ -478,25 +586,31 @@ tbody td {
 }
 
 .status-pending {
-  background: #FFF8E1;
-  border-color: #FFD54F;
+  background: #fff8e1;
+  border-color: #ffd54f;
   color: #7a5c00;
 }
-.status-pending .status-dot { background: #FFD54F; }
+.status-pending .status-dot {
+  background: #ffd54f;
+}
 
 .status-approved {
-  background: #E8F5E9;
-  border-color: #81C784;
+  background: #e8f5e9;
+  border-color: #81c784;
   color: #1b5e20;
 }
-.status-approved .status-dot { background: #66BB6A; }
+.status-approved .status-dot {
+  background: #66bb6a;
+}
 
 .status-declined {
-  background: #FFEBEE;
-  border-color: #E57373;
+  background: #ffebee;
+  border-color: #e57373;
   color: #b71c1c;
 }
-.status-declined .status-dot { background: #EF5350; }
+.status-declined .status-dot {
+  background: #ef5350;
+}
 
 /* MODAL STYLE (sama seperti sebelumnya) */
 .detail-overlay {
@@ -523,7 +637,7 @@ tbody td {
 }
 
 .detail-header {
-  background: linear-gradient(90deg, #1D127D, #397CFA);
+  background: linear-gradient(90deg, #1d127d, #397cfa);
   padding: 16px 20px;
   display: flex;
   align-items: center;
@@ -535,7 +649,7 @@ tbody td {
   font-size: 14px;
   font-weight: 700;
   color: #fff;
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: "Plus Jakarta Sans", sans-serif;
   letter-spacing: 0.4px;
   text-transform: uppercase;
   margin: 0;
@@ -547,7 +661,7 @@ tbody td {
   font-size: 11px;
   font-weight: 600;
   border: 1.5px solid transparent;
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
 }
 
 .detail-body {
@@ -563,7 +677,7 @@ tbody td {
   text-transform: uppercase;
   letter-spacing: 0.6px;
   margin-bottom: 10px;
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: "Plus Jakarta Sans", sans-serif;
   display: flex;
   align-items: center;
   gap: 5px;
@@ -591,7 +705,7 @@ tbody td {
   text-transform: uppercase;
   letter-spacing: 0.5px;
   font-weight: 500;
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
 }
 
 .field-value {
@@ -603,7 +717,7 @@ tbody td {
   padding: 9px 12px;
   min-height: 36px;
   line-height: 1.5;
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
 }
 
 .field-desc {
@@ -632,11 +746,11 @@ tbody td {
   padding: 0 24px;
   height: 36px;
   border-radius: 8px;
-  background: #1D127D;
+  background: #1d127d;
   color: #fff;
   font-size: 12px;
   font-weight: 600;
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: "Plus Jakarta Sans", sans-serif;
   border: none;
   cursor: pointer;
   display: flex;
@@ -660,7 +774,9 @@ tbody td {
 
 .modal-slide-enter-active,
 .modal-slide-leave-active {
-  transition: transform 0.25s ease, opacity 0.25s ease;
+  transition:
+    transform 0.25s ease,
+    opacity 0.25s ease;
 }
 .modal-slide-enter-from {
   transform: translateY(20px) scale(0.97);

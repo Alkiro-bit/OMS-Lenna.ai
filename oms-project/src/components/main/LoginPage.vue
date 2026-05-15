@@ -198,7 +198,7 @@ const login = async () => {
 }
 
 .hero h1 {
-  font-size: clamp(30px, 3vw, 44px);
+  font-size: clamp(30px, 3vw, 40px);
   line-height: 1.15;
   margin-bottom: 20px;
 }

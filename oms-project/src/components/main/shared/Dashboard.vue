@@ -110,7 +110,7 @@
                     <div class="field-group">
                       <span class="field-label">PIC</span>
                       <span class="field-value">{{
-                        selectedOvertime.pic || "-"
+                        selectedOvertime.pm_name || "-"
                       }}</span>
                     </div>
                   </div>

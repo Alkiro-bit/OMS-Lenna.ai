@@ -69,7 +69,9 @@
                 required
               >
                 <option value="" disabled>Pilih Jam Mulai</option>
-                <option v-for="t in timeOptions" :key="t" :value="t">{{ t }}</option>
+                <option v-for="t in timeOptions" :key="t" :value="t">
+                  {{ t }}
+                </option>
               </select>
               <span v-if="timeError" class="form-error">{{ timeError }}</span>
             </div>
@@ -82,7 +84,9 @@
                 required
               >
                 <option value="" disabled>Pilih Jam Selesai</option>
-                <option v-for="t in timeOptions" :key="t" :value="t">{{ t }}</option>
+                <option v-for="t in timeOptions" :key="t" :value="t">
+                  {{ t }}
+                </option>
               </select>
             </div>
           </div>
@@ -92,8 +96,8 @@
             <label class="form-label required">PIC / Project Manager</label>
             <select class="form-select" v-model="formData.pic" required>
               <option value="" disabled>Pilih Project Manager</option>
-              <option v-for="pm in pmList" :key="pm" :value="pm">
-                {{ pm }}
+              <option v-for="pm in pmList" :key="pm.id" :value="pm.id">
+                {{ pm.name }}
               </option>
             </select>
           </div>
@@ -152,8 +156,8 @@
             >
               <i class="fa-solid fa-plus"></i>
             </button>
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               class="btn-submit"
               :disabled="!isFormValid"
               :class="{ 'btn-disabled': !isFormValid }"
@@ -170,9 +174,10 @@
 <script setup>
 import { ref, computed } from "vue";
 import { useRouter, useRoute, RouterLink } from "vue-router";
-import { pmList} from "../../../store/overtimeStore";
+import { pmList } from "../../../store/overtimeStore";
 import axios from "axios";
 
+console.log(pmList.value)
 const router = useRouter();
 const route = useRoute();
 
@@ -204,9 +209,21 @@ const currentRoute = computed(() => route.path);
 
 // ── TIME OPTIONS ───────────────────────────────────────────────────────
 const timeOptions = [
-  "19:00", "20:00", "21:00", "22:00", "23:00", 
-  "00:00", "01:00", "02:00", "03:00", "04:00", 
-  "05:00", "06:00", "07:00", "08:00", "08:30"
+  "19:00",
+  "20:00",
+  "21:00",
+  "22:00",
+  "23:00",
+  "00:00",
+  "01:00",
+  "02:00",
+  "03:00",
+  "04:00",
+  "05:00",
+  "06:00",
+  "07:00",
+  "08:00",
+  "08:30",
 ];
 
 // ── PM LIST ────────────────────────────────────────────────────────────
@@ -284,7 +301,12 @@ function validateTime() {
   const minAllowed = 19 * 60;
   const maxAllowed = 24 * 60 + 8 * 60 + 30;
 
-  if (startAbs < minAllowed || startAbs > maxAllowed || endAbs < minAllowed || endAbs > maxAllowed) {
+  if (
+    startAbs < minAllowed ||
+    startAbs > maxAllowed ||
+    endAbs < minAllowed ||
+    endAbs > maxAllowed
+  ) {
     timeError.value = "Waktu lembur hanya diperbolehkan antara 19:00 s.d 08:30";
     return;
   }
@@ -306,10 +328,13 @@ function validateTime() {
 const isFormValid = computed(() => {
   const data = formData.value;
   // 1. Cek semua input telah terisi
-  if (!data.tanggal || !data.jamMulai || !data.jamSelesai || !data.pic) return false;
-  
+  if (!data.tanggal || !data.jamMulai || !data.jamSelesai || !data.pic)
+    return false;
+
   // 2. Cek semua subtask terisi
-  const hasEmptyTasks = data.tasks.some(t => !t.name.trim() || !t.description.trim());
+  const hasEmptyTasks = data.tasks.some(
+    (t) => !t.name.trim() || !t.description.trim(),
+  );
   if (hasEmptyTasks) return false;
 
   // 3. Cek validasi jam sesuai aturan OMS (19:00 - 08:30) & Minimal 4 jam
@@ -321,7 +346,13 @@ const isFormValid = computed(() => {
   const minAllowed = 19 * 60;
   const maxAllowed = 24 * 60 + 8 * 60 + 30;
 
-  if (startAbs < minAllowed || startAbs > maxAllowed || endAbs < minAllowed || endAbs > maxAllowed) return false;
+  if (
+    startAbs < minAllowed ||
+    startAbs > maxAllowed ||
+    endAbs < minAllowed ||
+    endAbs > maxAllowed
+  )
+    return false;
   if (endAbs <= startAbs) return false;
   if ((endAbs - startAbs) / 60 < 4) return false;
 
@@ -338,30 +369,34 @@ async function handleSubmit() {
     return;
   }
 
+  const token = localStorage.getItem("token");
+
+  if (!token) {
+    alert("Session expired, login ulang");
+    return;
+  }
+
+  const payload = {
+    date: formData.value.tanggal,
+    start_time: formData.value.jamMulai,
+    end_time: formData.value.jamSelesai,
+    product_manager_id: Number(formData.value.pic),
+    tasks: formData.value.tasks.map((task) => ({
+      name: task.name,
+      description: task.description,
+    })),
+  };
+
   try {
-    const token = localStorage.getItem("token");
-
-    const payload = {
-      date: formData.value.tanggal,
-      start_time: formData.value.jamMulai,
-      end_time: formData.value.jamSelesai,
-      product_manager_id: formData.value.pic,
-      tasks: formData.value.tasks.map((task) => ({
-        name: task.name,
-        description: task.description
-      }))
-    };
-    console.log(payload);
-
     const response = await axios.post(
       "http://127.0.0.1:8000/api/form",
       payload,
       {
         headers: {
-          Authorization: "Bearer " + token,
-          Accept: "application/json"
-        }
-      }
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+        },
+      },
     );
 
     console.log("Submit success:", response.data);
@@ -373,21 +408,11 @@ async function handleSubmit() {
       showSuccessAlert.value = false;
       router.push("/dashboard");
     }, 1500);
-
   } catch (error) {
-    console.error("Submit failed:", error.response?.data || error);
-    alert("Gagal submit lembur");
+    console.error(error.response?.data || error);
+    alert(error.response?.data?.message || "Submit gagal");
   }
 }
-
-  // Simulasi success
-  showSuccessAlert.value = true;
-  resetForm();
-
-  // Auto hide alert setelah 5 detik
-  setTimeout(() => {
-    showSuccessAlert.value = false;
-  }, 5000);
 
 function resetForm() {
   formData.value = {
@@ -421,8 +446,6 @@ function handleLogout() {
 <style scoped>
 @import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700&family=Inter:wght@400;500&display=swap");
 
-
-
 /* ── PAGE BODY ──────────────────────────────────────────────────────── */
 .page-body {
   flex: 1;
@@ -432,7 +455,7 @@ function handleLogout() {
   flex-direction: column;
   align-items: center;
   gap: 16px;
-  background: linear-gradient(135deg, #1D127D, #397CFA);
+  background: linear-gradient(135deg, #1d127d, #397cfa);
 }
 
 /* ── SUCCESS ALERT ──────────────────────────────────────────────────── */

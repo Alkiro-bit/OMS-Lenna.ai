@@ -13,7 +13,7 @@
 
     <!-- CONTENT BODY: My Overtime + Table -->
     <div class="content-body">
-      <div class="overtime-bar">My Overtime</div>
+      <div class="overtime-bar">Overtimes</div>
 
       <div class="overtime-table-card">
         <div class="overtime-table-wrap">
@@ -41,10 +41,7 @@
                 <td>{{ formatDate(row.date) }}</td>
                 <td>{{ row.hours }} Hour</td>
                 <td>
-                  <span class="status-badge" :class="getStatusClass(row.status)">
-                    <span class="status-dot"></span>
-                    {{ row.status }}
-                  </span>
+                  <img :src="`/icons/status/${row.status}.png`" :alt="row.status" class="status-icon-img" />
                 </td>
               </tr>
             </tbody>
@@ -71,12 +68,11 @@
             >
               <div class="detail-header">
                 <p class="detail-title">DETAIL PENGAJUAN LEMBUR</p>
-                <span
-                  class="detail-status-badge"
-                  :style="getStatusStyle(selectedOvertime.status)"
-                >
-                  {{ selectedOvertime.status }}
-                </span>
+                <img 
+                  :src="`/icons/status/${selectedOvertime.status}.png`" 
+                  :alt="selectedOvertime.status" 
+                  class="detail-status-img"
+                />
               </div>
 
               <div class="detail-body">
@@ -168,7 +164,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { overtimeList } from '../../../store/overtimeStore'
 
-const userRole = ref(window.localStorage.getItem('role'));
+const userRole = computed(() => window.localStorage.getItem('role'));
 
 // Kita perlu akses account dari parent? Atau gunakan state management / provide-inject?
 // Solusi sederhana: defineProps atau bisa juga pake composable.
@@ -185,26 +181,50 @@ const props = defineProps({
 
 const route = useRoute()
 
-// STATS CARD SUMMARIES (Logic Perhitungan Stats Card).
+// YEAR FILTER (Employee only)
+const selectedYear = ref(new Date().getFullYear())
+const availableYears = computed(() => {
+  const years = new Set()
+  overtimeList.value.forEach(item => {
+    if (item.date) {
+      years.add(new Date(item.date).getFullYear())
+    }
+  })
+  return Array.from(years).sort((a, b) => b - a)
+})
+
+// Perhitungan Stats Card
 const statsCards = computed(() => {
-  const list = overtimeList.value || [];
+  let list = overtimeList.value || [];
+  
+  const currentYear = new Date().getFullYear();
+  list = list.filter(item => {
+    if (!item.date) return false;
+    return new Date(item.date).getFullYear() === currentYear;
+  });
+
+  // Perhitungan Lembur -> PM
+  if (userRole.value === 'product_manager') {
+    list = list.filter(item => item.employeeName === props.account.name)
+  }
   
   const totalJam = list.reduce((sum, item) => sum + Number(item.hours || 0), 0);
   const pengajuan = list.length;
+
   const approved = list.filter(item => item.status === 'Approved').length;
   const pending = list.filter(item => item.status === 'Pending').length;
   const declined = list.filter(item => item.status === 'Declined').length;
+  const reviewed = list.filter(item => item.status === 'Reviewed').length;
 
   return [
     { key: 'totalJam', value: totalJam, label: 'Total Jam Lembur' },
     { key: 'pengajuan', value: pengajuan, label: 'Pengajuan Lembur' },
-    { key: 'approved', value: approved, label: 'Lembur di Approve' },    
+    { key: 'approved', value: approved, label: 'Lembur di Approve' },
     { key: 'pending', value: pending, label: 'Pending' },
-    { key: 'declined', value: declined, label: 'Declined' }
+    { key: 'declined', value: declined, label: 'Declined' },
+    { key: 'reviewed', value: reviewed, label: 'Reviewed' },
   ];
 })
-
-
 
 // Modal state
 const isDetailModalOpen = ref(false)
@@ -265,19 +285,12 @@ function getStatusClass(status) {
   const statusMap = {
     'Pending': 'status-pending',
     'Approved': 'status-approved',
-    'Declined': 'status-declined'
+    'Declined': 'status-declined',
+    'Reviewed':'status-reviewed'
   }
   return statusMap[status] ?? 'status-default'
 }
 
-function getStatusStyle(status) {
-  const styles = {
-    'Approved': 'background:#E8F5E9;border-color:#81C784;color:#1b5e20',
-    'Declined': 'background:#FFEBEE;border-color:#E57373;color:#b71c1c',
-    'Pending':  'background:#FFF8E1;border-color:#FFD54F;color:#7a5c00'
-  }
-  return styles[status] || styles['Pending']
-}
 </script>
 
 <style scoped>
@@ -430,45 +443,17 @@ tbody td {
   font-family: 'Inter', sans-serif;
 }
 
-.status-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 3px 10px;
-  border-radius: 20px;
-  font-size: 11px;
-  font-weight: 500;
-  border: 1px solid transparent;
-  font-family: 'Inter', sans-serif;
+.status-icon-img {
+  height: 18px;
+  width: auto;
+  display: block;
 }
 
-.status-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  flex-shrink: 0;
+.detail-status-img {
+  height: 18px;
+  width: auto;
+  display: block;
 }
-
-.status-pending {
-  background: #FFF8E1;
-  border-color: #FFD54F;
-  color: #7a5c00;
-}
-.status-pending .status-dot { background: #FFD54F; }
-
-.status-approved {
-  background: #E8F5E9;
-  border-color: #81C784;
-  color: #1b5e20;
-}
-.status-approved .status-dot { background: #66BB6A; }
-
-.status-declined {
-  background: #FFEBEE;
-  border-color: #E57373;
-  color: #b71c1c;
-}
-.status-declined .status-dot { background: #EF5350; }
 
 /* MODAL STYLE (sama seperti sebelumnya) */
 .detail-overlay {
@@ -511,15 +496,6 @@ tbody td {
   letter-spacing: 0.4px;
   text-transform: uppercase;
   margin: 0;
-}
-
-.detail-status-badge {
-  padding: 3px 12px;
-  border-radius: 20px;
-  font-size: 11px;
-  font-weight: 600;
-  border: 1.5px solid transparent;
-  font-family: 'Inter', sans-serif;
 }
 
 .detail-body {

@@ -170,7 +170,8 @@
 <script setup>
 import { ref, computed } from "vue";
 import { useRouter, useRoute, RouterLink } from "vue-router";
-import { pmList, overtimeList } from "../../../store/overtimeStore";
+import { pmList} from "../../../store/overtimeStore";
+import axios from "axios";
 
 const router = useRouter();
 const route = useRoute();
@@ -329,28 +330,55 @@ const isFormValid = computed(() => {
 
 // ── FORM SUBMIT ────────────────────────────────────────────────────────
 
-function handleSubmit() {
-  // Validasi final
+async function handleSubmit() {
   validateTime();
+
   if (timeError.value) {
     alert(timeError.value);
     return;
   }
 
-  const taskItems = formData.value.tasks.filter((t) => t.name && t.description);
-  const taskTitle = taskItems.map(t => t.name).join(", ");
-  
-  overtimeList.value.unshift({
-    task: taskTitle,
-    date: new Date(formData.value.tanggal),
-    hours: Number(((getAbsoluteMinutes(...formData.value.jamSelesai.split(":").map(Number)) - getAbsoluteMinutes(...formData.value.jamMulai.split(":").map(Number))) / 60).toFixed(1)),
-    status: "Pending",
-    jamMulai: formData.value.jamMulai,
-    jenis: "General",
-    pic: formData.value.pic,
-    desc: taskItems.length === 1 ? taskItems[0].description : '',
-    tasks: taskItems
-  });
+  try {
+    const token = localStorage.getItem("token");
+
+    const payload = {
+      date: formData.value.tanggal,
+      start_time: formData.value.jamMulai,
+      end_time: formData.value.jamSelesai,
+      product_manager_id: formData.value.pic,
+      tasks: formData.value.tasks.map((task) => ({
+        name: task.name,
+        description: task.description
+      }))
+    };
+    console.log(payload);
+
+    const response = await axios.post(
+      "http://127.0.0.1:8000/api/form",
+      payload,
+      {
+        headers: {
+          Authorization: "Bearer " + token,
+          Accept: "application/json"
+        }
+      }
+    );
+
+    console.log("Submit success:", response.data);
+
+    showSuccessAlert.value = true;
+    resetForm();
+
+    setTimeout(() => {
+      showSuccessAlert.value = false;
+      router.push("/dashboard");
+    }, 1500);
+
+  } catch (error) {
+    console.error("Submit failed:", error.response?.data || error);
+    alert("Gagal submit lembur");
+  }
+}
 
   // Simulasi success
   showSuccessAlert.value = true;
@@ -360,7 +388,6 @@ function handleSubmit() {
   setTimeout(() => {
     showSuccessAlert.value = false;
   }, 5000);
-}
 
 function resetForm() {
   formData.value = {

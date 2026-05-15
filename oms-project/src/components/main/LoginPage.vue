@@ -86,60 +86,61 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref } from "vue";
+import { useRouter } from "vue-router";
+import axios from "axios";
 
-const router = useRouter()
+const router = useRouter();
 
-const email = ref('')
-const password = ref('')
-const remember = ref(false)
+const email = ref("");
+const password = ref("");
+const remember = ref(false);
 
-// dummy users
-const users = [
-  {
-    email: 'employee@lenna.ai',
-    password: '123',
-    role: 'employee'
-  },
-  {
-    email: 'pm@lenna.ai',
-    password: '123',
-    role: 'product_manager'
-  },
-  {
-    email: 'hr@lenna.ai',
-    password: '123',
-    role: 'hr'
-  }
-]
 
-const login = () => {
+const login = async () => {
+  localStorage.removeItem("role");
+  localStorage.removeItem("name");
+  localStorage.removeItem("email");
   if (!email.value || !password.value) {
-    alert('Please fill in both email and password.')
-    return
+    alert("Please fill in both email and password.");
+    return;
   }
 
-  const user = users.find(
-    u =>
-      u.email === email.value &&
-      u.password === password.value
-  )
+  try {
+    const response = await axios.post("http://127.0.0.1:8000/api/login", {
+      email: email.value,
+      password: password.value,
+    });
 
-  if (!user) {
-    alert('Email or password is incorrect.')
-    return
+    const user = response.data;
+
+    localStorage.setItem("token", user.access_token);
+    localStorage.setItem("email", user.email);
+    localStorage.setItem("role", user.role);
+    localStorage.setItem("name", user.name);
+
+    const visitedKey = `visited_${user.email}`;
+    const hasVisited = localStorage.getItem(visitedKey);
+
+    if (!hasVisited) {
+      localStorage.setItem("isFirstLogin", "true");
+      localStorage.setItem(visitedKey, "true");
+    } else {
+      localStorage.setItem("isFirstLogin", "false");
+    }
+
+    if (user.role === "employee") {
+      window.location.href = "/dashboard";
+    } else if (user.role === "product_manager") {
+      window.location.href = "/dashboard";
+    } else if (user.role === "hr") {
+      alert("HR Dashboard coming soon");
+    }
+  } catch (error) {
+    alert("Email atau password salah");
+    console.log(error);
   }
-
-  localStorage.setItem('role', user.role)
-
-  if (user.role === 'employee' || user.role === 'product_manager') {
-    window.localStorage.setItem('token', 'blalblalva');
-    window.location.href ='/dashboard'
-  } else {
-    alert('Dashboard for this role is not available yet.')
-  }
-}
+};
 </script>
 
 <style scoped>

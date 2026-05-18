@@ -205,7 +205,6 @@ import {
   onBeforeMount,
 } from "vue";
 import { useRoute } from "vue-router";
-import { overtimeList } from "../../../store/overtimeStore";
 import axios from "axios";
 
 const userRole = ref(window.localStorage.getItem("role"));
@@ -223,7 +222,7 @@ const props = defineProps({
   },
 });
 
-const router = useRoute();
+const route = useRoute();
 
 const dashboardData = reactive({
   summary: {
@@ -312,7 +311,9 @@ const fetchDashboardData = async () => {
     });
 
     dashboardData.summary = response.data.summary;
-    dashboardData.overtime = response.data.overtime;
+    dashboardData.overtime = response.data.overtime.sort(
+      (a, b) => new Date(b.created_at) - new Date(a.created_at),
+    );
     console.log("TESTT", dashboardData.overtime);
   } catch (err) {
     console.error(err);

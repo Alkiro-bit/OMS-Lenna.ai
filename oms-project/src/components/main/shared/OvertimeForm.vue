@@ -62,32 +62,25 @@
           <div class="form-row">
             <div class="form-group">
               <label class="form-label required">Jam Mulai</label>
-              <select
-                class="form-select"
+              <input
+                type="time"
+                class="form-input"
                 v-model="formData.jamMulai"
                 @change="validateTime"
                 required
-              >
-                <option value="" disabled>Pilih Jam Mulai</option>
-                <option v-for="t in timeOptions" :key="t" :value="t">
-                  {{ t }}
-                </option>
-              </select>
+              />
               <span v-if="timeError" class="form-error">{{ timeError }}</span>
             </div>
+
             <div class="form-group">
               <label class="form-label required">Jam Selesai</label>
-              <select
-                class="form-select"
+              <input
+                type="time"
+                class="form-input"
                 v-model="formData.jamSelesai"
                 @change="validateTime"
                 required
-              >
-                <option value="" disabled>Pilih Jam Selesai</option>
-                <option v-for="t in timeOptions" :key="t" :value="t">
-                  {{ t }}
-                </option>
-              </select>
+              />
             </div>
           </div>
 
@@ -177,7 +170,7 @@ import { useRouter, useRoute, RouterLink } from "vue-router";
 import { pmList } from "../../../store/overtimeStore";
 import axios from "axios";
 
-console.log(pmList.value)
+console.log(pmList.value);
 const router = useRouter();
 const route = useRoute();
 
@@ -206,28 +199,6 @@ const navItems = ref([
 ]);
 
 const currentRoute = computed(() => route.path);
-
-// ── TIME OPTIONS ───────────────────────────────────────────────────────
-const timeOptions = [
-  "19:00",
-  "20:00",
-  "21:00",
-  "22:00",
-  "23:00",
-  "00:00",
-  "01:00",
-  "02:00",
-  "03:00",
-  "04:00",
-  "05:00",
-  "06:00",
-  "07:00",
-  "08:00",
-  "08:30",
-];
-
-// ── PM LIST ────────────────────────────────────────────────────────────
-// pmList diimport dari store/overtimeStore.js
 
 // ── FORM DATA ──────────────────────────────────────────────────────────
 const formData = ref({

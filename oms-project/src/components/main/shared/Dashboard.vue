@@ -27,7 +27,8 @@
               <tr>
                 <th v-if="userRole === 'product_manager'">Name</th>
                 <th>Task</th>
-                <th>Date</th>
+                <th>Overtime date</th>
+                <th>Submit date</th>
                 <th>Duration</th>
                 <th>Status</th>
               </tr>
@@ -46,6 +47,7 @@
                 </td>
                 <td><span v-html="row.tasks"></span></td>
                 <td>{{ formatDate(row.date) }}</td>
+                <td>{{ formatDateTime(row.created_at) }}</td>
                 <td>{{ row.duration }} Hour</td>
                 <td>
                   <span
@@ -358,6 +360,21 @@ function formatDate(date) {
   return `${day}-${month}-${year}`;
 }
 
+function formatDateTime(date) {
+  if (!date) return "-";
+
+  const d = new Date(date);
+
+  const day = d.getDate();
+  const month = MONTHS[d.getMonth()];
+  const year = String(d.getFullYear()).slice(-2);
+
+  const hours = String(d.getHours()).padStart(2, "0");
+  const minutes = String(d.getMinutes()).padStart(2, "0");
+
+  return `${day}-${month}-${year} ${hours}:${minutes}`;
+}
+
 const currentPeriod = computed(() => {
   const now = new Date();
   const monthName = MONTHS[now.getMonth()];
@@ -524,19 +541,19 @@ thead th {
 
 /* For PM role (with Name column) */
 thead th:nth-child(1) {
-  width: 15%;
+  width: 25%;
 }
 thead th:nth-child(2) {
-  width: 25%;
+  width: 15%;
 }
 thead th:nth-child(3) {
   width: 20%;
 }
 thead th:nth-child(4) {
-  width: 20%;
+  width: 15%;
 }
 thead th:nth-child(5) {
-  width: 20%;
+  width: 15%;
 }
 
 tbody tr {

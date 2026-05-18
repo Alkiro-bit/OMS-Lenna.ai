@@ -43,6 +43,7 @@
                 type="date"
                 class="form-input"
                 v-model="formData.tanggal"
+                @change="validateTime"
                 required
               />
             </div>
@@ -308,8 +309,8 @@ function closeDeleteModal() {
 
 // Helper untuk menghitung menit absolut (menganggap jam < 12 ada di hari berikutnya)
 function getAbsoluteMinutes(h, m) {
-  const adjustedH = h < 12 ? h + 24 : h;
-  return adjustedH * 60 + m;
+  const adjustedH = Number(h) < 12 ? Number(h) + 24 : Number(h);
+  return adjustedH * 60 + Number(m);
 }
 
 // Hitung durasi otomatis
@@ -333,12 +334,38 @@ const calculatedDuration = computed(() => {
   return mins > 0 ? `${hours} jam ${mins} menit` : `${hours} jam`;
 });
 
+async function cekTanggalMerah(tanggal) {
+  const response = await fetch("https://libur.deno.dev/api?date=2026-05-01", {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+  const holidays = await response.json();
+
+  const hasil = holidays.find((item) => item.holiday_date === tanggal);
+  return hasil;
+}
+
 // Validasi jam minimal 19:00 & durasi minimal 4 jam
-function validateTime() {
+async function validateTime() {
   timeError.value = "";
 
   const { jamMulai, jamSelesai } = formData.value;
   if (!jamMulai || !jamSelesai) return;
+
+  const namaHari = [
+    "Minggu",
+    "Senin",
+    "Selasa",
+    "Rabu",
+    "Kamis",
+    "Jumat",
+    "Sabtu",
+  ];
+
+  const day = new Date(formData.value.tanggal);
+  const today = namaHari[day.getDay()];
 
   const [startHour, startMin] = jamMulai.split(":").map(Number);
   const [endHour, endMin] = jamSelesai.split(":").map(Number);
@@ -349,18 +376,22 @@ function validateTime() {
   // Waktu buka lembur: 19:00 (1140 min) s/d 08:30 esok hari (32.5 * 60 = 1950 min)
   const minAllowed = 19 * 60;
   const maxAllowed = 24 * 60 + 8 * 60 + 30;
+  const cekMerah = await cekTanggalMerah(formData.value.tanggal);
 
   if (
-    startAbs < minAllowed ||
-    startAbs > maxAllowed ||
-    endAbs < minAllowed ||
-    endAbs > maxAllowed
+    (startHour < minAllowed ||
+      startHour > maxAllowed ||
+      endHour < minAllowed ||
+      endHour > maxAllowed) &&
+    today != "Sabtu" &&
+    today != "Minggu" &&
+    !cekMerah
   ) {
     timeError.value = "Waktu lembur hanya diperbolehkan antara 19:00 s.d 08:30";
     return;
   }
 
-  if (endAbs <= startAbs) {
+  if (endHour <= startHour) {
     timeError.value = "Jam selesai harus lebih besar dari jam mulai";
     return;
   }

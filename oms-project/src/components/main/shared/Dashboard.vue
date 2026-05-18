@@ -1,11 +1,5 @@
 <template>
   <div class="dashboard-page">
-    <section class="welcome-banner">
-      <h1>
-        {{ isFirstLogin ? "Welcome" : "Welcome back" }}, {{ account.name }}
-      </h1>
-      <p>Here's your overtime overview.</p>
-    </section>
     <section class="stats-section">
       <div class="stats-grid">
         <div v-for="card in statsCards" :key="card.key" class="stat-card">
@@ -403,7 +397,7 @@ function getStatusStyle(status) {
 
 <style scoped>
 /* ============================================================
-   STYLE KHUSUS DASHBOARD (hanya yang belum ada di App.vue)
+   STYLE KHUSUS DASHBOARD PAGE
    ============================================================ */
 .dashboard-page {
   display: flex;
@@ -503,73 +497,56 @@ function getStatusStyle(status) {
   flex-shrink: 0;
 }
 
+/* ============================================================
+   TABLE
+   ============================================================ */
 .overtime-table-card {
   background: #fff;
-  border-radius: 10px;
-  outline: 1px solid #0000;
-  border: 1px solid #e0e0e0;
-  overflow: hidden;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
 }
 
 .overtime-table-wrap {
-  overflow-y: auto;
-  flex: 1;
+  overflow-x: auto;
 }
 
 table {
   width: 100%;
   border-collapse: collapse;
-  table-layout: fixed;
 }
 
 thead th {
-  background: #848484;
-  color: #fff;
   font-size: 12px;
-  font-weight: 600;
-  padding: 9px 14px;
+  font-weight: 700;
+  color: #6B7280;
+  text-transform: uppercase;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  padding: 14px;
   text-align: left;
-  position: sticky;
-  top: 0;
-  z-index: 2;
-  font-family: "Plus Jakarta Sans", sans-serif;
+  border-bottom: 2px solid #E5E7EB;
 }
 
-/* For PM role (with Name column) */
-thead th:nth-child(1) {
-  width: 25%;
-}
-thead th:nth-child(2) {
-  width: 15%;
-}
-thead th:nth-child(3) {
-  width: 20%;
-}
-thead th:nth-child(4) {
-  width: 15%;
-}
-thead th:nth-child(5) {
-  width: 15%;
-}
+thead th:nth-child(1) { width: 30%; }
+thead th:nth-child(2) { width: 20%; }
+thead th:nth-child(3) { width: 15%; }
+thead th:nth-child(4) { width: 20%; }
+thead th:nth-child(5) { width: 15%; }
 
-tbody tr {
-  border-bottom: 1px solid #ececec;
-  transition: background 0.1s;
-}
-
-tbody tr:last-child {
-  border-bottom: none;
-}
-tbody tr:hover {
-  background: #f8f9ff;
+tbody td {
+  font-size: 13px;
+  color: #111;
+  font-family: 'Inter', sans-serif;
+  padding: 14px;
+  border-bottom: 1px solid #E5E7EB;
 }
 
 .table-row-clickable {
   cursor: pointer;
+}
+
+.table-row-clickable:hover {
+  background: #F9FAFB;
 }
 
 .table-row-clickable:focus {
@@ -577,11 +554,43 @@ tbody tr:hover {
   outline-offset: -2px;
 }
 
-tbody td {
-  padding: 9px 14px;
+tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.status-icon-img {
+  height: 18px;
+  width: auto;
+  display: block;
+}
+
+.modal-status-img {
+  height: 18px;
+  width: auto;
+  display: block;
+}
+
+.detail-btn {
+  background: #1D127D;
+  color: #fff;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 8px;
   font-size: 12px;
-  color: #222;
-  font-family: "Inter", sans-serif;
+  font-weight: 600;
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.detail-btn:hover {
+  background: #2563EB;
+}
+
+.text-center {
+  text-align: center;
+  color: #6B7280;
+  font-style: italic;
 }
 
 .status-badge {

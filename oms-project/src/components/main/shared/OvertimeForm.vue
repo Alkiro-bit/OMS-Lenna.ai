@@ -30,7 +30,7 @@
             <input
               type="text"
               class="form-input"
-              :value="`${user.name} - ${account.position}`"
+              :value="`${account.name} - ${account.position}`"
               readonly
             />
           </div>
@@ -162,10 +162,44 @@
       </div>
     </div>
   </div>
+
+  <Teleport to="body">
+    <Transition name="overlay-fade">
+      <div
+        v-if="showDeleteModal"
+        class="delete-overlay"
+        @click="closeDeleteModal"
+      >
+        <Transition name="modal-slide">
+          <div v-if="showDeleteModal" class="delete-modal" @click.stop>
+            <div class="delete-header">
+              <i class="fa-solid fa-triangle-exclamation"></i>
+              <h3>Hapus Task</h3>
+            </div>
+
+            <p class="delete-text">
+              Apakah Anda yakin ingin menghapus task ini? Tindakan ini tidak
+              dapat dibatalkan.
+            </p>
+
+            <div class="delete-actions">
+              <button class="btn-cancel" @click="closeDeleteModal">
+                Batal
+              </button>
+
+              <button class="btn-delete" @click="confirmDeleteTask">
+                Hapus
+              </button>
+            </div>
+          </div>
+        </Transition>
+      </div>
+    </Transition>
+  </Teleport>
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { useRouter, useRoute, RouterLink } from "vue-router";
 import { pmList } from "../../../store/overtimeStore";
 import axios from "axios";
@@ -178,13 +212,36 @@ const route = useRoute();
 const sidebarExpanded = ref(false);
 
 // ── USER DATA ──────────────────────────────────────────────────────────
-const user = ref({
-  name: "John Doe",
-});
-
 const account = ref({
-  name: "Afgan Ramadhan",
-  position: "Engineer - Fullstack",
+  name: "",
+  position: "",
+});
+async function fetchUserData() {
+  const token = localStorage.getItem("token");
+
+  if (!token) return;
+
+  try {
+    const response = await axios.get("http://127.0.0.1:8000/api/me", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: "application/json",
+      },
+    });
+
+    console.log("DATA USER:", response.data);
+
+    account.value = {
+      name: response.data.data.name || "Unknown User",
+      position: response.data.data.position || "No Position",
+    };
+  } catch (error) {
+    console.error("Gagal ambil data user:", error);
+  }
+}
+
+onMounted(() => {
+  fetchUserData();
 });
 
 // ── NAVIGATION ─────────────────────────────────────────────────────────
@@ -222,8 +279,29 @@ function addTask() {
   });
 }
 
+const showDeleteModal = ref(false);
+const taskToDelete = ref(null);
 function removeTask(index) {
-  formData.value.tasks.splice(index, 1);
+  if (formData.value.tasks.length === 1) {
+    alert("Minimal harus ada 1 task.");
+    return;
+  }
+
+  taskToDelete.value = index;
+  showDeleteModal.value = true;
+}
+
+function confirmDeleteTask() {
+  if (taskToDelete.value !== null) {
+    formData.value.tasks.splice(taskToDelete.value, 1);
+  }
+
+  closeDeleteModal();
+}
+
+function closeDeleteModal() {
+  showDeleteModal.value = false;
+  taskToDelete.value = null;
 }
 
 // ── TIME VALIDATION ────────────────────────────────────────────────────
@@ -416,7 +494,7 @@ function handleLogout() {
 
 <style scoped>
 @import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700&family=Inter:wght@400;500&display=swap");
-
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
 /* ── PAGE BODY ──────────────────────────────────────────────────────── */
 .page-body {
   flex: 1;
@@ -532,7 +610,7 @@ function handleLogout() {
 
 .form-label {
   font-size: 11px;
-  color: #888;
+  color: #0d0d0d;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   font-weight: 500;
@@ -550,7 +628,7 @@ function handleLogout() {
   border-radius: 8px;
   padding: 0 12px;
   font-size: 13px;
-  color: #111;
+  color: #595757;
   font-family: "Inter", sans-serif;
   background: #fff;
   transition: border-color 0.15s;
@@ -568,10 +646,9 @@ function handleLogout() {
 
 .form-select {
   cursor: pointer;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23888' d='M6 8L2 4h8z'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 12px center;
-  padding-right: 36px;
+  background-image: none;
+  padding-right: 16px;
+  appearance: auto;
 }
 
 .form-textarea {
@@ -714,5 +791,84 @@ function handleLogout() {
 .btn-submit.btn-disabled:hover {
   background: #bbbbbb;
   transform: none;
+}
+
+.delete-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.delete-modal {
+  width: 400px;
+  max-width: 92%;
+  background: #fff;
+  border-radius: 16px;
+  padding: 28px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.18);
+}
+
+.delete-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.delete-header i {
+  font-size: 22px;
+  color: #ffaa00;
+}
+
+.delete-header h3 {
+  margin: 0;
+  font-size: 18px;
+  color: #de1c1c;
+  font-weight: 700;
+  font-family: Poppins;
+}
+
+.delete-text {
+  font-size: 14px;
+  color: #161515;
+  line-height: 1.6;
+  margin-bottom: 24px;
+  font-family: Poppins;
+}
+
+.delete-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.btn-cancel,
+.btn-delete {
+  border: none;
+  border-radius: 10px;
+  padding: 10px 18px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-cancel {
+  background: #f1f3f5;
+  color: #555;
+  font-family: Poppins;
+}
+
+.btn-delete {
+  background: #e57373;
+  color: white;
+}
+
+.btn-delete:hover {
+  background: #d32f2f;
+  font-family: Poppins;
 }
 </style>

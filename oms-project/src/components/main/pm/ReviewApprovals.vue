@@ -101,24 +101,19 @@
                   <p class="section-label">
                     <i class="ti ti-user"></i> INFORMASI PENGAJU
                   </p>
-                  <div class="field-grid">
+                 <div class="field-grid">
                     <div class="field-group full">
                       <span class="field-label">NAMA EMPLOYEE</span>
-                      <span class="field-value">{{
-                        selectedApproval?.employeeName
-                      }}</span>
+                      <span class="field-value">
+                        {{ selectedApproval?.employeeName }}
+                      </span>
                     </div>
-                    <div class="field-group">
+
+                    <div class="field-group full">
                       <span class="field-label">JABATAN</span>
-                      <span class="field-value">{{
-                        selectedApproval?.employeePosition
-                      }}</span>
-                    </div>
-                    <div class="field-group">
-                      <span class="field-label">LAMA DURASI PERJANJIAN</span>
-                      <span class="field-value">{{
-                        selectedApproval?.contractDuration
-                      }}</span>
+                      <span class="field-value">
+                        {{ selectedApproval?.employeePosition }}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -133,21 +128,30 @@
                   <div class="field-grid">
                     <div class="field-group">
                       <span class="field-label">TANGGAL</span>
-                      <span class="field-value">{{
-                        formatDate(selectedApproval?.overtimeDate)
-                      }}</span>
+                      <span class="field-value">
+                        {{ formatDate(selectedApproval?.overtimeDate) }}
+                      </span>
                     </div>
+
                     <div class="field-group">
                       <span class="field-label">JAM MULAI</span>
-                      <span class="field-value"
-                        >{{ selectedApproval?.startTime }} WIB</span
-                      >
+                      <span class="field-value">
+                        {{ selectedApproval?.startTime }} WIB
+                      </span>
                     </div>
-                    <div class="field-group full">
+
+                    <div class="field-group">
+                      <span class="field-label">JAM SELESAI</span>
+                      <span class="field-value">
+                        {{ selectedApproval?.endTime }} WIB
+                      </span>
+                    </div>
+
+                    <div class="field-group">
                       <span class="field-label">DURASI</span>
-                      <span class="field-value">{{
-                        selectedApproval?.duration
-                      }}</span>
+                      <span class="field-value">
+                        {{ selectedApproval?.duration }}
+                      </span>
                     </div>
                   </div>
                 </div>

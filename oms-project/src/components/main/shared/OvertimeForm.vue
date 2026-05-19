@@ -308,9 +308,8 @@ function closeDeleteModal() {
 // ── TIME VALIDATION ────────────────────────────────────────────────────
 
 // Helper untuk menghitung menit absolut (menganggap jam < 12 ada di hari berikutnya)
-function getAbsoluteMinutes(h, m) {
-  const adjustedH = Number(h) < 12 ? Number(h) + 24 : Number(h);
-  return adjustedH * 60 + Number(m);
+function toMinutes(h, m) {
+  return Number(h) * 60 + Number(m);
 }
 
 // Hitung durasi otomatis
@@ -321,130 +320,123 @@ const calculatedDuration = computed(() => {
   const [startH, startM] = jamMulai.split(":").map(Number);
   const [endH, endM] = jamSelesai.split(":").map(Number);
 
-  const startAbs = getAbsoluteMinutes(startH, startM);
-  const endAbs = getAbsoluteMinutes(endH, endM);
+  const startAbs = toMinutes(startH, startM);
+  let endAbs = toMinutes(endH, endM);
 
-  if (endAbs <= startAbs) return "";
+  if (endAbs <= startAbs) {
+    endAbs += 24 * 60;
+  }
 
   const durationMinutes = endAbs - startAbs;
+
   const hours = Math.floor(durationMinutes / 60);
   const mins = durationMinutes % 60;
 
-  if (hours === 0 && mins === 0) return "";
   return mins > 0 ? `${hours} jam ${mins} menit` : `${hours} jam`;
 });
 
-async function cekTanggalMerah(tanggal) {
-  const response = await fetch("https://libur.deno.dev/api?date=2026-05-01", {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
-  const holidays = await response.json();
+// async function cekTanggalMerah(tanggal) {
+//   try {
+//     const response = await fetch(
+//       `https://libur.deno.dev/api?date=${tanggal}`
+//     );
 
-  const hasil = holidays.find((item) => item.holiday_date === tanggal);
-  return hasil;
-}
+//     const data = await response.json();
+
+//     console.log("Holiday API:", data);
+
+//     // true kalau array berisi data
+//     return Array.isArray(data) && data.length > 0;
+//   } catch (error) {
+//     console.error("Error cek tanggal merah:", error);
+//     return false;
+//   }
+// }
 
 // Validasi jam minimal 19:00 & durasi minimal 4 jam
 async function validateTime() {
   timeError.value = "";
 
-  const { jamMulai, jamSelesai } = formData.value;
-  if (!jamMulai || !jamSelesai) return;
+  const { jamMulai, jamSelesai, tanggal } = formData.value;
 
-  const namaHari = [
-    "Minggu",
-    "Senin",
-    "Selasa",
-    "Rabu",
-    "Kamis",
-    "Jumat",
-    "Sabtu",
-  ];
-
-  const day = new Date(formData.value.tanggal);
-  const today = namaHari[day.getDay()];
+  if (!jamMulai || !jamSelesai || !tanggal) return false;
 
   const [startHour, startMin] = jamMulai.split(":").map(Number);
   const [endHour, endMin] = jamSelesai.split(":").map(Number);
 
-  const startAbs = getAbsoluteMinutes(startHour, startMin);
-  const endAbs = getAbsoluteMinutes(endHour, endMin);
+  const startAbs = toMinutes(startHour, startMin);
+  let endAbs = toMinutes(endHour, endMin);
 
-  // Waktu buka lembur: 19:00 (1140 min) s/d 08:30 esok hari (32.5 * 60 = 1950 min)
-  const minAllowed = 19 * 60;
-  const maxAllowed = 24 * 60 + 8 * 60 + 30;
-  const cekMerah = await cekTanggalMerah(formData.value.tanggal);
-
-  if (
-    (startHour < minAllowed ||
-      startHour > maxAllowed ||
-      endHour < minAllowed ||
-      endHour > maxAllowed) &&
-    today != "Sabtu" &&
-    today != "Minggu" &&
-    !cekMerah
-  ) {
-    timeError.value = "Waktu lembur hanya diperbolehkan antara 19:00 s.d 08:30";
-    return;
-  }
-
-  if (endHour <= startHour) {
-    timeError.value = "Jam selesai harus lebih besar dari jam mulai";
-    return;
+  // kalau lewat tengah malam
+  if (endAbs <= startAbs) {
+    endAbs += 24 * 60;
   }
 
   const durationMinutes = endAbs - startAbs;
-  const hours = durationMinutes / 60;
 
-  if (hours < 4) {
-    timeError.value = "Durasi lembur minimal 4 jam";
-    return;
+  // ambil hari
+  const [year, month, date] = tanggal.split("-").map(Number);
+  const day = new Date(year, month - 1, date).getDay();
+
+  const isWeekend = day === 0 || day === 6;
+
+  console.log({
+    tanggal,
+    day,
+    isWeekend,
+    startAbs,
+    endAbs,
+    durationMinutes
+  });
+
+  // weekday wajib mulai jam 19:00
+  if (!isWeekend && startAbs < 19 * 60) {
+    timeError.value =
+      "Pada hari kerja lembur hanya boleh dimulai dari jam 19:00";
+    return false;
   }
+
+  // semua hari minimal 4 jam
+  if (durationMinutes < 240) {
+    timeError.value = "Durasi lembur minimal 4 jam";
+    return false;
+  }
+
+  return true;
 }
 
 const isFormValid = computed(() => {
   const data = formData.value;
-  // 1. Cek semua input telah terisi
-  if (!data.tanggal || !data.jamMulai || !data.jamSelesai || !data.pic)
-    return false;
 
-  // 2. Cek semua subtask terisi
+  if (!data.tanggal || !data.jamMulai || !data.jamSelesai || !data.pic) {
+    return false;
+  }
+
   const hasEmptyTasks = data.tasks.some(
-    (t) => !t.name.trim() || !t.description.trim(),
+    (t) => !t.name.trim() || !t.description.trim()
   );
+
   if (hasEmptyTasks) return false;
 
-  // 3. Cek validasi jam sesuai aturan OMS (19:00 - 08:30) & Minimal 4 jam
   const [startHour, startMin] = data.jamMulai.split(":").map(Number);
   const [endHour, endMin] = data.jamSelesai.split(":").map(Number);
-  const startAbs = getAbsoluteMinutes(startHour, startMin);
-  const endAbs = getAbsoluteMinutes(endHour, endMin);
 
-  const minAllowed = 19 * 60;
-  const maxAllowed = 24 * 60 + 8 * 60 + 30;
+  const startAbs = toMinutes(startHour, startMin);
+  let endAbs = toMinutes(endHour, endMin);
 
-  if (
-    startAbs < minAllowed ||
-    startAbs > maxAllowed ||
-    endAbs < minAllowed ||
-    endAbs > maxAllowed
-  )
-    return false;
-  if (endAbs <= startAbs) return false;
-  if ((endAbs - startAbs) / 60 < 4) return false;
+  if (endAbs <= startAbs) {
+    endAbs += 24 * 60;
+  }
 
-  return true;
+  return endAbs - startAbs >= 240;
 });
 
 // ── FORM SUBMIT ────────────────────────────────────────────────────────
 
 async function handleSubmit() {
-  validateTime();
+  const isValid = await validateTime();
 
-  if (timeError.value) {
+  if (!isValid) {
     alert(timeError.value);
     return;
   }

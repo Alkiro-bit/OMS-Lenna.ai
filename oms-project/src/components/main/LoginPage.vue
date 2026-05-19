@@ -1,10 +1,8 @@
 <template>
   <div class="container">
-
     <!-- panel kiri -->
     <div class="left-panel">
       <div class="hero">
-
         <div class="icons">
           <i class="fa-regular fa-clock"></i>
           <i class="fa-regular fa-file-lines"></i>
@@ -12,17 +10,16 @@
         </div>
 
         <h1>
-          Track. Approve. Optimize<br>
+          Track. Approve. Optimize<br />
           Employee, PM, HR
         </h1>
 
         <p>
-          Dari form kertas ke satu platform. Pengajuan lembur yang
-          lebih mudah, lebih cepat, dan tidak ada yang terlewat.
+          Dari form kertas ke satu platform. Pengajuan lembur yang lebih mudah,
+          lebih cepat, dan tidak ada yang terlewat.
         </p>
 
-      <div class="stats">
-
+        <div class="stats">
           <div class="stat-wrapper">
             <div class="floating-emoji">👨‍💻👩‍💻</div>
             <div class="stat">
@@ -35,7 +32,10 @@
             <div class="floating-emoji">✅📊</div>
             <div class="stat">
               <h2>PM & HR</h2>
-              <span>Approve with full <br> visibility</span>
+              <span
+                >Approve with full <br />
+                visibility</span
+              >
             </div>
           </div>
         </div>
@@ -45,27 +45,15 @@
     <!-- panel kanan -->
     <div class="right-panel">
       <div class="login-card">
-
         <h1>Welcome</h1>
-        <p class="subtitle">
-          Sign with your @lenna.ai account to continue.
-        </p>
+        <p class="subtitle">Sign with your @lenna.ai account to continue.</p>
 
         <form @submit.prevent="login">
-
           <label class="form-label">Work email</label>
-          <input
-            type="email"
-            v-model="email"
-            placeholder=""
-          >
+          <input type="email" v-model="email" placeholder="" />
 
           <label class="form-label">Password</label>
-          <input
-            type="password"
-            v-model="password"
-            placeholder=""
-          >
+          <input type="password" v-model="password" placeholder="" />
 
           <!-- <div class="remember">
             <input type="checkbox" v-model="remember">
@@ -78,10 +66,8 @@
         <p class="footer">
           Your role (PM, HR Finance, Management) is set by HR.
         </p>
-
       </div>
     </div>
-
   </div>
 </template>
 
@@ -95,7 +81,6 @@ const router = useRouter();
 const email = ref("");
 const password = ref("");
 const remember = ref(false);
-
 
 const login = async () => {
   localStorage.removeItem("role");
@@ -144,14 +129,12 @@ const login = async () => {
 </script>
 
 <style scoped>
-
-
 .container {
   display: flex;
   min-height: 100vh;
   width: 100%;
   overflow: hidden;
-  font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+  font-family: "Plus Jakarta Sans", "Inter", sans-serif;
 }
 
 /* style buat panel kiri */
@@ -174,7 +157,7 @@ const login = async () => {
   flex: 1;
   max-width: 48%;
   min-width: 460px;
-  background: linear-gradient(135deg, #202184, #383BEA);
+  background: linear-gradient(135deg, #202184, #383bea);
   border-top-right-radius: 280px;
   border-bottom-right-radius: 280px;
   display: flex;
@@ -206,7 +189,7 @@ const login = async () => {
 .hero p {
   font-size: 17px;
   margin-bottom: 45px;
-  opacity: .95;
+  opacity: 0.95;
 }
 
 .stats {
@@ -217,12 +200,12 @@ const login = async () => {
 }
 
 .stat {
-  background: rgba(255,255,255,0.15);
+  background: rgba(255, 255, 255, 0.15);
   backdrop-filter: blur(12px);
   padding: 20px 30px;
   border-radius: 20px;
   min-width: 200px;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.18);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18);
   width: clamp(170px, 18vw, 220px);
 }
 
@@ -304,7 +287,7 @@ input[type="password"] {
   border-radius: 12px;
   font-size: 17px;
   cursor: pointer;
-  transition: .3s;
+  transition: 0.3s;
 }
 .submit-btn:hover {
   background: #2f60eb;
@@ -314,6 +297,5 @@ input[type="password"] {
   margin-top: 22px;
   color: #666;
   font-size: 14px;
-  
 }
 </style>

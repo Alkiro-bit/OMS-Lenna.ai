@@ -56,7 +56,7 @@
       <header class="topbar" v-if="currentRoute !== '/'">
         <div class="topbar-left">
           <div class="avatar avatar-md">{{ getInitials(account.name) }}</div>
-          <span class="greeting"> {{ isFirstLogin ? "Welcome" : "Welcome back" }}, <strong>{{ account.name }}</strong></span>
+          <span class="greeting"> {{ isFirstLogin ? "Welcome" : "Hello" }}, <strong>{{ account.name }}</strong></span>
         </div>
         <button class="logout-btn" @click="handleLogout">
           <i class="fa-solid fa-arrow-right-from-bracket"></i>

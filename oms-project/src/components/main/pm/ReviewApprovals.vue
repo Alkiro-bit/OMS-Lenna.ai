@@ -252,7 +252,7 @@ const filters = [
   { label: "Pending", value: "pending" },
   { label: "Reviewed", value: "reviewed" },
   { label: "Approved", value: "approved" },
-  { label: "Rejected", value: "rejected" },
+  { label: "Declined", value: "declined" },
 ];
 
 // ============================================================
@@ -273,6 +273,17 @@ const filteredApprovals = computed(() => {
 
 function filterApprovals(status) {
   selectedFilter.value = status;
+}
+
+function getStatusIcon(status) {
+  const icons = {
+    Pending: "/icons/status/Pending.png",
+    Approved: "/icons/status/Approved.png",
+    Declined: "/icons/status/Declined.png",
+    Reviewed: "/icons/status/Review.png",
+  };
+
+  return icons[status] || "/icons/status/Pending.png";
 }
 
 function openModal(approval) {
@@ -301,44 +312,43 @@ function handleKeydown(event) {
   }
 }
 
-function handleApprove(id) {
-  if (!confirm("Apakah Anda yakin ingin menyetujui pengajuan lembur ini?")) {
-    return;
-  }
-
   // TODO: Uncomment saat backend ready
   // await axios.post(`/overtime/${id}/approve`, { notes: reviewerNotes.value })
 
   // Update local state
-  const approval = approvals.value.find((a) => a.id === id);
   async function handleApprove(id) {
-    if (!confirm("Setujui pengajuan ini?")) return;
-
-    const token = localStorage.getItem("token");
-
-    try {
-      await axios.post(
-        `http://127.0.0.1:8000/api/approvals/${id}/approve`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: "application/json",
-          },
-        },
-      );
-
-      await fetchApprovals();
-      alert("Pengajuan berhasil disetujui");
-      closeModal();
-    } catch (error) {
-      console.error(error);
-      alert("Gagal approve");
-    }
+  if (!confirm("Apakah Anda yakin ingin menyetujui pengajuan lembur ini?")) {
+    return;
   }
 
-  alert("Pengajuan berhasil disetujui");
-  closeModal();
+  const token = localStorage.getItem("token");
+
+  try {
+    await axios.post(
+      `http://127.0.0.1:8000/api/approvals/${id}/approve`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+        },
+      }
+    );
+
+    const approval = approvals.value.find(a => a.id === id);
+    if (approval) {
+      approval.status = "Approved";
+    }
+
+    alert("Pengajuan berhasil disetujui");
+    closeModal();
+    await fetchApprovals();
+
+
+  } catch (error) {
+    console.error(error.response?.data || error);
+    alert("Gagal approve pengajuan");
+  }
 }
 
 async function handleReject(id) {
@@ -352,23 +362,31 @@ async function handleReject(id) {
   try {
     await axios.post(
       `http://127.0.0.1:8000/api/approvals/${id}/reject`,
-      {
-        notes: reviewerNotes.value,
-      },
+      {},
       {
         headers: {
           Authorization: `Bearer ${token}`,
           Accept: "application/json",
         },
-      },
+      }
     );
 
-    await fetchApprovals();
-    alert("Pengajuan ditolak");
+    const approval = approvals.value.find(a => a.id === id);
+    if (approval) {
+      approval.status = "Rejected";
+    }
+
+    alert("Pengajuan berhasil ditolak");
     closeModal();
-  } catch (error) {
-    console.error(error);
-    alert("Gagal reject");
+    await fetchApprovals();
+
+
+  }catch (error) {
+  console.log("ERROR REJECT FULL:", error);
+  console.log("RESPONSE:", error.response);
+  console.log("DATA:", error.response?.data);
+
+  alert(error.response?.data?.message || "Gagal reject pengajuan");
   }
 }
 
@@ -380,8 +398,6 @@ const approval = approvals.value.find((a) => a.id === id);
 if (approval) {
   approval.status = "Rejected";
 }
-
-closeModal();
 
 const MONTHS = [
   "JAN",
@@ -442,6 +458,7 @@ onUnmounted(() => {
 <style scoped>
 @import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700&family=Inter:wght@400;500;600&display=swap");
 @import url("https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css");
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
 
 .review-approvals {
   padding: 24px;
@@ -472,7 +489,7 @@ onUnmounted(() => {
 .header-subtitle {
   font-size: 13px;
   color: rgba(255, 255, 255, 0.85);
-  font-family: "Inter", sans-serif;
+  font-family: Poppins, sans-serif;
   margin: 0;
 }
 

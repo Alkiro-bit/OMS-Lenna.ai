@@ -48,7 +48,7 @@
 
         <h1>Welcome</h1>
         <p class="subtitle">
-          Sign with your Lenna.ai account to continue.
+          Sign with your @lenna.ai account to continue.
         </p>
 
         <form @submit.prevent="login">
@@ -67,10 +67,10 @@
             placeholder=""
           >
 
-          <div class="remember">
+          <!-- <div class="remember">
             <input type="checkbox" v-model="remember">
             <span>Keep me signed in on this device</span>
-          </div>
+          </div> -->
 
           <button type="submit" class="submit-btn">Sign in</button>
         </form>

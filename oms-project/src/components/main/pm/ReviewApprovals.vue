@@ -41,10 +41,16 @@
             <td>{{ formatDate(approval.overtimeDate) }}</td>
             <td>{{ approval.duration }}</td>
             <td>
-              <img :src="`/icons/status/${approval.status}.png`" :alt="approval.status" class="status-icon-img" />
+              <img
+                :src="getStatusIcon(approval.status)"
+                :alt="approval.status"
+                class="status-icon-img"
+              />
             </td>
             <td>
-              <button class="detail-btn" @click="openModal(approval)">Detail</button>
+              <button class="detail-btn" @click="openModal(approval)">
+                Detail
+              </button>
             </td>
           </tr>
           <tr v-if="filteredApprovals.length === 0">
@@ -73,12 +79,17 @@
               <!-- Modal Header -->
               <div class="modal-header">
                 <p class="modal-title">DETAIL PENGAJUAN LEMBUR</p>
-                <img 
-                  :src="`/icons/status/${selectedApproval?.status}.png`" 
-                  :alt="selectedApproval?.status" 
+                <img
+              <img
+                  :src="getStatusIcon(selectedApproval?.status)"
+                  :alt="selectedApproval?.status"
                   class="modal-status-img"
                 />
-                <button class="close-btn" @click="closeModal" aria-label="Close modal">
+                <button
+                  class="close-btn"
+                  @click="closeModal"
+                  aria-label="Close modal"
+                >
                   <i class="ti ti-x"></i>
                 </button>
               </div>
@@ -93,15 +104,21 @@
                   <div class="field-grid">
                     <div class="field-group full">
                       <span class="field-label">NAMA EMPLOYEE</span>
-                      <span class="field-value">{{ selectedApproval?.employeeName }}</span>
+                      <span class="field-value">{{
+                        selectedApproval?.employeeName
+                      }}</span>
                     </div>
                     <div class="field-group">
                       <span class="field-label">JABATAN</span>
-                      <span class="field-value">{{ selectedApproval?.employeePosition }}</span>
+                      <span class="field-value">{{
+                        selectedApproval?.employeePosition
+                      }}</span>
                     </div>
                     <div class="field-group">
                       <span class="field-label">LAMA DURASI PERJANJIAN</span>
-                      <span class="field-value">{{ selectedApproval?.contractDuration }}</span>
+                      <span class="field-value">{{
+                        selectedApproval?.contractDuration
+                      }}</span>
                     </div>
                   </div>
                 </div>
@@ -116,15 +133,21 @@
                   <div class="field-grid">
                     <div class="field-group">
                       <span class="field-label">TANGGAL</span>
-                      <span class="field-value">{{ formatDate(selectedApproval?.overtimeDate) }}</span>
+                      <span class="field-value">{{
+                        formatDate(selectedApproval?.overtimeDate)
+                      }}</span>
                     </div>
                     <div class="field-group">
                       <span class="field-label">JAM MULAI</span>
-                      <span class="field-value">{{ selectedApproval?.startTime }} WIB</span>
+                      <span class="field-value"
+                        >{{ selectedApproval?.startTime }} WIB</span
+                      >
                     </div>
                     <div class="field-group full">
                       <span class="field-label">DURASI</span>
-                      <span class="field-value">{{ selectedApproval?.duration }}</span>
+                      <span class="field-value">{{
+                        selectedApproval?.duration
+                      }}</span>
                     </div>
                   </div>
                 </div>
@@ -141,9 +164,14 @@
                     :key="index"
                     class="task-item"
                   >
-                    <p class="task-title">TASK {{ index + 1 }}: {{ task.name }}</p>
+                    <p class="task-title">
+                      TASK {{ index + 1 }}: {{ task.name }}
+                    </p>
                     <p class="task-description">{{ task.description }}</p>
-                    <div v-if="index < selectedApproval.tasks.length - 1" class="task-divider"></div>
+                    <div
+                      v-if="index < selectedApproval.tasks.length - 1"
+                      class="task-divider"
+                    ></div>
                   </div>
                 </div>
 
@@ -163,10 +191,10 @@
 
               <!-- Modal Footer -->
               <div class="modal-footer">
-                <button class="btn-reject" @click="handleReject(selectedApproval?.id)">
+              <button type="button" class="btn-reject" @click="handleReject(selectedApproval?.id)">
                   <i class="ti ti-circle-x"></i> Reject
                 </button>
-                <button class="btn-approve" @click="handleApprove(selectedApproval?.id)">
+              <button type="button" class="btn-approve" @click="handleApprove(selectedApproval?.id)">
                   <i class="ti ti-circle-check"></i> Approve
                 </button>
               </div>
@@ -179,206 +207,217 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, onBeforeMount } from "vue";
+import axios from "axios";
 
 // ============================================================
 // STATE MANAGEMENT
 // ============================================================
-const selectedFilter = ref('all') 
-const approvals = ref([])
-const isModalOpen = ref(false)
-const selectedApproval = ref(null)
-const reviewerNotes = ref('')
+
+async function fetchApprovals() {
+  const token = localStorage.getItem("token");
+
+  try {
+    const response = await axios.get("http://127.0.0.1:8000/api/approvals", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: "application/json",
+      },
+    });
+
+    approvals.value = response.data;
+    console.log("Approvals:", response.data);
+  } catch (error) {
+    console.error("Gagal ambil approval:", error);
+  }
+}
+
+const selectedFilter = ref("all");
+const approvals = ref([]);
+const isModalOpen = ref(false);
+const selectedApproval = ref(null);
+const reviewerNotes = ref("");
 
 // ============================================================
 // DUMMY DATA
 // ============================================================
-const approvalsList = [
-  {
-    id: 1,
-    employeeName: "Afgan Ramadhan",
-    employeePosition: "Engineer - Fullstack",
-    contractDuration: "Lama Durasi Perjanjian",
-    overtimeDate: new Date(2026, 3, 24),
-    startTime: "19:00",
-    duration: "7 Jam",
-    status: "Pending",
-    tasks: [
-      { name: "Debugging", description: "Investigasi dan perbaikan critical bug pada endpoint autentikasi." }
-    ]
-  },
-  {
-    id: 2,
-    employeeName: "John Doe",
-    employeePosition: "Frontend Developer",
-    contractDuration: "Lama Durasi Perjanjian",
-    overtimeDate: new Date(2026, 3, 23),
-    startTime: "19:30",
-    duration: "5 Jam",
-    status: "Pending",
-    tasks: [
-      { name: "UI Development", description: "Implementasi design system baru untuk dashboard." }
-    ]
-  },
-  {
-    id: 3,
-    employeeName: "Sari Dewi",
-    employeePosition: "QA Engineer",
-    contractDuration: "Lama Durasi Perjanjian",
-    overtimeDate: new Date(2026, 3, 20),
-    startTime: "17:00",
-    duration: "4 Jam",
-    status: "Reviewed",
-    tasks: [
-      { name: "Code Review", description: "Review pull requests from frontend team." }
-    ]
-  },
-  {
-    id: 4,
-    employeeName: "Budi Santoso",
-    employeePosition: "Backend Developer",
-    contractDuration: "Lama Durasi Perjanjian",
-    overtimeDate: new Date(2026, 3, 19),
-    startTime: "20:00",
-    duration: "5 Jam",
-    status: "Approved",
-    tasks: [
-      { name: "API Development", description: "Develop new endpoints untuk modul reporting." }
-    ]
-  },
-  {
-    id: 5,
-    employeeName: "Maya Putri",
-    employeePosition: "DevOps Engineer",
-    contractDuration: "Lama Durasi Perjanjian",
-    overtimeDate: new Date(2026, 3, 18),
-    startTime: "19:00",
-    duration: "3 Jam",
-    status: "Declined",
-    tasks: [
-      { name: "Deployment", description: "Deploy hotfix ke production." }
-    ]
-  },
-]
 
 // Initialize with dummy data
-approvals.value = approvalsList
 
 // ============================================================
 // FILTER OPTIONS
 // ============================================================
 const filters = [
-  { label: 'All', value: 'all' },
-  { label: 'Pending', value: 'pending' },
-  { label: 'Reviewed', value: 'reviewed' },
-  { label: 'Approved', value: 'approved' },
-  { label: 'Rejected', value: 'rejected' },
-]
+  { label: "All", value: "all" },
+  { label: "Pending", value: "pending" },
+  { label: "Reviewed", value: "reviewed" },
+  { label: "Approved", value: "approved" },
+  { label: "Rejected", value: "rejected" },
+];
 
 // ============================================================
 // COMPUTED PROPERTIES
 // ============================================================
 const filteredApprovals = computed(() => {
-  if (selectedFilter.value === 'all') {
-    return approvals.value
+  if (selectedFilter.value === "all") {
+    return approvals.value;
   }
-  return approvals.value.filter(item => 
-    item.status.toLowerCase() === selectedFilter.value
-  )
-})
+  return approvals.value.filter(
+    (item) => item.status.toLowerCase() === selectedFilter.value,
+  );
+});
 
 // ============================================================
 // FUNCTIONS
 // ============================================================
 
 function filterApprovals(status) {
-  selectedFilter.value = status
+  selectedFilter.value = status;
 }
 
 function openModal(approval) {
-  selectedApproval.value = approval
-  isModalOpen.value = true
-  reviewerNotes.value = ''
-  document.body.style.overflow = 'hidden'
+  selectedApproval.value = approval;
+  isModalOpen.value = true;
+  reviewerNotes.value = "";
+  document.body.style.overflow = "hidden";
 }
 
 function closeModal() {
-  isModalOpen.value = false
-  selectedApproval.value = null
-  reviewerNotes.value = ''
-  document.body.style.overflow = ''
+  isModalOpen.value = false;
+  selectedApproval.value = null;
+  reviewerNotes.value = "";
+  document.body.style.overflow = "";
 }
 
 function handleOverlayClick(event) {
   if (event.target === event.currentTarget) {
-    closeModal()
+    closeModal();
   }
 }
 
 function handleKeydown(event) {
-  if (event.key === 'Escape' && isModalOpen.value) {
-    closeModal()
+  if (event.key === "Escape" && isModalOpen.value) {
+    closeModal();
   }
 }
 
 function handleApprove(id) {
-  if (!confirm('Apakah Anda yakin ingin menyetujui pengajuan lembur ini?')) {
-    return
+  if (!confirm("Apakah Anda yakin ingin menyetujui pengajuan lembur ini?")) {
+    return;
   }
 
   // TODO: Uncomment saat backend ready
   // await axios.post(`/overtime/${id}/approve`, { notes: reviewerNotes.value })
 
   // Update local state
-  const approval = approvals.value.find(a => a.id === id)
-  if (approval) {
-    approval.status = 'Approved'
+  const approval = approvals.value.find((a) => a.id === id);
+  async function handleApprove(id) {
+    if (!confirm("Setujui pengajuan ini?")) return;
+
+    const token = localStorage.getItem("token");
+
+    try {
+      await axios.post(
+        `http://127.0.0.1:8000/api/approvals/${id}/approve`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+          },
+        },
+      );
+
+      await fetchApprovals();
+      alert("Pengajuan berhasil disetujui");
+      closeModal();
+    } catch (error) {
+      console.error(error);
+      alert("Gagal approve");
+    }
   }
 
-  alert('Pengajuan berhasil disetujui')
-  closeModal()
+  alert("Pengajuan berhasil disetujui");
+  closeModal();
 }
 
-function handleReject(id) {
+async function handleReject(id) {
   if (!reviewerNotes.value.trim()) {
-    alert('Catatan penolakan wajib diisi')
-    return
+    alert("Catatan penolakan wajib diisi");
+    return;
   }
 
-  // TODO: Uncomment saat backend ready
-  // await axios.post(`/overtime/${id}/reject`, { notes: reviewerNotes.value })
+  const token = localStorage.getItem("token");
 
-  // Update local state
-  const approval = approvals.value.find(a => a.id === id)
-  if (approval) {
-    approval.status = 'Rejected'
+  try {
+    await axios.post(
+      `http://127.0.0.1:8000/api/approvals/${id}/reject`,
+      {
+        notes: reviewerNotes.value,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+        },
+      },
+    );
+
+    await fetchApprovals();
+    alert("Pengajuan ditolak");
+    closeModal();
+  } catch (error) {
+    console.error(error);
+    alert("Gagal reject");
   }
-
-  alert('Pengajuan ditolak')
-  closeModal()
 }
 
-const MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
+// TODO: Uncomment saat backend ready
+// await axios.post(`/overtime/${id}/reject`, { notes: reviewerNotes.value })
+
+// Update local state
+const approval = approvals.value.find((a) => a.id === id);
+if (approval) {
+  approval.status = "Rejected";
+}
+
+closeModal();
+
+const MONTHS = [
+  "JAN",
+  "FEB",
+  "MAR",
+  "APR",
+  "MAY",
+  "JUN",
+  "JUL",
+  "AUG",
+  "SEP",
+  "OCT",
+  "NOV",
+  "DEC",
+];
 
 function formatDate(date) {
-  if (!date) return '-'
-  const d = new Date(date)
-  const day = d.getDate()
-  const month = MONTHS[d.getMonth()]
-  const year = String(d.getFullYear()).slice(-2)
-  return `${day}-${month}-${year}`
+  if (!date) return "-";
+  const d = new Date(date);
+  const day = d.getDate();
+  const month = MONTHS[d.getMonth()];
+  const year = String(d.getFullYear()).slice(-2);
+  return `${day}-${month}-${year}`;
 }
 
 // ============================================================
 // LIFECYCLE HOOKS
 // ============================================================
-onMounted(() => {
-  window.addEventListener('keydown', handleKeydown)
-})
+onBeforeMount(() => {
+  fetchApprovals();
+  window.addEventListener("keydown", handleKeydown);
+});
 
 onUnmounted(() => {
-  window.removeEventListener('keydown', handleKeydown)
-})
+  window.removeEventListener("keydown", handleKeydown);
+});
 
 // ============================================================
 // API INTEGRATION (TODO)
@@ -401,8 +440,8 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700&family=Inter:wght@400;500;600&display=swap');
-@import url('https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css');
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700&family=Inter:wght@400;500;600&display=swap");
+@import url("https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css");
 
 .review-approvals {
   padding: 24px;
@@ -417,7 +456,7 @@ onUnmounted(() => {
    HEADER SECTION
    ============================================================ */
 .header {
-  background: linear-gradient(135deg, #1D127D, #397CFA);
+  background: linear-gradient(135deg, #1d127d, #397cfa);
   padding: 24px;
   border-radius: 12px;
 }
@@ -426,14 +465,14 @@ onUnmounted(() => {
   font-size: 18px;
   font-weight: 700;
   color: #fff;
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: "Plus Jakarta Sans", sans-serif;
   margin: 0 0 8px 0;
 }
 
 .header-subtitle {
   font-size: 13px;
   color: rgba(255, 255, 255, 0.85);
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
   margin: 0;
 }
 
@@ -452,10 +491,10 @@ onUnmounted(() => {
   border-radius: 20px;
   border: none;
   background: transparent;
-  color: #6B7280;
+  color: #6b7280;
   font-size: 13px;
   font-weight: 500;
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
   cursor: pointer;
   white-space: nowrap;
   transition: all 0.15s;
@@ -466,7 +505,7 @@ onUnmounted(() => {
 }
 
 .filter-pill.active {
-  background: #1D127D;
+  background: #1d127d;
   color: #fff;
 }
 
@@ -489,30 +528,40 @@ table {
 thead th {
   font-size: 12px;
   font-weight: 700;
-  color: #6B7280;
+  color: #6b7280;
   text-transform: uppercase;
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: "Plus Jakarta Sans", sans-serif;
   padding: 14px;
   text-align: left;
-  border-bottom: 2px solid #E5E7EB;
+  border-bottom: 2px solid #e5e7eb;
 }
 
-thead th:nth-child(1) { width: 30%; }
-thead th:nth-child(2) { width: 20%; }
-thead th:nth-child(3) { width: 15%; }
-thead th:nth-child(4) { width: 20%; }
-thead th:nth-child(5) { width: 15%; }
+thead th:nth-child(1) {
+  width: 30%;
+}
+thead th:nth-child(2) {
+  width: 20%;
+}
+thead th:nth-child(3) {
+  width: 15%;
+}
+thead th:nth-child(4) {
+  width: 20%;
+}
+thead th:nth-child(5) {
+  width: 15%;
+}
 
 tbody td {
   font-size: 13px;
   color: #111;
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
   padding: 14px;
-  border-bottom: 1px solid #E5E7EB;
+  border-bottom: 1px solid #e5e7eb;
 }
 
 tbody tr:hover {
-  background: #F9FAFB;
+  background: #f9fafb;
 }
 
 tbody tr:last-child td {
@@ -532,25 +581,25 @@ tbody tr:last-child td {
 }
 
 .detail-btn {
-  background: #1D127D;
+  background: #1d127d;
   color: #fff;
   border: none;
   padding: 8px 20px;
   border-radius: 8px;
   font-size: 12px;
   font-weight: 600;
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
   cursor: pointer;
   transition: background 0.15s;
 }
 
 .detail-btn:hover {
-  background: #2563EB;
+  background: #2563eb;
 }
 
 .text-center {
   text-align: center;
-  color: #6B7280;
+  color: #6b7280;
   font-style: italic;
 }
 
@@ -582,7 +631,7 @@ tbody tr:last-child td {
 }
 
 .modal-header {
-  background: linear-gradient(135deg, #2D3B8F, #4A5FC1);
+  background: linear-gradient(135deg, #2d3b8f, #4a5fc1);
   padding: 18px 24px;
   display: flex;
   align-items: center;
@@ -594,7 +643,7 @@ tbody tr:last-child td {
   font-size: 14px;
   font-weight: 700;
   color: #fff;
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: "Plus Jakarta Sans", sans-serif;
   text-transform: uppercase;
   margin: 0;
 }
@@ -633,7 +682,7 @@ tbody tr:last-child td {
   color: #888;
   text-transform: uppercase;
   letter-spacing: 0.6px;
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: "Plus Jakarta Sans", sans-serif;
   margin: 0 0 10px 0;
   display: flex;
   align-items: center;
@@ -662,24 +711,24 @@ tbody tr:last-child td {
   text-transform: uppercase;
   letter-spacing: 0.5px;
   font-weight: 500;
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
 }
 
 .field-value {
   font-size: 13px;
   color: #111;
   font-weight: 500;
-  background: #F7F7F8;
+  background: #f7f7f8;
   border-radius: 7px;
   padding: 10px 12px;
   min-height: 36px;
   line-height: 1.5;
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
 }
 
 .detail-divider {
   height: 1px;
-  background: #E5E7EB;
+  background: #e5e7eb;
   margin: 16px 0;
 }
 
@@ -690,8 +739,8 @@ tbody tr:last-child td {
 .task-title {
   font-size: 12px;
   font-weight: 700;
-  color: #1D127D;
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  color: #1d127d;
+  font-family: "Plus Jakarta Sans", sans-serif;
   text-transform: uppercase;
   margin: 0 0 6px 0;
 }
@@ -700,25 +749,25 @@ tbody tr:last-child td {
   font-size: 13px;
   color: #111;
   line-height: 1.6;
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
   margin: 0;
 }
 
 .task-divider {
   height: 1px;
-  background: #E5E7EB;
+  background: #e5e7eb;
   margin: 12px 0;
 }
 
 .reviewer-notes {
   width: 100%;
   min-height: 80px;
-  background: #F9FAFB;
-  border: 1.5px solid #E5E7EB;
+  background: #f9fafb;
+  border: 1.5px solid #e5e7eb;
   border-radius: 8px;
   padding: 10px 12px;
   font-size: 13px;
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
   line-height: 1.6;
   resize: vertical;
   transition: border-color 0.15s;
@@ -726,12 +775,12 @@ tbody tr:last-child td {
 
 .reviewer-notes:focus {
   outline: none;
-  border-color: #3B82F6;
+  border-color: #3b82f6;
 }
 
 .modal-footer {
   padding: 16px 24px;
-  border-top: 1px solid #E5E7EB;
+  border-top: 1px solid #e5e7eb;
   display: flex;
   justify-content: flex-end;
   gap: 12px;
@@ -745,7 +794,7 @@ tbody tr:last-child td {
   border: none;
   font-size: 13px;
   font-weight: 700;
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: "Plus Jakarta Sans", sans-serif;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -759,12 +808,12 @@ tbody tr:last-child td {
 }
 
 .btn-reject {
-  background: #DC2626;
+  background: #dc2626;
   color: #fff;
 }
 
 .btn-approve {
-  background: #16A34A;
+  background: #16a34a;
   color: #fff;
 }
 
@@ -783,7 +832,9 @@ tbody tr:last-child td {
 
 .modal-slide-enter-active,
 .modal-slide-leave-active {
-  transition: transform 0.25s ease, opacity 0.25s ease;
+  transition:
+    transform 0.25s ease,
+    opacity 0.25s ease;
 }
 
 .modal-slide-enter-from {

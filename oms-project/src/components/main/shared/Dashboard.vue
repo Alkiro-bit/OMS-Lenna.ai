@@ -343,6 +343,17 @@ function formatDate(date) {
   return `${day}-${month}-${year}`;
 }
 
+function getStatusIcon(status) {
+  const icons = {
+    Pending: "/icons/status/pending.png",
+    Approved: "/icons/status/approve.png",
+    Rejected: "/icons/status/declined.png",
+    Reviewed: "/icons/status/review.png",
+  };
+
+  return icons[status] || "/icons/status/pending.png";
+}
+
 function formatDateTime(date) {
   if (!date) return "-";
 

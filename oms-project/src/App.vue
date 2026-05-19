@@ -81,7 +81,12 @@ const router = useRouter();
 const route = useRoute();
 
 const isLoggedIn = ref(false);
-const userData = ref(null);
+const isFirstLogin = ref(false);
+
+const userData = ref({
+  name: "",
+  position: ""
+});
 
 const getUserData = async () => {
   const token = window.localStorage.getItem("token");

@@ -44,13 +44,7 @@
                 <td>{{ formatDateTime(row.created_at) }}</td>
                 <td>{{ row.duration }} Hour</td>
                 <td>
-                  <span
-                    class="status-badge"
-                    :class="getStatusClass(row.status)"
-                  >
-                    <span class="status-dot"></span>
-                    {{ row.status }}
-                  </span>
+                  <img :src="getStatusIconPath(row.status)" :alt="row.status" class="status-icon-img" />
                 </td>
               </tr>
             </tbody>
@@ -77,12 +71,7 @@
             >
               <div class="detail-header">
                 <p class="detail-title">DETAIL PENGAJUAN LEMBUR</p>
-                <span
-                  class="detail-status-badge"
-                  :style="getStatusStyle(selectedOvertime.status)"
-                >
-                  {{ selectedOvertime.status }}
-                </span>
+                <img :src="getStatusIconPath(selectedOvertime.status)" :alt="selectedOvertime.status" class="modal-status-img" />
               </div>
 
               <div class="detail-body">
@@ -376,22 +365,20 @@ const currentPeriod = computed(() => {
   return `${formattedMonth} ${now.getFullYear()}`;
 });
 
-function getStatusClass(status) {
+function getStatusIconPath(status) {
+  if (!status) return '';
   const statusMap = {
-    Pending: "status-pending",
-    Approved: "status-approved",
-    Declined: "status-declined",
+    'pending': 'Pending',
+    'approved': 'Approved',
+    'declined': 'Declined',
+    'reviewed': 'Reviewed',
+    'Pending': 'Pending',
+    'Approved': 'Approved',
+    'Declined': 'Declined',
+    'Reviewed': 'Reviewed'
   };
-  return statusMap[status] ?? "status-default";
-}
-
-function getStatusStyle(status) {
-  const styles = {
-    Approved: "background:#E8F5E9;border-color:#81C784;color:#1b5e20",
-    Declined: "background:#FFEBEE;border-color:#E57373;color:#b71c1c",
-    Pending: "background:#FFF8E1;border-color:#FFD54F;color:#7a5c00",
-  };
-  return styles[status] || styles["Pending"];
+  const normalizedStatus = statusMap[status] || status;
+  return `/icons/status/${normalizedStatus}.png`;
 }
 </script>
 
@@ -593,51 +580,6 @@ tbody tr:last-child td {
   font-style: italic;
 }
 
-.status-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 3px 10px;
-  border-radius: 20px;
-  font-size: 11px;
-  font-weight: 500;
-  border: 1px solid transparent;
-  font-family: "Inter", sans-serif;
-}
-
-.status-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-.status-pending {
-  background: #fff8e1;
-  border-color: #ffd54f;
-  color: #7a5c00;
-}
-.status-pending .status-dot {
-  background: #ffd54f;
-}
-
-.status-approved {
-  background: #e8f5e9;
-  border-color: #81c784;
-  color: #1b5e20;
-}
-.status-approved .status-dot {
-  background: #66bb6a;
-}
-
-.status-declined {
-  background: #ffebee;
-  border-color: #e57373;
-  color: #b71c1c;
-}
-.status-declined .status-dot {
-  background: #ef5350;
-}
 
 /* MODAL STYLE (sama seperti sebelumnya) */
 .detail-overlay {
@@ -680,15 +622,6 @@ tbody tr:last-child td {
   letter-spacing: 0.4px;
   text-transform: uppercase;
   margin: 0;
-}
-
-.detail-status-badge {
-  padding: 3px 12px;
-  border-radius: 20px;
-  font-size: 11px;
-  font-weight: 600;
-  border: 1.5px solid transparent;
-  font-family: "Inter", sans-serif;
 }
 
 .detail-body {

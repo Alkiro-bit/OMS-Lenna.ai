@@ -824,6 +824,7 @@ function handleLogout() {
   align-items: center;
   justify-content: center;
   z-index: 9999;
+  font: Poppins, sans-serif;
 }
 
 .delete-modal {
@@ -871,6 +872,7 @@ function handleLogout() {
 
 .btn-cancel,
 .btn-delete {
+  font-family: Poppins;
   border: none;
   border-radius: 10px;
   padding: 10px 18px;

@@ -1,10 +1,12 @@
 <template>
   <div class="review-approvals">
-    <!-- HEADER SECTION -->
-    <div class="header">
-      <h1 class="header-title">Review Pengajuan Lembur</h1>
-      <p class="header-subtitle">Kelola dan review pengajuan lembur karyawan</p>
-    </div>
+
+    <section class="stats-section">
+      <div class="stats-grid">
+        <h1 class="header-title">Review Pengajuan Lembur</h1>
+        <p class="header-subtitle">Kelola dan review pengajuan lembur karyawan</p>
+      </div>
+    </section>
 
     <!-- FILTER TABS -->
     <div class="filter-tabs">
@@ -80,7 +82,6 @@
               <div class="modal-header">
                 <p class="modal-title">DETAIL PENGAJUAN LEMBUR</p>
                 <img
-              <img
                   :src="getStatusIcon(selectedApproval?.status)"
                   :alt="selectedApproval?.status"
                   class="modal-status-img"
@@ -465,7 +466,6 @@ onUnmounted(() => {
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
 
 .review-approvals {
-  padding: 24px;
   background: #f4f5f7;
   min-height: 100%;
   display: flex;
@@ -476,18 +476,13 @@ onUnmounted(() => {
 /* ============================================================
    HEADER SECTION
    ============================================================ */
-.header {
-  background: linear-gradient(135deg, #1d127d, #397cfa);
-  padding: 24px;
-  border-radius: 12px;
-}
 
 .header-title {
-  font-size: 18px;
+  font-size: 26x;
   font-weight: 700;
   color: #fff;
   font-family: "Plus Jakarta Sans", sans-serif;
-  margin: 0 0 8px 0;
+  margin: 0 0 2px 0;
 }
 
 .header-subtitle {
@@ -497,14 +492,26 @@ onUnmounted(() => {
   margin: 0;
 }
 
+.stats-section {
+  background: linear-gradient(135deg, #1d127d, #397cfa);
+  padding: 56.5px 56.5px 56.5px 26px;
+}
+
+.stats-grid { 
+  display: flex;
+  flex-direction: column;
+}
+
+
 /* ============================================================
    FILTER TABS
    ============================================================ */
 .filter-tabs {
   display: flex;
-  gap: 8px;
+  gap: 12px;
   overflow-x: auto;
   padding-bottom: 4px;
+  padding: 10px 10px 10px 26px;
 }
 
 .filter-pill {
@@ -539,11 +546,13 @@ onUnmounted(() => {
   padding: 20px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
   overflow-x: auto;
+  margin: 0px 26px;
 }
 
 table {
   width: 100%;
   border-collapse: collapse;
+  padding: 24px;
 }
 
 thead th {
@@ -592,13 +601,15 @@ tbody tr:last-child td {
 .status-icon-img {
   height: 18px;
   width: auto;
-  display: block;
+  display: flex;
+  nav-right: auto;
 }
 
 .modal-status-img {
   height: 18px;
   width: auto;
-  display: block;
+  display: flex;
+  nav-right: auto;
 }
 
 .detail-btn {

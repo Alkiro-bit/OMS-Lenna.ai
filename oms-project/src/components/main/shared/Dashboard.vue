@@ -345,13 +345,13 @@ function formatDate(date) {
 
 function getStatusIcon(status) {
   const icons = {
-    Pending: "/icons/status/pending.png",
-    Approved: "/icons/status/approve.png",
-    Rejected: "/icons/status/declined.png",
-    Reviewed: "/icons/status/review.png",
+    Pending: "/icons/status/Pending.png",
+    Approved: "/icons/status/Approved.png",
+    Rejected: "/icons/status/Declined.png",
+    Reviewed: "/icons/status/Reviewed.png",
   };
 
-  return icons[status] || "/icons/status/pending.png";
+  return icons[status] || "/icons/status/Pending.png";
 }
 
 function formatDateTime(date) {
@@ -375,22 +375,6 @@ const currentPeriod = computed(() => {
   const formattedMonth = monthName.charAt(0) + monthName.slice(1).toLowerCase();
   return `${formattedMonth} ${now.getFullYear()}`;
 });
-
-function getStatusIconPath(status) {
-  if (!status) return '';
-  const statusMap = {
-    'pending': 'Pending',
-    'approved': 'Approved',
-    'declined': 'Declined',
-    'reviewed': 'Reviewed',
-    'Pending': 'Pending',
-    'Approved': 'Approved',
-    'Declined': 'Declined',
-    'Reviewed': 'Reviewed'
-  };
-  const normalizedStatus = statusMap[status] || status;
-  return `/icons/status/${normalizedStatus}.png`;
-}
 </script>
 
 <style scoped>
@@ -401,25 +385,6 @@ function getStatusIconPath(status) {
   display: flex;
   flex-direction: column;
   height: 100%;
-}
-
-.welcome-banner {
-  padding: 20px 24px 10px;
-  background: #f4f5f7;
-}
-
-.welcome-banner h1 {
-  font-size: 24px;
-  font-weight: 700;
-  margin: 0;
-  color: #111;
-  font-family: "Plus Jakarta Sans", sans-serif;
-}
-
-.welcome-banner p {
-  margin-top: 6px;
-  color: #666;
-  font-size: 14px;
 }
 
 .stats-section {

@@ -469,7 +469,7 @@ async function handleSubmit() {
   }
 
   const payload = {
-    // title: formData.value.title, ==== > nanti di uncomment aja kalo udah nyambung. 
+    title: formData.value.title,
     date: formData.value.tanggal,
     start_time: formData.value.jamMulai,
     end_time: formData.value.jamSelesai,
@@ -680,9 +680,9 @@ function handleLogout() {
   border: 1.5px solid #e0e0e0;
   border-radius: 8px;
   padding: 0 12px;
-  font-size: 17px;  
+  font-size: 15px;  
   color: #595757;
-  font-family: "Inter", sans-serif;
+  font-family: "Plus Jakarta Sans", sans-serif;
   background: #fff;
   transition: border-color 0.15s;
   margin-bottom: -10px;

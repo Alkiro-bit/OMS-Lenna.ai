@@ -63,9 +63,9 @@
           <button type="submit" class="submit-btn">Sign in</button>
         </form>
 
-        <p class="footer">
+        <!-- <p class="footer">
           Your role (PM, HR Finance, Management) is set by HR.
-        </p>
+        </p> -->
       </div>
     </div>
   </div>

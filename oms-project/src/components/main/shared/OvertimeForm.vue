@@ -32,7 +32,7 @@
                     type="text"
                     class="form-input-title"
                     v-model="formData.title"
-                    placeholder="Contoh : Overtime for Project X "
+                    placeholder="Overtime for..."
                     required 
                   />
                   <label class="form-title">Title</label>   
@@ -105,7 +105,7 @@
           <div class="form-group full">
             <label class="form-label required">PIC</label>
             <select class="form-select" v-model="formData.pic" required>
-              <option value="" disabled>Pilih Project Manager</option>
+              <option value="" disabled>Choose PIC  </option>
               <option v-for="pm in pmList" :key="pm.id" :value="pm.id">
                 {{ pm.name }}
               </option>
@@ -138,19 +138,19 @@
                   type="text"
                   class="form-input"
                   v-model="task.name"
-                  placeholder="Contoh: Debugging, Deployment, Testing"
+                  placeholder="Example: Debugging, Deployment, Testing"
                   required
                 />
               </div>
 
               <div class="form-group full">
-                <label class="form-label required">Deskripsi</label>
+                <label class="form-label required">Description</label>
                 <textarea
                   class="form-textarea"
                   v-model="task.description"
                   rows="4"
-                  placeholder="Jelaskan detail pekerjaan yang akan dilakukan..."
-                  re  quired
+                  placeholder="Describe the details of the work to be done..."
+                  required
                 ></textarea>
               </div>
             </div>
@@ -195,21 +195,20 @@
           <div v-if="showDeleteModal" class="delete-modal" @click.stop>
             <div class="delete-header">
               <i class="fa-solid fa-triangle-exclamation"></i>
-              <h3>Hapus Task</h3>
+              <h3>Delete Task</h3>
             </div>
 
             <p class="delete-text">
-              Apakah Anda yakin ingin menghapus task ini? Tindakan ini tidak
-              dapat dibatalkan.
+              Are you sure you want to delete this task? This action cannot be undone.
             </p>
 
             <div class="delete-actions">
               <button class="btn-cancel" @click="closeDeleteModal">
-                Batal
+                Cancel
               </button>
 
               <button class="btn-delete" @click="confirmDeleteTask">
-                Hapus
+                Delete
               </button>
             </div>
           </div>

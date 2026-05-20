@@ -118,7 +118,7 @@ const login = async () => {
       window.location.href = "/dashboard";
     } else if (user.role === "product_manager") {
       window.location.href = "/dashboard";
-    } else if (user.role === "hr") {
+    } else if (user.role === "human_resource") {
       alert("HR Dashboard coming soon");
     }
   } catch (error) {

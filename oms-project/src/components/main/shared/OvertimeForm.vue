@@ -18,15 +18,29 @@
     <div class="form-card">
       <!-- HEADER -->
       <div class="form-header">
-        <h1 class="form-title">FORM PENGAJUAN LEMBUR</h1>
+        <h1 class="form-title">OVERTIME SUBMISSION FORM</h1>
       </div>
 
       <!-- FORM BODY -->
       <div class="form-body">
         <form @submit.prevent="handleSubmit">
+          
+          <!-- Title -->
+          <div class="form-group full">
+                  <label class="form-label required">Title</label>
+                  <input
+                    type="text"
+                    class="form-input-title"
+                    v-model="formData.title"
+                    placeholder="Contoh : Overtime for Project X "
+                    required 
+                  />
+                  <label class="form-title">Title</label>   
+          </div>
+
           <!-- Nama & Tim (read-only) -->
           <div class="form-group full">
-            <label class="form-label">Nama & Tim</label>
+            <label class="form-label">Name & Team</label>
             <input
               type="text"
               class="form-input"
@@ -35,10 +49,12 @@
             />
           </div>
 
-          <!-- Tanggal & Durasi (2 kolom) -->
+
+          <!-- Title, Tanggal, & Durasi -->
           <div class="form-row">
+
             <div class="form-group">
-              <label class="form-label required">Tanggal</label>
+              <label class="form-label required">Date</label>
               <input
                 type="date"
                 class="form-input"
@@ -48,7 +64,7 @@
               />
             </div>
             <div class="form-group">
-              <label class="form-label">Durasi</label>
+              <label class="form-label">Duration</label>
               <input
                 type="text"
                 class="form-input"
@@ -62,7 +78,7 @@
           <!-- Jam Mulai & Jam Selesai (2 kolom) -->
           <div class="form-row">
             <div class="form-group">
-              <label class="form-label required">Jam Mulai</label>
+              <label class="form-label required">Start Time</label>
               <input
                 type="time"
                 class="form-input"
@@ -74,7 +90,7 @@
             </div>
 
             <div class="form-group">
-              <label class="form-label required">Jam Selesai</label>
+              <label class="form-label required">End Time</label>
               <input
                 type="time"
                 class="form-input"
@@ -87,7 +103,7 @@
 
           <!-- PIC / Project Manager -->
           <div class="form-group full">
-            <label class="form-label required">PIC / Project Manager</label>
+            <label class="form-label required">PIC</label>
             <select class="form-select" v-model="formData.pic" required>
               <option value="" disabled>Pilih Project Manager</option>
               <option v-for="pm in pmList" :key="pm.id" :value="pm.id">
@@ -134,22 +150,26 @@
                   v-model="task.description"
                   rows="4"
                   placeholder="Jelaskan detail pekerjaan yang akan dilakukan..."
-                  required
+                  re  quired
                 ></textarea>
               </div>
             </div>
+
+            <div class="addTask">
+            <button
+                type="button"
+                class="btn-add-task"
+                @click="addTask"
+                title="Tambah task baru"
+              >
+                <i class="fa-solid fa-plus"></i>
+              </button>
           </div>
+          </div>
+
 
           <!-- FORM FOOTER BUTTONS -->
           <div class="form-footer">
-            <button
-              type="button"
-              class="btn-add-task"
-              @click="addTask"
-              title="Tambah task baru"
-            >
-              <i class="fa-solid fa-plus"></i>
-            </button>
             <button
               type="submit"
               class="btn-submit"
@@ -260,6 +280,7 @@ const currentRoute = computed(() => route.path);
 
 // ── FORM DATA ──────────────────────────────────────────────────────────
 const formData = ref({
+  title: "",
   tanggal: "",
   jamMulai: "",
   jamSelesai: "",
@@ -408,7 +429,7 @@ async function validateTime() {
 const isFormValid = computed(() => {
   const data = formData.value;
 
-  if (!data.tanggal || !data.jamMulai || !data.jamSelesai || !data.pic) {
+  if ( !data.title || !data.tanggal || !data.jamMulai || !data.jamSelesai || !data.pic) {
     return false;
   }
 
@@ -449,6 +470,7 @@ async function handleSubmit() {
   }
 
   const payload = {
+    // title: formData.value.title, ==== > nanti di uncomment aja kalo udah nyambung. 
     date: formData.value.tanggal,
     start_time: formData.value.jamMulai,
     end_time: formData.value.jamSelesai,
@@ -488,6 +510,7 @@ async function handleSubmit() {
 
 function resetForm() {
   formData.value = {
+    title: "",
     tanggal: "",
     jamMulai: "",
     jamSelesai: "",
@@ -638,9 +661,32 @@ function handleLogout() {
   letter-spacing: 0.5px;
   font-weight: 500;
 }
+
 .form-label.required::after {
   content: " *";
   color: #e57373;
+}
+
+.form-title-input { 
+  font-size: 11px; 
+  color: #0d0d0d;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 500;
+}
+
+.form-input-title {
+  width: 100%;
+  height: 46px;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 0 12px;
+  font-size: 17px;  
+  color: #595757;
+  font-family: "Inter", sans-serif;
+  background: #fff;
+  transition: border-color 0.15s;
+  margin-bottom: -10px;
 }
 
 .form-input,
@@ -657,6 +703,7 @@ function handleLogout() {
   transition: border-color 0.15s;
 }
 .form-input:focus,
+.form-input-title:focus,
 .form-select:focus {
   outline: none;
   border-color: #397cfa;
@@ -746,6 +793,40 @@ function handleLogout() {
   background: rgba(229, 115, 115, 0.1);
 }
 
+.addTask {
+  display: flex;
+  margin-top: -24px;
+  padding-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.btn-add-task {
+  display: flex;
+  flex-direction: column;
+  padding: 6px;
+  gap: 4px;
+  margin-top: 8px;
+  border-radius: 4px;
+  background: #3b82f6;
+  color: #fff;
+  border: none;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+  transition:
+    background 0.15s,
+    transform 0.1s;
+}
+.btn-add-task:hover {
+  background: #2563eb;
+}
+.btn-add-task:active {
+  transform: scale(0.98);
+}
+
 /* ── FORM FOOTER ────────────────────────────────────────────────────── */
 .form-footer {
   margin-top: 20px;
@@ -756,30 +837,6 @@ function handleLogout() {
   gap: 12px;
 }
 
-.btn-add-task {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  background: #3b82f6;
-  color: #fff;
-  border: none;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 22px;
-  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
-  transition:
-    background 0.15s,
-    transform 0.1s;
-}
-.btn-add-task:hover {
-  background: #2563eb;
-  transform: scale(1.05);
-}
-.btn-add-task:active {
-  transform: scale(0.98);
-}
 
 .btn-submit {
   padding: 0 32px;

@@ -375,6 +375,23 @@ const currentPeriod = computed(() => {
   const formattedMonth = monthName.charAt(0) + monthName.slice(1).toLowerCase();
   return `${formattedMonth} ${now.getFullYear()}`;
 });
+
+function getStatusIconPath(status) {
+  if (!status) return '';
+  const statusMap = {
+    'pending': 'Pending',
+    'approved': 'Approved',
+    'declined': 'Declined',
+    'reviewed': 'Reviewed',
+    'Pending': 'Pending',
+    'Approved': 'Approved',
+    'Declined': 'Declined',
+    'Reviewed': 'Reviewed'
+  };
+  const normalizedStatus = statusMap[status] || status;
+  return `/icons/status/${normalizedStatus}.png`;
+};
+
 </script>
 
 <style scoped>
@@ -490,10 +507,10 @@ thead th {
   border-bottom: 2px solid #E5E7EB;
 }
 
-thead th:nth-child(1) { width: 30%; }
+thead th:nth-child(1) { width: 20%; }
 thead th:nth-child(2) { width: 20%; }
 thead th:nth-child(3) { width: 15%; }
-thead th:nth-child(4) { width: 20%; }
+thead th:nth-child(4) { width: 15%; }
 thead th:nth-child(5) { width: 15%; }
 
 tbody td {

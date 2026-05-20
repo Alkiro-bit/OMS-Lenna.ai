@@ -226,27 +226,27 @@ const statsCards = computed(() => {
     {
       key: "totalJam",
       value: dashboardData.summary.totalHours,
-      label: "Total Jam Lembur",
+      label: "Overtime Hours",
     },
     {
       key: "pengajuan",
       value: dashboardData.summary.totalSubmission,
-      label: "Pengajuan Lembur",
+      label: "Overtime Submission",
     },
     {
       key: "approved",
       value: dashboardData.summary.totalApproved,
-      label: "Lembur di Approve",
+      label: "Overtime Approved",
     },
     {
       key: "pending",
       value: dashboardData.summary.totalPending,
-      label: "Pending",
+      label: "Overtime Pending",
     },
     {
       key: "declined",
       value: dashboardData.summary.totalDeclined,
-      label: "Declined",
+      label: "Overtime Declined",
     },
   ];
 });

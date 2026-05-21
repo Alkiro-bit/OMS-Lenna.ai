@@ -511,7 +511,7 @@ onUnmounted(() => {
 .stats-grid { 
   display: flex;
   flex-direction: column;
-  font-size: 20px;
+  font-size: 18px;
   font-family: "Plus Jakarta Sans";
 }
 

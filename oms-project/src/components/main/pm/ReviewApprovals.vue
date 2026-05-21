@@ -569,9 +569,9 @@ table {
 }
 
 thead th {
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 700;
-  color: #6b7280;
+  color: #141515;
   text-transform: uppercase;
   font-family: "Plus Jakarta Sans", sans-serif;
   padding: 14px;

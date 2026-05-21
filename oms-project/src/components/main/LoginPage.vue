@@ -117,9 +117,9 @@ const login = async () => {
     if (user.role === "employee") {
       window.location.href = "/dashboard";
     } else if (user.role === "product_manager") {
-      window.location.href = "/dashboard";
+      window.location.href = "/review-approvals";
     } else if (user.role === "human_resource") {
-      alert("HR Dashboard coming soon");
+      window.location.href = "/dashboard-hr";
     }
   } catch (error) {
     alert("Email atau password salah");

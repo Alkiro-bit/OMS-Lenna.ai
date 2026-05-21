@@ -159,7 +159,7 @@ const navItems = computed(() => {
   ];
 
   if (role === "product_manager") {
-    items.push({
+    items.unshift({
       name: "review-approvals",
       label: "Review",
       path: "/review-approvals",

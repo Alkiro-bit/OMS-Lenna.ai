@@ -26,8 +26,20 @@
         <form @submit.prevent="handleSubmit">
           
           <!-- Title -->
+          
+          <!-- Nama & Tim (read-only) -->
           <div class="form-group full">
-                  <label class="form-label required">Title</label>
+            <label class="form-label">Name & Team</label>
+            <input
+            type="text"
+            class="form-input"
+            :value="`${account.name} - ${account.position}`"
+            readonly
+            />
+          </div>
+          
+          <div class="form-group full">
+                  <label class="form-label required">Form Title</label>
                   <input
                     type="text"
                     class="form-input-title"
@@ -37,18 +49,6 @@
                   />
                   <label class="form-title">Title</label>   
           </div>
-
-          <!-- Nama & Tim (read-only) -->
-          <div class="form-group full">
-            <label class="form-label">Name & Team</label>
-            <input
-              type="text"
-              class="form-input"
-              :value="`${account.name} - ${account.position}`"
-              readonly
-            />
-          </div>
-
 
           <!-- Title, Tanggal, & Durasi -->
           <div class="form-row">
@@ -676,11 +676,11 @@ function handleLogout() {
 
 .form-input-title {
   width: 100%;
-  height: 46px;
+  height: 42px;
   border: 1.5px solid #e0e0e0;
   border-radius: 8px;
   padding: 0 12px;
-  font-size: 15px;  
+  font-size: 13px;  
   color: #595757;
   font-family: "Plus Jakarta Sans", sans-serif;
   background: #fff;

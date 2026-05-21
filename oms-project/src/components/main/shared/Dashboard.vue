@@ -5,7 +5,7 @@
         <div v-for="card in statsCards" :key="card.key" class="stat-card">
           <p class="stat-number">{{ card.value }}</p>
           <p class="stat-label">{{ card.label }}</p>
-          <p class="stat-period">{{ currentPeriod }}</p>
+          <p class="stat-period">All Time</p>
         </div>
       </div>
     </section>
@@ -70,29 +70,30 @@
               @click.stop
             >
               <div class="detail-header">
-                <p class="detail-title">DETAIL PENGAJUAN LEMBUR</p>
+                <p class="detail-title">OVERTIME SUBMISSION DETAILS</p>
                 <img :src="getStatusIconPath(selectedOvertime.status)" :alt="selectedOvertime.status" class="modal-status-img" />
               </div>
 
               <div class="detail-body">
                 <div class="detail-section">
+
                   <p class="section-label">
-                    <i class="fa-solid fa-user"></i> Informasi Pengaju
+                    <i class="fa-solid fa-user"></i> Submitter Information
                   </p>
                   <div class="field-grid">
-                    <div class="field-group full">
-                      <span class="field-label">Nama Karyawan</span>
+                    <div class="field-group">
+                      <span class="field-label">Name</span>
                       <span class="field-value">{{
                         selectedOvertime.user_name
                       }}</span>
                     </div>
                     <div class="field-group">
-                      <span class="field-label">Jabatan</span>
+                      <span class="field-label">Position</span>
                       <span class="field-value">{{
                         selectedOvertime.position
                       }}</span>
                     </div>
-                    <div class="field-group">
+                    <div class="field-group full">
                       <span class="field-label">PIC</span>
                       <span class="field-value">{{
                         selectedOvertime.pm_name || "-"
@@ -105,29 +106,36 @@
 
                 <div class="detail-section">
                   <p class="section-label">
-                    <i class="fa-solid fa-clock"></i> Waktu Lembur
+                    <i class="fa-solid fa-clock"></i> overtime Information
                   </p>
                   <div class="field-grid">
+                     <div class="field-group full">
+                         <span class="field-label">Form Title</span> 
+                         <span class="field-value">{{
+                          selectedOvertime.title 
+                          }}</span> <!-- INI MAS JANGAN SAMPE LUPAAA-->
+                      </div>
+
                     <div class="field-group">
-                      <span class="field-label">Tanggal</span>
+                      <span class="field-label">Date</span>
                       <span class="field-value">{{
                         formatDate(selectedOvertime.date)
                       }}</span>
                     </div>
                     <div class="field-group">
-                      <span class="field-label">Jam Mulai</span>
+                      <span class="field-label">Start Time</span>
                       <span class="field-value"
                         >{{ selectedOvertime.start_time || "" }} WIB</span
                       >
                     </div>
                     <div class="field-group">
-                      <span class="field-label">Jam Selesai</span>
+                      <span class="field-label">End Time</span>
                       <span class="field-value"
                         >{{ selectedOvertime.end_time || "" }} WIB</span
                       >
                     </div>
                     <div class="field-group">
-                      <span class="field-label">Durasi</span>
+                      <span class="field-label">Duration</span>
                       <span class="field-value"
                         >{{ selectedOvertime.duration }} Jam</span
                       >
@@ -139,7 +147,7 @@
 
                 <div class="detail-section">
                   <p class="section-label">
-                    <i class="fa-solid fa-align-left"></i> Detail Pekerjaan
+                    <i class="fa-solid fa-align-left"></i> Task Details
                   </p>
                   <!-- Format iterasi jika ada subtasks -->
                   <div
@@ -369,13 +377,6 @@ function formatDateTime(date) {
   return `${day}-${month}-${year} ${hours}:${minutes}`;
 }
 
-const currentPeriod = computed(() => {
-  const now = new Date();
-  const monthName = MONTHS[now.getMonth()];
-  const formattedMonth = monthName.charAt(0) + monthName.slice(1).toLowerCase();
-  return `${formattedMonth} ${now.getFullYear()}`;
-});
-
 function getStatusIconPath(status) {
   if (!status) return '';
   const statusMap = {
@@ -442,7 +443,7 @@ function getStatusIconPath(status) {
   font-size: 13px;
   color: #444;
   font-weight: 500;
-  margin: 0 0 4px 0;
+  margin: 0 0 0 0;
   padding: 0 35px 0 0;
   line-height: 1.3;
 }
@@ -485,6 +486,7 @@ function getStatusIconPath(status) {
   border-radius: 12px;
   padding: 20px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  min-height: 600px;
 }
 
 .overtime-table-wrap {

@@ -161,7 +161,7 @@ const navItems = computed(() => {
   if (role === "product_manager") {
     items.push({
       name: "review-approvals",
-      label: "Review Approvals",
+      label: "Review",
       path: "/review-approvals",
       icon: "/icons/mdi_checkbox-outline.png",
     });

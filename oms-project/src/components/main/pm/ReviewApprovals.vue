@@ -3,8 +3,8 @@
 
     <section class="stats-section">
       <div class="stats-grid">
-        <h1 class="header-title">Review Pengajuan Lembur</h1>
-        <p class="header-subtitle">Kelola dan review pengajuan lembur karyawan</p>
+        <h1 class="header-title">Overtime Submission Review</h1>
+        <p class="header-subtitle">Manage and review employee overtime requests</p>
       </div>
     </section>
 
@@ -26,9 +26,10 @@
       <table>
         <thead>
           <tr>
-            <th>Employee</th>
-            <th>Tanggal</th>
-            <th>Durasi</th>
+            <th>Name</th>
+            <th>Form Title</th>
+            <th>DATE</th>
+            <th>Duration</th>
             <th>Status</th>
             <th>Actions</th>
           </tr>
@@ -40,6 +41,7 @@
             class="table-row"
           >
             <td>{{ approval.employeeName }}</td>
+            <td>{{ approval.title }}</td> <!-- ================ TITLE TABLE (ini uda bener belom si?) ================== -->
             <td>{{ formatDate(approval.overtimeDate) }}</td>
             <td>{{ approval.duration }}</td>
             <td>
@@ -80,7 +82,7 @@
             >
               <!-- Modal Header -->
               <div class="modal-header">
-                <p class="modal-title">DETAIL PENGAJUAN LEMBUR</p>
+                <p class="modal-title">OVERTIME SUBMISSION DETAILS</p>
                 <img
                   :src="getStatusIcon(selectedApproval?.status)"
                   :alt="selectedApproval?.status"
@@ -100,18 +102,18 @@
                 <!-- A. INFORMASI PENGAJU -->
                 <div class="detail-section">
                   <p class="section-label">
-                    <i class="ti ti-user"></i> INFORMASI PENGAJU
+                    <i class="ti ti-user"></i> Submitter Information
                   </p>
                  <div class="field-grid">
                     <div class="field-group full">
-                      <span class="field-label">NAMA EMPLOYEE</span>
+                      <span class="field-label">Name</span>
                       <span class="field-value">
                         {{ selectedApproval?.employeeName }}
                       </span>
                     </div>
 
                     <div class="field-group full">
-                      <span class="field-label">JABATAN</span>
+                      <span class="field-label">Position</span>
                       <span class="field-value">
                         {{ selectedApproval?.employeePosition }}
                       </span>
@@ -121,35 +123,44 @@
 
                 <div class="detail-divider"></div>
 
-                <!-- B. WAKTU LEMBUR -->
+                <!-- B. DETAIL LEMBUR -->
                 <div class="detail-section">
                   <p class="section-label">
-                    <i class="ti ti-clock"></i> WAKTU LEMBUR
+                    <i class="ti ti-clock"></i> Overtime Information
                   </p>
                   <div class="field-grid">
+                    
+                    <!-- ============================ FORM TITLE (itu calling data Arraynya udah bener ga si?)============================ -->
+                    <div class="field-group full">
+                      <span class="field-label">FORM TITLE</span> 
+                      <span class="field-value">
+                        {{ selectedApproval?.title }}
+                      </span>
+                    </div>
+                    
                     <div class="field-group">
-                      <span class="field-label">TANGGAL</span>
+                      <span class="field-label">Date</span>
                       <span class="field-value">
                         {{ formatDate(selectedApproval?.overtimeDate) }}
                       </span>
                     </div>
 
                     <div class="field-group">
-                      <span class="field-label">JAM MULAI</span>
+                      <span class="field-label">Start Time</span>
                       <span class="field-value">
                         {{ selectedApproval?.startTime }} WIB
                       </span>
                     </div>
 
                     <div class="field-group">
-                      <span class="field-label">JAM SELESAI</span>
+                      <span class="field-label">End Time</span>
                       <span class="field-value">
                         {{ selectedApproval?.endTime }} WIB
                       </span>
                     </div>
 
                     <div class="field-group">
-                      <span class="field-label">DURASI</span>
+                      <span class="field-label">Duration</span>
                       <span class="field-value">
                         {{ selectedApproval?.duration }}
                       </span>
@@ -162,7 +173,7 @@
                 <!-- C. DETAIL PEKERJAAN -->
                 <div class="detail-section">
                   <p class="section-label">
-                    <i class="ti ti-align-left"></i> DETAIL PEKERJAAN
+                    <i class="ti ti-align-left"></i> Task Details
                   </p>
                   <div
                     v-for="(task, index) in selectedApproval?.tasks"
@@ -184,11 +195,11 @@
 
                 <!-- D. NOTES REVIEWER -->
                 <div class="detail-section">
-                  <p class="section-label">NOTES REVIEWER (OPSIONAL)</p>
+                  <p class="section-label">NOTES REVIEWER (OPTIONAL)</p>
                   <textarea
                     v-model="reviewerNotes"
                     class="reviewer-notes"
-                    placeholder="Tambahkan catatan review..."
+                    placeholder="Add review notes..."
                     rows="4"
                   ></textarea>
                 </div>
@@ -263,7 +274,7 @@ const filters = [
 // ============================================================
 // COMPUTED PROPERTIES
 // ============================================================
-const filteredApprovals = computed(() => {
+const   filteredApprovals = computed(() => {
   if (selectedFilter.value === "all") {
     return approvals.value;
   }
@@ -567,19 +578,22 @@ thead th {
 }
 
 thead th:nth-child(1) {
-  width: 30%;
-}
-thead th:nth-child(2) {
-  width: 20%;
-}
-thead th:nth-child(3) {
   width: 15%;
 }
+thead th:nth-child(2) {
+  width: 15%;
+}
+thead th:nth-child(3) {
+  width: 10%;
+}
 thead th:nth-child(4) {
-  width: 20%;
+  width: 10%;
 }
 thead th:nth-child(5) {
   width: 15%;
+}
+thead th:nth-child(6) {
+  width: 5%;
 }
 
 tbody td {
@@ -608,8 +622,8 @@ tbody tr:last-child td {
 .modal-status-img {
   height: 18px;
   width: auto;
-  display: flex;
-  nav-right: auto;
+  display: block;
+  margin-left     : auto;
 }
 
 .detail-btn {

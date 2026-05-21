@@ -10,7 +10,11 @@
     >
       <div class="sidebar-brand">
         <div class="brand-logo">
-          <img src="/icons/LOGO Lenna.ai.png" alt="Lenna.ai" class="brand-logo-img" />
+          <img
+            src="/icons/LOGO Lenna.ai.png"
+            alt="Lenna.ai"
+            class="brand-logo-img"
+          />
         </div>
         <Transition name="fade-slide">
           <div v-if="sidebarExpanded" class="brand-text">
@@ -22,22 +26,30 @@
 
       <nav class="sidebar-nav">
         <p v-if="sidebarExpanded" class="nav-section-label">HOME</p>
-        <RouterLink 
-          v-for="item in navItems" 
-          :key="item.name" 
+        <RouterLink
+          v-for="item in navItems"
+          :key="item.name"
           :to="item.path"
-          class="nav-item" 
+          class="nav-item"
           :class="{ active: currentRoute === item.path }"
         >
           <img :src="item.icon" class="nav-icon-img" :alt="item.label" />
           <Transition name="fade-slide">
-            <span v-if="sidebarExpanded" class="nav-text">{{ item.label }}</span>
+            <span v-if="sidebarExpanded" class="nav-text">{{
+              item.label
+            }}</span>
           </Transition>
         </RouterLink>
       </nav>
 
-      <div class="sidebar-account">
-        <div class="avatar avatar-sm">{{ getInitials(account.name) }}</div>
+      <div class="sidebar-account" @click="goToProfile">
+        <div class="avatar avatar-sm">
+          <img v-if="profileImage" :src="profileImage" class="avatar-image" />
+
+          <span v-else>
+            {{ getInitials(account.name) }}
+          </span>
+        </div>
         <Transition name="fade-slide">
           <div v-if="sidebarExpanded" class="account-info">
             <p class="account-name">{{ account.name }}</p>
@@ -55,8 +67,22 @@
       <!-- TOPBAR-->
       <header class="topbar" v-if="currentRoute !== '/'">
         <div class="topbar-left">
-          <div class="avatar avatar-md">{{ getInitials(account.name) }}</div>
-          <span class="greeting"> {{ isFirstLogin ? "Welcome" : "Hello" }}, <strong>{{ account.name }}</strong></span>
+          <div class="avatar avatar-md">
+            <img
+              v-if="profileImage"
+              :src="profileImage"
+              alt="Profile"
+              class="avatar-image"
+            />
+
+            <span v-else>
+              {{ getInitials(account.name) }}
+            </span>
+          </div>
+          <span class="greeting">
+            {{ isFirstLogin ? "Welcome" : "Hello" }},
+            <strong>{{ account.name }}</strong></span
+          >
         </div>
         <button class="logout-btn" @click="handleLogout">
           <i class="fa-solid fa-arrow-right-from-bracket"></i>
@@ -85,7 +111,7 @@ const isFirstLogin = ref(false);
 
 const userData = ref({
   name: "",
-  position: ""
+  position: "",
 });
 
 const getUserData = async () => {
@@ -111,12 +137,21 @@ const getUserData = async () => {
   }
 };
 
+const profileImage = computed(() => {
+  if (account.value.profile_picture) {
+    return `http://127.0.0.1:8000/storage/profile_pictures/${account.value.profile_picture}`;
+  }
+
+  return null;
+});
+
 onBeforeMount(() => {
   getUserData();
 });
 
 provide("userData", userData);
 provide("isLoggedIn", isLoggedIn);
+provide("refreshUserData", getUserData);
 
 // Sidebar
 const sidebarExpanded = ref(false);
@@ -186,11 +221,15 @@ function handleLogout() {
   localStorage.clear();
   router.push("/");
 }
+
+function goToProfile() {
+  router.push("/profile");
+}
 </script>
 
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Inter:wght@400;500&display=swap');
-@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css');
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Inter:wght@400;500&display=swap");
+@import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css");
 
 *,
 *::before,
@@ -214,7 +253,7 @@ body,
   display: flex;
   height: 100vh;
   background: #f4f5f7;
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
   font-size: 13px;
   overflow: hidden;
 }
@@ -273,7 +312,7 @@ body,
   font-size: 12px;
   font-weight: 700;
   color: #111;
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: "Plus Jakarta Sans", sans-serif;
   line-height: 1.3;
   cursor: pointer;
 }
@@ -301,7 +340,7 @@ body,
   letter-spacing: 0.5px;
   padding: 6px 4px 4px;
   white-space: nowrap;
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: "Plus Jakarta Sans", sans-serif;
 }
 
 .nav-item {
@@ -335,7 +374,7 @@ body,
 .nav-text {
   font-size: 12px;
   font-weight: 600;
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: "Plus Jakarta Sans", sans-serif;
 }
 
 .sidebar-account {
@@ -346,6 +385,11 @@ body,
   gap: 10px;
   white-space: nowrap;
   overflow: hidden;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+.sidebar-account:hover {
+  background: #f5f5f5;
 }
 
 .account-info {
@@ -357,7 +401,7 @@ body,
   font-size: 12px;
   font-weight: 600;
   color: #111;
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: "Plus Jakarta Sans", sans-serif;
 }
 
 .account-pos {
@@ -375,14 +419,14 @@ body,
 
 .avatar {
   border-radius: 50%;
-  background: linear-gradient(135deg, #1D127D, #397CFA);
+  background: linear-gradient(135deg, #1d127d, #397cfa);
   display: flex;
   align-items: center;
   justify-content: center;
   color: #fff;
   font-weight: 700;
   flex-shrink: 0;
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: "Plus Jakarta Sans", sans-serif;
   cursor: pointer;
 }
 
@@ -428,7 +472,7 @@ body,
 .greeting {
   font-size: 14px;
   color: #111;
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: "Plus Jakarta Sans", sans-serif;
 }
 
 .greeting strong {
@@ -444,13 +488,15 @@ body,
   color: #ffffff;
   font-size: 12px;
   font-weight: 500;
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 7px;
-  transition: background 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    color 0.15s;
 }
 
 .logout-btn:hover {
@@ -469,7 +515,9 @@ body,
    ============================================================ */
 .fade-slide-enter-active,
 .fade-slide-leave-active {
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
 }
 .fade-slide-enter-from {
   opacity: 0;
@@ -478,5 +526,12 @@ body,
 .fade-slide-leave-to {
   opacity: 0;
   transform: translateX(-6px);
+}
+
+.avatar-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
 }
 </style>

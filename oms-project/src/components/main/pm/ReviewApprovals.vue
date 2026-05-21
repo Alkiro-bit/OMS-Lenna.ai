@@ -41,7 +41,7 @@
             class="table-row"
           >
             <td>{{ approval.employeeName }}</td>
-            <td>{{ approval.title }}</td> <!-- ================ TITLE TABLE (ini uda bener belom si?) ================== -->
+            <td>{{ approval.overtime_title }}</td> <!-- ================ TITLE TABLE (ini uda bener belom si?) ================== -->
             <td>{{ formatDate(approval.overtimeDate) }}</td>
             <td>{{ approval.duration }}</td>
             <td>
@@ -134,7 +134,7 @@
                     <div class="field-group full">
                       <span class="field-label">FORM TITLE</span> 
                       <span class="field-value">
-                        {{ selectedApproval?.title }}
+                        {{ selectedApproval?.overtime_title }}
                       </span>
                     </div>
                     

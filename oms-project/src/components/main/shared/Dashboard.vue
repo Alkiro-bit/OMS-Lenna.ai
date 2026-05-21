@@ -39,7 +39,7 @@
                 <td v-if="userRole === 'product_manager'">
                   {{ row.user_name || "Karyawan" }}
                 </td>
-                <td><span v-html="row.title"></span></td>
+                <td><span v-html="row.overtime_title"></span></td>
                 <td>{{ formatDate(row.date) }}</td>
                 <td>{{ formatDateTime(row.created_at) }}</td>
                 <td>{{ row.duration }} Hour</td>

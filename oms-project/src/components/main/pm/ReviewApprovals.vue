@@ -497,9 +497,9 @@ onUnmounted(() => {
 }
 
 .header-subtitle {
-  font-size: 13px;
+  font-size: 15px;
   color: rgba(255, 255, 255, 0.85);
-  font-family: Poppins, sans-serif;
+  font-family: "Plus Jakarta Sans", sans-serif;
   margin: 0;
 }
 
@@ -511,6 +511,8 @@ onUnmounted(() => {
 .stats-grid { 
   display: flex;
   flex-direction: column;
+  font-size: 20px;
+  font-family: "Plus Jakarta Sans";
 }
 
 

@@ -41,7 +41,7 @@
             class="table-row"
           >
             <td>{{ approval.employeeName }}</td>
-            <td>{{ approval.title }}</td> <!-- ================ TITLE TABLE (ini uda bener belom si?) ================== -->
+            <td>{{ approval.overtime_title }}</td> <!-- ================ TITLE TABLE (ini uda bener belom si?) ================== -->
             <td>{{ formatDate(approval.overtimeDate) }}</td>
             <td>{{ approval.duration }}</td>
             <td>
@@ -134,7 +134,7 @@
                     <div class="field-group full">
                       <span class="field-label">FORM TITLE</span> 
                       <span class="field-value">
-                        {{ selectedApproval?.title }}
+                        {{ selectedApproval?.overtime_title }}
                       </span>
                     </div>
                     
@@ -497,9 +497,9 @@ onUnmounted(() => {
 }
 
 .header-subtitle {
-  font-size: 13px;
+  font-size: 15px;
   color: rgba(255, 255, 255, 0.85);
-  font-family: Poppins, sans-serif;
+  font-family: "Plus Jakarta Sans", sans-serif;
   margin: 0;
 }
 
@@ -511,6 +511,8 @@ onUnmounted(() => {
 .stats-grid { 
   display: flex;
   flex-direction: column;
+  font-size: 18px;
+  font-family: "Plus Jakarta Sans";
 }
 
 
@@ -567,9 +569,9 @@ table {
 }
 
 thead th {
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 700;
-  color: #6b7280;
+  color: #141515;
   text-transform: uppercase;
   font-family: "Plus Jakarta Sans", sans-serif;
   padding: 14px;

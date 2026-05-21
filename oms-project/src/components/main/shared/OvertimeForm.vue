@@ -43,7 +43,7 @@
                   <input
                     type="text"
                     class="form-input-title"
-                    v-model="formData.title"
+                    v-model="formData.overtime_title"
                     placeholder="Overtime for..."
                     required 
                   />
@@ -279,7 +279,7 @@ const currentRoute = computed(() => route.path);
 
 // ── FORM DATA ──────────────────────────────────────────────────────────
 const formData = ref({
-  title: "",
+  overtime_title: "",
   tanggal: "",
   jamMulai: "",
   jamSelesai: "",
@@ -428,7 +428,7 @@ async function validateTime() {
 const isFormValid = computed(() => {
   const data = formData.value;
 
-  if ( !data.title || !data.tanggal || !data.jamMulai || !data.jamSelesai || !data.pic) {
+  if ( !data.overtime_title || !data.tanggal || !data.jamMulai || !data.jamSelesai || !data.pic) {
     return false;
   }
 
@@ -469,7 +469,7 @@ async function handleSubmit() {
   }
 
   const payload = {
-    title: formData.value.title,
+    overtime_title: formData.value.overtime_title,
     date: formData.value.tanggal,
     start_time: formData.value.jamMulai,
     end_time: formData.value.jamSelesai,
@@ -509,7 +509,7 @@ async function handleSubmit() {
 
 function resetForm() {
   formData.value = {
-    title: "",
+    overtime_title: "",
     tanggal: "",
     jamMulai: "",
     jamSelesai: "",

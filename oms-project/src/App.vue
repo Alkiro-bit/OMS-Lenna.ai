@@ -438,10 +438,10 @@ body,
 .logout-btn {
   width: 120px;
   height: 30px;
-  border: 1px solid #8d8d8d;
+  border: 1px solid #ffffff;
   border-radius: 6px;
-  background: transparent;
-  color: #6c6c6c;
+  background-color: #ff0000;
+  color: #ffffff;
   font-size: 12px;
   font-weight: 500;
   font-family: 'Inter', sans-serif;

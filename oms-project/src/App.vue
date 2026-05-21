@@ -369,7 +369,7 @@ body,
   margin-left: auto;
   color: #bbb;
   font-size: 16px;
-  cursor: pointer;
+  cursor: default;
   flex-shrink: 0;
 }
 

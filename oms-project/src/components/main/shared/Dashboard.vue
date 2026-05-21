@@ -1,6 +1,7 @@
 <template>
   <div class="dashboard-page">
-    <section class="stats-section">
+
+      <section class="stats-section">
       <div class="stats-grid">
         <div v-for="card in statsCards" :key="card.key" class="stat-card">
           <p class="stat-number">{{ card.value }}</p>
@@ -10,8 +11,7 @@
       </div>
     </section>
 
-    <!-- CONTENT BODY: My Overtime + Table -->
-    <div class="content-body">
+    <div class="anjay">
       <div class="overtime-bar">My Overtime</div>
 
       <div class="overtime-table-card">
@@ -52,7 +52,6 @@
         </div>
       </div>
     </div>
-
     <!-- MODAL DETAIL -->
     <Teleport to="body">
       <Transition name="overlay-fade">
@@ -170,6 +169,32 @@
                       <span class="field-value field-desc">{{
                         subtask.task_description
                       }}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div
+                  v-if="shouldShowReviewerNotes(selectedOvertime)"
+                  class="detail-section"
+                >
+                  <p class="section-label">
+                    <i class="fa-solid fa-note-sticky"></i> Reviewer Notes
+                  </p>
+                  <div class="field-grid">
+                    <div class="field-group full">
+                      <span class="field-label">Notes</span>
+                      <textarea
+                        class="notes-textarea"
+                        :value="getReviewerNotes(selectedOvertime)"
+                        :placeholder="
+                          getReviewerNotes(selectedOvertime)
+                            ? ''
+                            : 'No reviewer notes available.'
+                        "
+                        rows="4"
+                        readonly
+                        disabled
+                      ></textarea>
                     </div>
                   </div>
                 </div>
@@ -351,6 +376,39 @@ function formatDate(date) {
   return `${day}-${month}-${year}`;
 }
 
+function normalizeStatus(status = "") {
+  const normalized = String(status).trim().toLowerCase();
+  return normalized === "rejected" ? "declined" : normalized;
+}
+
+function getReviewerNotes(entry = {}) {
+  const candidates = [
+    entry?.notes,
+    entry?.note,
+    entry?.review_notes,
+    entry?.reviewer_notes,
+    entry?.rejection_notes,
+    entry?.declined_notes,
+    entry?.review?.notes,
+    entry?.approval?.notes,
+    entry?.metadata?.notes,
+  ];
+
+  const found = candidates.find((value) => {
+    if (typeof value === "string") {
+      return value.trim().length > 0;
+    }
+
+    return Boolean(value);
+  });
+
+  return typeof found === "string" ? found.trim() : found || "";
+}
+
+function shouldShowReviewerNotes(entry = {}) {
+  return normalizeStatus(entry?.status) === "declined" || getReviewerNotes(entry).length > 0;
+}
+
 function getStatusIcon(status) {
   const icons = {
     Pending: "/icons/status/Pending.png",
@@ -403,11 +461,20 @@ function getStatusIconPath(status) {
   display: flex;
   flex-direction: column;
   height: 100%;
+  gap: 4px;
+}
+
+.anjay {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin : 20px;
+  flex: 1;
 }
 
 .stats-section {
   background: linear-gradient(135deg, #1d127d, #397cfa);
-  padding: 20px 20px 32px;
+  padding: 30px;
   flex-shrink: 0;
 }
 
@@ -681,6 +748,26 @@ tbody tr:last-child td {
   line-height: 1.65;
   font-weight: 400;
   white-space: pre-wrap;
+}
+
+.notes-textarea {
+  width: 100%;
+  min-height: 110px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 13px;
+  line-height: 1.6;
+  font-family: "Inter", sans-serif;
+  background: #f3f4f6;
+  color: #111;
+  resize: none;
+}
+
+.notes-textarea:disabled {
+  opacity: 1;
+  cursor: not-allowed;
+  -webkit-text-fill-color: #111;
 }
 
 .detail-divider {

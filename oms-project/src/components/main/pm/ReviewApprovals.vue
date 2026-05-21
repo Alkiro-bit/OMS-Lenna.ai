@@ -58,7 +58,7 @@
             </td>
           </tr>
           <tr v-if="filteredApprovals.length === 0">
-            <td colspan="5" class="text-center">Tidak ada pengajuan lembur.</td>
+            <td colspan="6" class="text-center">Tidak ada pengajuan lembur.</td>
           </tr>
         </tbody>
       </table>
@@ -195,22 +195,40 @@
 
                 <!-- D. NOTES REVIEWER -->
                 <div class="detail-section">
-                  <p class="section-label">NOTES REVIEWER (OPTIONAL)</p>
+                  <p class="section-label">REVIEWER NOTES</p>
                   <textarea
+                    v-if="!isFinalStatus(selectedApproval?.status)"
                     v-model="reviewerNotes"
                     class="reviewer-notes"
                     placeholder="Add review notes..."
+                    rows="4"
+                  ></textarea>
+                  <textarea
+                    v-else
+                    class="reviewer-notes reviewer-notes-readonly"
+                    :value="getApprovalNotes(selectedApproval)"
+                    :placeholder="hasApprovalNotes(selectedApproval) ? '' : 'No reviewer notes available.'"
+                    readonly
+                    disabled
                     rows="4"
                   ></textarea>
                 </div>
               </div>
 
               <!-- Modal Footer -->
-              <div class="modal-footer">
-              <button type="button" class="btn-reject" @click="handleReject(selectedApproval?.id)">
+              <div v-if="!isFinalStatus(selectedApproval?.status)" class="modal-footer">
+                <button
+                  type="button"
+                  class="btn-reject"
+                  @click="handleReject(selectedApproval?.id)"
+                >
                   <i class="ti ti-circle-x"></i> Reject
                 </button>
-              <button type="button" class="btn-approve" @click="handleApprove(selectedApproval?.id)">
+                <button
+                  type="button"
+                  class="btn-approve"
+                  @click="handleApprove(selectedApproval?.id)"
+                >
                   <i class="ti ti-circle-check"></i> Approve
                 </button>
               </div>
@@ -274,12 +292,50 @@ const filters = [
 // ============================================================
 // COMPUTED PROPERTIES
 // ============================================================
-const   filteredApprovals = computed(() => {
+function normalizeStatus(status = "") {
+  const normalized = String(status).trim().toLowerCase();
+  return normalized === "rejected" ? "declined" : normalized;
+}
+
+function isFinalStatus(status = "") {
+  return ["approved", "declined"].includes(normalizeStatus(status));
+}
+
+function getApprovalNotes(approval = {}) {
+  const candidates = [
+    approval?.notes,
+    approval?.note,
+    approval?.review_notes,
+    approval?.reviewer_notes,
+    approval?.rejection_notes,
+    approval?.declined_notes,
+    approval?.review?.notes,
+    approval?.approval?.notes,
+    approval?.metadata?.notes,
+  ];
+
+  const found = candidates.find((value) => {
+    if (typeof value === "string") {
+      return value.trim().length > 0;
+    }
+
+    return Boolean(value);
+  });
+
+  return typeof found === "string" ? found.trim() : found || "";
+}
+
+function hasApprovalNotes(approval = {}) {
+  return getApprovalNotes(approval).length > 0;
+}
+
+const filteredApprovals = computed(() => {
   if (selectedFilter.value === "all") {
     return approvals.value;
   }
+
   return approvals.value.filter(
-    (item) => item.status.toLowerCase() === selectedFilter.value,
+    (item) => normalizeStatus(item.status) === selectedFilter.value,
   );
 });
 
@@ -293,13 +349,13 @@ function filterApprovals(status) {
 
 function getStatusIcon(status) {
   const icons = {
-    Pending: "/icons/status/Pending.png",
-    Approved: "/icons/status/Approved.png",
-    Declined: "/icons/status/Declined.png",
-    Reviewed: "/icons/status/Review.png",
+    pending: "/icons/status/Pending.png",
+    approved: "/icons/status/Approved.png",
+    declined: "/icons/status/Declined.png",
+    reviewed: "/icons/status/Reviewed.png",
   };
 
-  return icons[status] || "/icons/status/Pending.png";
+  return icons[normalizeStatus(status)] || "/icons/status/Pending.png";
 }
 
 function openModal(approval) {
@@ -328,11 +384,7 @@ function handleKeydown(event) {
   }
 }
 
-  // TODO: Uncomment saat backend ready
-  // await axios.post(`/overtime/${id}/approve`, { notes: reviewerNotes.value })
-
-  // Update local state
-  async function handleApprove(id) {
+async function handleApprove(id) {
   if (!confirm("Apakah Anda yakin ingin menyetujui pengajuan lembur ini?")) {
     return;
   }
@@ -348,19 +400,11 @@ function handleKeydown(event) {
           Authorization: `Bearer ${token}`,
           Accept: "application/json",
         },
-      }
+      },
     );
 
-    const approval = approvals.value.find(a => a.id === id);
-    if (approval) {
-      approval.status = "Approved";
-    }
-
-    alert("Pengajuan berhasil disetujui");
-    closeModal();
     await fetchApprovals();
-
-
+    closeModal();
   } catch (error) {
     console.error(error.response?.data || error);
     alert("Gagal approve pengajuan");
@@ -378,41 +422,24 @@ async function handleReject(id) {
   try {
     await axios.post(
       `http://127.0.0.1:8000/api/approvals/${id}/reject`,
-      {},
+      { notes: reviewerNotes.value },
       {
         headers: {
           Authorization: `Bearer ${token}`,
           Accept: "application/json",
         },
-      }
+      },
     );
 
-    const approval = approvals.value.find(a => a.id === id);
-    if (approval) {
-      approval.status = "Rejected";
-    }
-
-    alert("Pengajuan berhasil ditolak");
-    closeModal();
     await fetchApprovals();
+    closeModal();
+  } catch (error) {
+    console.log("ERROR REJECT FULL:", error);
+    console.log("RESPONSE:", error.response);
+    console.log("DATA:", error.response?.data);
 
-
-  }catch (error) {
-  console.log("ERROR REJECT FULL:", error);
-  console.log("RESPONSE:", error.response);
-  console.log("DATA:", error.response?.data);
-
-  alert(error.response?.data?.message || "Gagal reject pengajuan");
+    alert(error.response?.data?.message || "Gagal reject pengajuan");
   }
-}
-
-// TODO: Uncomment saat backend ready
-// await axios.post(`/overtime/${id}/reject`, { notes: reviewerNotes.value })
-
-// Update local state
-const approval = approvals.value.find((a) => a.id === id);
-if (approval) {
-  approval.status = "Rejected";
 }
 
 const MONTHS = [
@@ -824,6 +851,17 @@ tbody tr:last-child td {
 .reviewer-notes:focus {
   outline: none;
   border-color: #3b82f6;
+}
+
+.reviewer-notes-readonly {
+  background: #f3f4f6;
+  color: #111;
+  cursor: not-allowed;
+}
+
+.reviewer-notes-readonly:disabled {
+  opacity: 1;
+  -webkit-text-fill-color: #111;
 }
 
 .modal-footer {

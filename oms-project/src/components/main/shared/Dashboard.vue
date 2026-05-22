@@ -111,7 +111,7 @@
                      <div class="field-group full">
                          <span class="field-label">Form Title</span> 
                          <span class="field-value">{{
-                          selectedOvertime.title 
+                          selectedOvertime.overtime_title 
                           }}</span> <!-- INI MAS JANGAN SAMPE LUPAAA-->
                       </div>
 

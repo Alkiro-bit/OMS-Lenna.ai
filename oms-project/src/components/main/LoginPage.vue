@@ -288,6 +288,8 @@ input[type="password"] {
   font-size: 17px;
   cursor: pointer;
   transition: 0.3s;
+  font-family: "Plus Jakarta Sans";
+  font-weight: 666;
 }
 .submit-btn:hover {
   background: #2f60eb;

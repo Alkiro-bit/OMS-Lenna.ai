@@ -177,12 +177,11 @@ const account = userData;
 
 const navItems = computed(() => {
   const role = window.localStorage.getItem("role");
-
-  const items = [
+  let items = [
     {
       name: "dashboard",
       label: "Dashboard",
-      path: "/dashboard",
+      path: role === "human_resource" ? "/dashboard-hr" : "/dashboard",
       icon: "/icons/material-symbols_dashboard-rounded.png",
     },
     {
@@ -194,18 +193,46 @@ const navItems = computed(() => {
   ];
 
   if (role === "product_manager") {
-    items.unshift({
+    // items = items.unshift({
+    //   name: "review-approvals",
+    //   label: "Review",
+    //   path: "/review-approvals",
+    //   icon: "/icons/mdi_checkbox-outline.png",
+    // });
+
+    items = [{
       name: "review-approvals",
       label: "Review",
       path: "/review-approvals",
       icon: "/icons/mdi_checkbox-outline.png",
-    });
-  }
+    }, ...items];
+  } 
+    if (role === "human_resource") {
+    // items = items.filter((item) => item.name !== "form").push({
+    //   name: "submission",
+    //   label: "Submission",
+    //   path: "/Submission",
+    //   icon: "/icons/mdi_checkbox-outline.png",
+    // });
+
+    items = [...items.filter((item) => item.name !== "form"),{
+      name: "submission",
+      label: "Submission",  
+      path: "/Submission",
+      icon: "/icons/mdi_checkbox-outline.png",
+    }];
+  } 
 
   return items;
 });
 
 const currentRoute = computed(() => route.path);
+
+const array = [1, 2, 3];
+const array2 = [...array, 4, 5]
+array.push(4,5)
+console.log("array", array)
+console.log("array2", array2)
 
 function getInitials(name = "") {
   return name

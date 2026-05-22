@@ -5,6 +5,7 @@ import Form from "../components/main/shared/OvertimeForm.vue";
 import ReviewApprovals from "../components/main/pm/ReviewApprovals.vue";
 import DashboardHr from "../components/main/hr/DashboardHr.vue";
 import Profile from "../views/Profile.vue";
+import Submission from "../components/main/hr/Submission.vue";
 
 const routes = [
   { path: "/", name: "Login", component: LoginPage },
@@ -21,6 +22,7 @@ const routes = [
     name: "Profile",
     component: Profile,
   },
+  { path: "/Submission", name: "Submission", component: Submission}
 ];
 
 const router = createRouter({

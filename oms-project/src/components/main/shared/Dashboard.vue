@@ -21,6 +21,7 @@
               <tr>
                 <th v-if="userRole === 'product_manager'">Name</th>
                 <th>Form Title</th>
+                <th v-if = "userRole === 'employee'">PIC</th>
                 <th>Overtime date</th>
                 <th>Submit date</th>
                 <th>Duration</th>
@@ -40,6 +41,9 @@
                   {{ row.user_name || "Karyawan" }}
                 </td>
                 <td><span v-html="row.overtime_title"></span></td>
+                <td v-if="userRole === 'employee'">
+                  {{ row.pm_name || "Karyawan" }}
+                </td>
                 <td>{{ formatDate(row.date) }}</td>
                 <td>{{ formatDateTime(row.created_at) }}</td>
                 <td>{{ row.duration }} Hour</td>
@@ -111,7 +115,7 @@
                      <div class="field-group full">
                          <span class="field-label">Form Title</span> 
                          <span class="field-value">{{
-                          selectedOvertime.title 
+                          selectedOvertime.overtime_title 
                           }}</span> <!-- INI MAS JANGAN SAMPE LUPAAA-->
                       </div>
 
@@ -581,6 +585,7 @@ thead th:nth-child(2) { width: 20%; }
 thead th:nth-child(3) { width: 15%; }
 thead th:nth-child(4) { width: 15%; }
 thead th:nth-child(5) { width: 15%; }
+thead th:nth-child(6) { width: 15%; }
 
 tbody td {
   font-size: 13px;

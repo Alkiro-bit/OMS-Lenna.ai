@@ -274,15 +274,16 @@ const saveProfile = async () => {
 }
 
 .save-btn {
-  background: linear-gradient(90deg, #312e81, #3b82f6);
+  background: linear-gradient(90deg, #4ac82b, #2fc824);
   color: white;
   border: none;
   padding: 14px 28px;
   border-radius: 14px;
   font-size: 15px;
-  font-weight: bold;
   cursor: pointer;
+  font-weight: 555;
   transition: 0.3s;
+  font-family: "Plus Jakarta Sans";
 }
 
 .save-btn:hover {

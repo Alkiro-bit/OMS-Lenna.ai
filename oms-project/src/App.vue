@@ -66,7 +66,7 @@
     <div class="main-content">
       <!-- TOPBAR-->
       <header class="topbar" v-if="currentRoute !== '/'">
-        <div class="topbar-left">
+        <div class="topbar-left" @click="goToProfile">
           <div class="avatar avatar-md">
             <img
               v-if="profileImage"

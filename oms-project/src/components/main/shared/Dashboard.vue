@@ -46,7 +46,7 @@
                 </td>
                 <td>{{ formatDate(row.date) }}</td>
                 <td>{{ formatDateTime(row.created_at) }}</td>
-                <td>{{ row.duration }} Hour</td>
+                <td>{{ row.duration }} Hours</td>
                 <td>
                   <img :src="getStatusIconPath(row.status)" :alt="row.status" class="status-icon-img" />
                 </td>

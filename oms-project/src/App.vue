@@ -500,6 +500,7 @@ body,
   font-size: 14px;
   color: #111;
   font-family: "Plus Jakarta Sans", sans-serif;
+  cursor: pointer;
 }
 
 .greeting strong {

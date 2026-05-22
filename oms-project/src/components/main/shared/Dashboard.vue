@@ -46,7 +46,7 @@
                 </td>
                 <td>{{ formatDate(row.date) }}</td>
                 <td>{{ formatDateTime(row.created_at) }}</td>
-                <td>{{ row.duration }} Hour</td>
+                <td>{{ row.duration }} Hours</td>
                 <td>
                   <img :src="getStatusIconPath(row.status)" :alt="row.status" class="status-icon-img" />
                 </td>
@@ -558,6 +558,7 @@ function getStatusIconPath(status) {
   padding: 20px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
   min-height: 600px;
+  margin-bottom: 50px;
 }
 
 .overtime-table-wrap {

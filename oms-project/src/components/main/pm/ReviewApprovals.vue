@@ -22,46 +22,62 @@
     </div>
 
     <!-- TABLE -->
-    <div class="table-container">
-      <table>
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Form Title</th>
-            <th>DATE</th>
-            <th>Duration</th>
-            <th>Status</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr
-            v-for="approval in filteredApprovals"
-            :key="approval.id"
-            class="table-row"
-          >
-            <td>{{ approval.employeeName }}</td>
-            <td>{{ approval.overtime_title }}</td> <!-- ================ TITLE TABLE (ini uda bener belom si?) ================== -->
-            <td>{{ formatDate(approval.overtimeDate) }}</td>
-            <td>{{ approval.duration }}</td>
-            <td>
-              <img
-                :src="getStatusIcon(approval.status)"
-                :alt="approval.status"
-                class="status-icon-img"
-              />
-            </td>
-            <td>
-              <button class="detail-btn" @click="openModal(approval)">
-                Detail
-              </button>
-            </td>
-          </tr>
-          <tr v-if="filteredApprovals.length === 0">
-            <td colspan="6" class="text-center">Tidak ada pengajuan lembur.</td>
-          </tr>
-        </tbody>
-      </table>
+    <div class="anjay"> 
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Form Title</th>
+              <th>DATE</th>
+              <th>Duration</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr
+              v-for="approval in paginatedApprovals"
+              :key="approval.id"
+              class="table-row"
+            >
+              <td>{{ approval.employeeName }}</td>
+              <td>{{ approval.overtime_title }}</td> <!-- ================ TITLE TABLE (ini uda bener belom si?) ================== -->
+              <td>{{ formatDate(approval.overtimeDate) }}</td>
+              <td>{{ approval.duration }}</td>
+              <td>
+                <img
+                  :src="getStatusIcon(approval.status)"
+                  :alt="approval.status"
+                  class="status-icon-img"
+                />
+              </td>
+              <td>
+                <button class="detail-btn" @click="openModal(approval)">
+                  Detail
+                </button>
+              </td>
+            </tr>
+            <tr v-if="filteredApprovals.length === 0">
+              <td colspan="6" class="text-center">Tidak ada pengajuan lembur.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div> 
+            <div class="overtime-table-footer">
+                  <div class="footer-pagination fill">            
+                    <Pagination
+                      :currentPage="currentPage"
+                      :perPage="perPage"
+                      :totalRows="filteredApprovals.length"
+                      @page-changed="onPageChange"
+                  />
+                  </div>
+            </div>
+          </div>
+      </div>
     </div>
 
     <!-- MODAL DETAIL -->
@@ -243,6 +259,7 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, onBeforeMount } from "vue";
 import axios from "axios";
+import Pagination from "../assets/Pagination.vue"
 
 // ============================================================
 // STATE MANAGEMENT
@@ -466,6 +483,20 @@ function formatDate(date) {
   return `${day}-${month}-${year}`;
 }
 
+const currentPage = ref(1)
+const perPage = ref(10)
+
+const paginatedApprovals = computed(() => {
+  const start = (currentPage.value - 1) * perPage.value
+  const end = start + perPage.value
+
+  return filteredApprovals.value.slice(start, end)
+})
+
+function onPageChange(page) {
+  currentPage.value = page
+}
+
 // ============================================================
 // LIFECYCLE HOOKS
 // ============================================================
@@ -509,6 +540,14 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   gap: 20px;
+}
+
+.anjay {
+  display: flex;
+  flex-direction: column;
+  gap: 0px;
+  margin : 0px 20px 20px 20px ;
+  flex: 1;
 }
 
 /* ============================================================
@@ -585,8 +624,11 @@ onUnmounted(() => {
   border-radius: 12px;
   padding: 20px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-  overflow-x: auto;
-  margin: 0px 26px;
+  min-height: 700px;
+  margin-bottom: 50px;
+
+  display: flex;
+  flex-direction: column;
 }
 
 table {
@@ -630,7 +672,6 @@ tbody td {
   color: #111;
   font-family: "Inter", sans-serif;
   padding: 14px;
-  border-bottom: 1px solid #e5e7eb;
 }
 
 tbody tr:hover {
@@ -639,6 +680,22 @@ tbody tr:hover {
 
 tbody tr:last-child td {
   border-bottom: none;
+}
+
+.footer-pagination.fill{
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.overtime-table-footer {
+  margin-top: auto;
+  padding-top: 20px;
+  border-top: 1px solid #e5e7eb;
+
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
 }
 
 .status-icon-img {

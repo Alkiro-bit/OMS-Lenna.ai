@@ -24,35 +24,32 @@
       <!-- FORM BODY -->
       <div class="form-body">
         <form @submit.prevent="handleSubmit">
-          
           <!-- Title -->
-          
+
           <!-- Nama & Tim (read-only) -->
           <div class="form-group full">
             <label class="form-label">Name & Team</label>
             <input
-            type="text"
-            class="form-input"
-            :value="`${account.name} - ${account.position}`"
-            readonly
+              type="text"
+              class="form-input"
+              :value="`${account.name} - ${account.position}`"
+              readonly
             />
           </div>
-          
+
           <div class="form-group full">
-                  <label class="form-label required">Form Title</label>
-                  <input
-                    type="text"
-                    class="form-input-title"
-                    v-model="formData.overtime_title"
-                    placeholder="Overtime for..."
-                    required 
-                  />
-                  <label class="form-title">Title</label>   
+            <label class="form-label required">Form Title</label>
+            <input
+              type="text"
+              class="form-input-title"
+              v-model="formData.overtime_title"
+              placeholder="Overtime for..."
+              required
+            />
           </div>
 
           <!-- Title, Tanggal, & Durasi -->
           <div class="form-row">
-
             <div class="form-group">
               <label class="form-label required">Date</label>
               <input
@@ -98,14 +95,14 @@
                 @change="validateTime"
                 required
               />
-             </div>
+            </div>
           </div>
 
           <!-- PIC / Project Manager -->
           <div class="form-group full">
             <label class="form-label required">PIC</label>
             <select class="form-select" v-model="formData.pic" required>
-              <option value="" disabled>Choose PIC  </option>
+              <option value="" disabled>Choose PIC</option>
               <option v-for="pm in pmList" :key="pm.id" :value="pm.id">
                 {{ pm.name }}
               </option>
@@ -156,7 +153,7 @@
             </div>
 
             <div class="addTask">
-            <button
+              <button
                 type="button"
                 class="btn-add-task"
                 @click="addTask"
@@ -164,9 +161,8 @@
               >
                 <i class="fa-solid fa-plus"></i>
               </button>
+            </div>
           </div>
-          </div>
-
 
           <!-- FORM FOOTER BUTTONS -->
           <div class="form-footer">
@@ -199,7 +195,8 @@
             </div>
 
             <p class="delete-text">
-              Are you sure you want to delete this task? This action cannot be undone.
+              Are you sure you want to delete this task? This action cannot be
+              undone.
             </p>
 
             <div class="delete-actions">
@@ -220,22 +217,47 @@
 
 <script setup>
 import { ref, computed, onMounted } from "vue";
-import { useRouter, useRoute, RouterLink } from "vue-router";
+import { useRouter, useRoute } from "vue-router";
 import { pmList } from "../../../store/overtimeStore";
 import axios from "axios";
 
-console.log(pmList.value);
+// ── ROUTER ─────────────────────────────────────────────────────────────
 const router = useRouter();
 const route = useRoute();
 
-// ── SIDEBAR STATE ──────────────────────────────────────────────────────
-const sidebarExpanded = ref(false);
+const overtimeId = route.params.id;
+const isEditMode = computed(() => !!overtimeId);
 
 // ── USER DATA ──────────────────────────────────────────────────────────
 const account = ref({
   name: "",
   position: "",
 });
+
+// ── FORM DATA ──────────────────────────────────────────────────────────
+const formData = ref({
+  overtime_title: "",
+  tanggal: "",
+  jamMulai: "",
+  jamSelesai: "",
+  pic: "",
+  tasks: [
+    {
+      id: Date.now(),
+      name: "",
+      description: "",
+    },
+  ],
+});
+
+// ── STATES ─────────────────────────────────────────────────────────────
+const timeError = ref("");
+const showSuccessAlert = ref(false);
+
+const showDeleteModal = ref(false);
+const taskToDelete = ref(null);
+
+// ── FETCH USER ─────────────────────────────────────────────────────────
 async function fetchUserData() {
   const token = localStorage.getItem("token");
 
@@ -249,49 +271,59 @@ async function fetchUserData() {
       },
     });
 
-    console.log("DATA USER:", response.data);
-
     account.value = {
       name: response.data.data.name || "Unknown User",
       position: response.data.data.position || "No Position",
     };
   } catch (error) {
-    console.error("Gagal ambil data user:", error);
+    console.error("Gagal ambil user:", error);
   }
 }
 
+// ── FETCH DETAIL (EDIT MODE) ──────────────────────────────────────────
+async function fetchOvertimeDetail() {
+  if (!overtimeId) return;
+
+  const token = localStorage.getItem("token");
+
+  try {
+    const response = await axios.get(
+      `http://127.0.0.1:8000/api/overtimes/${overtimeId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    const overtime = response.data.data;
+
+    formData.value = {
+      overtime_title: overtime.overtime_title || "",
+      tanggal: overtime.date || "",
+      jamMulai: overtime.start_time || "",
+      jamSelesai: overtime.end_time || "",
+      pic: overtime.product_manager_id || "",
+
+      tasks:
+        overtime.tasks?.map((task) => ({
+          id: task.id,
+          name: task.task_title,
+          description: task.task_description,
+        })) || [],
+    };
+  } catch (error) {
+    console.error("Gagal ambil detail overtime:", error);
+  }
+}
+
+// ── LIFECYCLE ──────────────────────────────────────────────────────────
 onMounted(() => {
   fetchUserData();
+  fetchOvertimeDetail();
 });
-
-// ── NAVIGATION ─────────────────────────────────────────────────────────
-const navItems = ref([
-  {
-    name: "dashboard",
-    label: "Dashboard",
-    path: "/dashboard",
-    icon: "ti ti-layout-dashboard",
-  },
-  { name: "form", label: "Form", path: "/form", icon: "ti ti-file-text" },
-]);
-
-const currentRoute = computed(() => route.path);
-
-// ── FORM DATA ──────────────────────────────────────────────────────────
-const formData = ref({
-  overtime_title: "",
-  tanggal: "",
-  jamMulai: "",
-  jamSelesai: "",
-  pic: "",
-  tasks: [{ id: Date.now(), name: "", description: "" }],
-});
-
-const timeError = ref("");
-const showSuccessAlert = ref(false);
 
 // ── TASK MANAGEMENT ────────────────────────────────────────────────────
-
 function addTask() {
   formData.value.tasks.push({
     id: Date.now(),
@@ -300,8 +332,6 @@ function addTask() {
   });
 }
 
-const showDeleteModal = ref(false);
-const taskToDelete = ref(null);
 function removeTask(index) {
   if (formData.value.tasks.length === 1) {
     alert("Minimal harus ada 1 task.");
@@ -325,24 +355,25 @@ function closeDeleteModal() {
   taskToDelete.value = null;
 }
 
-// ── TIME VALIDATION ────────────────────────────────────────────────────
-
-// Helper untuk menghitung menit absolut (menganggap jam < 12 ada di hari berikutnya)
+// ── TIME HELPERS ───────────────────────────────────────────────────────
 function toMinutes(h, m) {
   return Number(h) * 60 + Number(m);
 }
 
-// Hitung durasi otomatis
+// ── CALCULATED DURATION ────────────────────────────────────────────────
 const calculatedDuration = computed(() => {
   const { jamMulai, jamSelesai } = formData.value;
+
   if (!jamMulai || !jamSelesai) return "";
 
   const [startH, startM] = jamMulai.split(":").map(Number);
   const [endH, endM] = jamSelesai.split(":").map(Number);
 
   const startAbs = toMinutes(startH, startM);
+
   let endAbs = toMinutes(endH, endM);
 
+  // lewat tengah malam
   if (endAbs <= startAbs) {
     endAbs += 24 * 60;
   }
@@ -355,104 +386,111 @@ const calculatedDuration = computed(() => {
   return mins > 0 ? `${hours} jam ${mins} menit` : `${hours} jam`;
 });
 
-// async function cekTanggalMerah(tanggal) {
-//   try {
-//     const response = await fetch(
-//       `https://libur.deno.dev/api?date=${tanggal}`
-//     );
-
-//     const data = await response.json();
-
-//     console.log("Holiday API:", data);
-
-//     // true kalau array berisi data
-//     return Array.isArray(data) && data.length > 0;
-//   } catch (error) {
-//     console.error("Error cek tanggal merah:", error);
-//     return false;
-//   }
-// }
-
-// Validasi jam minimal 19:00 & durasi minimal 4 jam
+// ── VALIDATE TIME ──────────────────────────────────────────────────────
 async function validateTime() {
   timeError.value = "";
 
   const { jamMulai, jamSelesai, tanggal } = formData.value;
 
-  if (!jamMulai || !jamSelesai || !tanggal) return false;
+  if (!jamMulai || !jamSelesai || !tanggal) {
+    return false;
+  }
 
   const [startHour, startMin] = jamMulai.split(":").map(Number);
   const [endHour, endMin] = jamSelesai.split(":").map(Number);
 
   const startAbs = toMinutes(startHour, startMin);
+
   let endAbs = toMinutes(endHour, endMin);
 
-  // kalau lewat tengah malam
+  // lewat tengah malam
   if (endAbs <= startAbs) {
     endAbs += 24 * 60;
   }
 
   const durationMinutes = endAbs - startAbs;
 
-  // ambil hari
+  // cek weekend
   const [year, month, date] = tanggal.split("-").map(Number);
+
   const day = new Date(year, month - 1, date).getDay();
 
   const isWeekend = day === 0 || day === 6;
 
-  console.log({
-    tanggal,
-    day,
-    isWeekend,
-    startAbs,
-    endAbs,
-    durationMinutes
-  });
-
-  // weekday wajib mulai jam 19:00
+  // weekday harus mulai >= 19:00
   if (!isWeekend && startAbs < 19 * 60) {
     timeError.value =
       "Pada hari kerja lembur hanya boleh dimulai dari jam 19:00";
+
     return false;
   }
 
-  // semua hari minimal 4 jam
+  // minimal 4 jam
   if (durationMinutes < 240) {
     timeError.value = "Durasi lembur minimal 4 jam";
+
     return false;
   }
 
   return true;
 }
 
+// ── FORM VALIDATION ────────────────────────────────────────────────────
 const isFormValid = computed(() => {
   const data = formData.value;
 
-  if ( !data.overtime_title || !data.tanggal || !data.jamMulai || !data.jamSelesai || !data.pic) {
+  if (
+    !data.overtime_title ||
+    !data.tanggal ||
+    !data.jamMulai ||
+    !data.jamSelesai ||
+    !data.pic
+  ) {
     return false;
   }
 
+  // task kosong
   const hasEmptyTasks = data.tasks.some(
-    (t) => !t.name.trim() || !t.description.trim()
+    (task) => !task.name.trim() || !task.description.trim(),
   );
 
   if (hasEmptyTasks) return false;
 
   const [startHour, startMin] = data.jamMulai.split(":").map(Number);
+
   const [endHour, endMin] = data.jamSelesai.split(":").map(Number);
 
   const startAbs = toMinutes(startHour, startMin);
+
   let endAbs = toMinutes(endHour, endMin);
 
   if (endAbs <= startAbs) {
     endAbs += 24 * 60;
   }
 
-  return endAbs - startAbs >= 240;
+  const durationMinutes = endAbs - startAbs;
+
+  // cek weekend
+  const [year, month, date] = data.tanggal.split("-").map(Number);
+
+  const day = new Date(year, month - 1, date).getDay();
+
+  const isWeekend = day === 0 || day === 6;
+
+  // weekday harus mulai jam 19:00
+  if (!isWeekend && startAbs < 19 * 60) {
+    return false;
+  }
+
+  // minimal 4 jam
+  if (durationMinutes < 240) {
+    return false;
+  }
+
+  return true;
 });
 
-// ── FORM SUBMIT ────────────────────────────────────────────────────────
-
+// ── SUBMIT FORM ────────────────────────────────────────────────────────
 async function handleSubmit() {
   const isValid = await validateTime();
 
@@ -474,6 +512,7 @@ async function handleSubmit() {
     start_time: formData.value.jamMulai,
     end_time: formData.value.jamSelesai,
     product_manager_id: Number(formData.value.pic),
+
     tasks: formData.value.tasks.map((task) => ({
       name: task.name,
       description: task.description,
@@ -481,20 +520,36 @@ async function handleSubmit() {
   };
 
   try {
-    const response = await axios.post(
-      "http://127.0.0.1:8000/api/form",
-      payload,
-      {
+    let response;
+
+    // EDIT MODE
+    if (isEditMode.value) {
+      response = await axios.put(
+        `http://127.0.0.1:8000/api/overtimes/${overtimeId}/resubmit`,
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+          },
+        },
+      );
+    }
+
+    // CREATE MODE
+    else {
+      response = await axios.post("http://127.0.0.1:8000/api/form", payload, {
         headers: {
           Authorization: `Bearer ${token}`,
           Accept: "application/json",
         },
-      },
-    );
+      });
+    }
 
     console.log("Submit success:", response.data);
 
     showSuccessAlert.value = true;
+
     resetForm();
 
     setTimeout(() => {
@@ -503,10 +558,12 @@ async function handleSubmit() {
     }, 1500);
   } catch (error) {
     console.error(error.response?.data || error);
+
     alert(error.response?.data?.message || "Submit gagal");
   }
 }
 
+// ── RESET FORM ─────────────────────────────────────────────────────────
 function resetForm() {
   formData.value = {
     overtime_title: "",
@@ -514,19 +571,27 @@ function resetForm() {
     jamMulai: "",
     jamSelesai: "",
     pic: "",
-    tasks: [{ id: Date.now(), name: "", description: "" }],
+
+    tasks: [
+      {
+        id: Date.now(),
+        name: "",
+        description: "",
+      },
+    ],
   };
+
   timeError.value = "";
 }
 
 // ── HELPERS ────────────────────────────────────────────────────────────
-
 function getInitials(name) {
   if (!name) return "";
+
   return name
     .trim()
     .split(" ")
-    .map((w) => w[0])
+    .map((word) => word[0])
     .join("")
     .substring(0, 2)
     .toUpperCase();
@@ -666,8 +731,8 @@ function handleLogout() {
   color: #e57373;
 }
 
-.form-title-input { 
-  font-size: 11px; 
+.form-title-input {
+  font-size: 11px;
   color: #0d0d0d;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -680,7 +745,7 @@ function handleLogout() {
   border: 1.5px solid #e0e0e0;
   border-radius: 8px;
   padding: 0 12px;
-  font-size: 13px;  
+  font-size: 13px;
   color: #595757;
   font-family: "Plus Jakarta Sans", sans-serif;
   background: #fff;
@@ -835,7 +900,6 @@ function handleLogout() {
   justify-content: flex-end;
   gap: 12px;
 }
-
 
 .btn-submit {
   padding: 0 32px;

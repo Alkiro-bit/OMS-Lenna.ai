@@ -1,7 +1,6 @@
 <template>
   <div class="dashboard-page">
-
-      <section class="stats-section">
+    <section class="stats-section">
       <div class="stats-grid">
         <div v-for="card in statsCards" :key="card.key" class="stat-card">
           <p class="stat-number">{{ card.value }}</p>
@@ -14,14 +13,14 @@
     <div class="anjay">
       <div class="overtime-bar">My Overtime</div>
 
-	      <div class="overtime-table-card">
-	        <div class="overtime-table-wrap">
-	          <table>
+      <div class="overtime-table-card">
+        <div class="overtime-table-wrap">
+          <table>
             <thead>
               <tr>
                 <th v-if="userRole === 'product_manager'">Name</th>
                 <th>Form Title</th>
-                <th v-if = "userRole === 'employee'">PIC</th>
+                <th v-if="userRole === 'employee'">PIC</th>
                 <th>Overtime date</th>
                 <th>Submit date</th>
                 <th>Duration</th>
@@ -48,31 +47,33 @@
                 <td>{{ formatDateTime(row.created_at) }}</td>
                 <td>{{ row.duration }} Hours</td>
                 <td>
-                  <img :src="getStatusIconPath(row.status)" :alt="row.status" class="status-icon-img" />
+                  <img
+                    :src="getStatusIconPath(row.status)"
+                    :alt="row.status"
+                    class="status-icon-img"
+                  />
                 </td>
               </tr>
-              
+
               <tr v-if="dashboardData.overtime.length === 0">
                 <td colspan="6" class="text-center">No overtime requests.</td>
               </tr>
+            </tbody>
+          </table>
+        </div>
 
-	            </tbody>
-	          </table>
-	        </div>
-
-	        <div class="overtime-table-footer">
-	          <div class="footer-pagination">
-	            <Pagination
-	              :currentPage="currentPage"
-	              :perPage="perPage"
-	              :totalRows="dashboardData.overtime.length"
-	              @page-changed="onPageChange"
-	            />
-	          </div>
-	        </div>
-
-	      </div>
-	    </div>
+        <div class="overtime-table-footer">
+          <div class="footer-pagination">
+            <Pagination
+              :currentPage="currentPage"
+              :perPage="perPage"
+              :totalRows="dashboardData.overtime.length"
+              @page-changed="onPageChange"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
     <!-- MODAL DETAIL -->
     <Teleport to="body">
       <Transition name="overlay-fade">
@@ -91,12 +92,15 @@
             >
               <div class="detail-header">
                 <p class="detail-title">OVERTIME SUBMISSION DETAILS</p>
-                <img :src="getStatusIconPath(selectedOvertime.status)" :alt="selectedOvertime.status" class="modal-status-img" />
+                <img
+                  :src="getStatusIconPath(selectedOvertime.status)"
+                  :alt="selectedOvertime.status"
+                  class="modal-status-img"
+                />
               </div>
 
               <div class="detail-body">
                 <div class="detail-section">
-
                   <p class="section-label">
                     <i class="fa-solid fa-user"></i> Submitter Information
                   </p>
@@ -129,12 +133,13 @@
                     <i class="fa-solid fa-clock"></i> overtime Information
                   </p>
                   <div class="field-grid">
-                     <div class="field-group full">
-                         <span class="field-label">Form Title</span> 
-                         <span class="field-value">{{
-                          selectedOvertime.overtime_title 
-                          }}</span> <!-- INI MAS JANGAN SAMPE LUPAAA-->
-                      </div>
+                    <div class="field-group full">
+                      <span class="field-label">Form Title</span>
+                      <span class="field-value">{{
+                        selectedOvertime.overtime_title
+                      }}</span>
+                      <!-- INI MAS JANGAN SAMPE LUPAAA-->
+                    </div>
 
                     <div class="field-group">
                       <span class="field-label">Date</span>
@@ -404,17 +409,7 @@ function normalizeStatus(status = "") {
 }
 
 function getReviewerNotes(entry = {}) {
-  const candidates = [
-    entry?.notes,
-    entry?.note,
-    entry?.review_notes,
-    entry?.reviewer_notes,
-    entry?.rejection_notes,
-    entry?.declined_notes,
-    entry?.review?.notes,
-    entry?.approval?.notes,
-    entry?.metadata?.notes,
-  ];
+  const candidates = [entry?.human_resource_notes];
 
   const found = candidates.find((value) => {
     if (typeof value === "string") {
@@ -428,7 +423,10 @@ function getReviewerNotes(entry = {}) {
 }
 
 function shouldShowReviewerNotes(entry = {}) {
-  return normalizeStatus(entry?.status) === "declined" || getReviewerNotes(entry).length > 0;
+  return (
+    normalizeStatus(entry?.status) === "declined" ||
+    getReviewerNotes(entry).length > 0
+  );
 }
 
 function getStatusIcon(status) {
@@ -458,41 +456,39 @@ function formatDateTime(date) {
 }
 
 function getStatusIconPath(status) {
-  if (!status) return '';
+  if (!status) return "";
   const statusMap = {
-    'pending': 'Pending',
-    'approved': 'Approved',
-    'declined': 'Declined',
-    'reviewed': 'Reviewed',
-    'Pending': 'Pending',
-    'Approved': 'Approved',
-    'Declined': 'Declined',
-    'Reviewed': 'Reviewed'
+    pending: "Pending",
+    approved: "Approved",
+    declined: "Declined",
+    reviewed: "Reviewed",
+    Pending: "Pending",
+    Approved: "Approved",
+    Declined: "Declined",
+    Reviewed: "Reviewed",
   };
   const normalizedStatus = statusMap[status] || status;
   return `/icons/status/${normalizedStatus}.png`;
-};
+}
 
 // pagination
-const currentPage = ref(1)
-const perPage = ref(10)
+const currentPage = ref(1);
+const perPage = ref(10);
 
 const paginatedData = computed(() => {
-  const start = (currentPage.value - 1) * perPage.value
-  const end = start + perPage.value
+  const start = (currentPage.value - 1) * perPage.value;
+  const end = start + perPage.value;
 
-  return dashboardData.overtime.slice(start, end)
-})
+  return dashboardData.overtime.slice(start, end);
+});
 
 const onPageChange = (page) => {
-  currentPage.value = page
-}
+  currentPage.value = page;
+};
 
 const colSpanValue = computed(() => {
   return userRole.value === "product_manager" ? 6 : 5;
 });
-
-
 </script>
 
 <style scoped>
@@ -510,7 +506,7 @@ const colSpanValue = computed(() => {
   display: flex;
   flex-direction: column;
   gap: 20px;
-  margin : 20px;
+  margin: 20px;
   flex: 1;
 }
 
@@ -619,30 +615,42 @@ thead th {
   font-weight: 666;
   color: #000000;
   text-transform: uppercase;
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: "Plus Jakarta Sans", sans-serif;
   padding: 14px;
   text-align: left;
-  border-bottom: 2px solid #E5E7EB;
+  border-bottom: 2px solid #e5e7eb;
 }
 
-thead th:nth-child(1) { width: 20%; }
-thead th:nth-child(2) { width: 20%; }
-thead th:nth-child(3) { width: 15%; }
-thead th:nth-child(4) { width: 15%; }
-thead th:nth-child(5) { width: 15%; }
-thead th:nth-child(6) { width: 15%; }
+thead th:nth-child(1) {
+  width: 20%;
+}
+thead th:nth-child(2) {
+  width: 20%;
+}
+thead th:nth-child(3) {
+  width: 15%;
+}
+thead th:nth-child(4) {
+  width: 15%;
+}
+thead th:nth-child(5) {
+  width: 15%;
+}
+thead th:nth-child(6) {
+  width: 15%;
+}
 
 tbody td {
   font-size: 13px;
   color: #111;
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
   padding: 0 14px;
-  border-bottom: 1px solid #E5E7EB;
+  border-bottom: 1px solid #e5e7eb;
   vertical-align: middle;
 }
 
-tbody tr { 
-  height: 60px; 
+tbody tr {
+  height: 60px;
 }
 
 .table-row-clickable {
@@ -650,7 +658,7 @@ tbody tr {
 }
 
 .table-row-clickable:hover {
-  background: #F9FAFB;
+  background: #f9fafb;
 }
 
 .table-row-clickable:focus {
@@ -676,7 +684,7 @@ tbody tr:last-child td {
 
 .text-center {
   text-align: center;
-  color: #6B7280;
+  color: #6b7280;
   font-style: italic;
 }
 
@@ -686,7 +694,7 @@ tbody tr:last-child td {
   justify-content: flex-end;
   align-items: center;
   padding-top: 20px;
-  border-top: 1px solid #E5E7EB;
+  border-top: 1px solid #e5e7eb;
   flex-shrink: 0;
 }
 
@@ -695,8 +703,6 @@ tbody tr:last-child td {
   justify-content: flex-end;
   align-items: center;
 }
-
-
 
 /* MODAL STYLE (sama seperti sebelumnya) */
 .detail-overlay {

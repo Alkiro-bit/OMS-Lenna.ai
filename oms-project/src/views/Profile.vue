@@ -53,6 +53,10 @@
 
         <div class="button-group">
           <button class="save-btn" @click="saveProfile">Save Changes</button>
+
+          <!-- <button class="delete-btn" @click="deleteProfilePhoto">
+            Remove Photo
+          </button> -->
         </div>
       </div>
     </div>
@@ -154,6 +158,56 @@ const saveProfile = async () => {
       text: "Something went wrong while updating profile",
       icon: "error",
       confirmButtonColor: "#ef4444",
+    });
+  }
+};
+
+const deleteProfilePhoto = async () => {
+  try {
+    const token = localStorage.getItem("token");
+
+    const result = await Swal.fire({
+      title: "Remove profile photo?",
+      text: "Your profile picture will be reset to default.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#ef4444",
+      cancelButtonColor: "#6b7280",
+      confirmButtonText: "Yes, remove it",
+    });
+
+    if (!result.isConfirmed) return;
+
+    await axios.delete("http://127.0.0.1:8000/api/profile/delete-photo", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    previewImage.value = null;
+    uploadedImage.value = null;
+    profile.value.profile_picture = null;
+
+    await refreshUserData();
+    await fetchProfile();
+
+    window.dispatchEvent(new Event("profile-updated"));
+
+    Swal.fire({
+      title: "Deleted!",
+      text: "Profile photo removed successfully",
+      icon: "success",
+      timer: 1800,
+      showConfirmButton: false,
+    });
+  } catch (error) {
+    console.log(error.response);
+    console.log(error.response.data);
+
+    Swal.fire({
+      title: "Failed",
+      text: "Failed to remove profile photo",
+      icon: "error",
     });
   }
 };
@@ -312,5 +366,23 @@ const saveProfile = async () => {
 .swal2-popup.rounded-popup {
   border-radius: 24px;
   font-family: "Plus Jakarta Sans", sans-serif;
+}
+
+.delete-btn {
+  background: #ef4444;
+  color: white;
+  border: none;
+  padding: 14px 28px;
+  border-radius: 14px;
+  font-size: 15px;
+  cursor: pointer;
+  font-weight: 555;
+  transition: 0.3s;
+  font-family: "Plus Jakarta Sans";
+  margin-left: 12px;
+}
+
+.delete-btn:hover {
+  background: #dc2626;
 }
 </style>

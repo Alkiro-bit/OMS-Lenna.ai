@@ -30,7 +30,7 @@
             </thead>
             <tbody>
               <tr
-                v-for="(row, i) in dashboardData.overtime"
+                v-for="(row, i) in paginatedData"
                 :key="i"
                 class="table-row-clickable"
                 @click="openDetailModal(row)"
@@ -53,6 +53,19 @@
               </tr>
             </tbody>
           </table>
+        </div>
+
+        <div> 
+          <div class="overtime-table-footer">
+                <div class="footer-pagination">            
+                  <Pagination
+                    :currentPage="currentPage"
+                    :perPage="perPage"
+                    :totalRows="dashboardData.overtime.length"
+                    @page-changed="onPageChange"
+                />
+                </div>
+          </div>
         </div>
       </div>
     </div>
@@ -228,6 +241,7 @@ import {
 } from "vue";
 import { useRoute } from "vue-router";
 import axios from "axios";
+import Pagination from "../assets/Pagination.vue";
 
 const userRole = ref(window.localStorage.getItem("role"));
 
@@ -450,6 +464,25 @@ function getStatusIconPath(status) {
   return `/icons/status/${normalizedStatus}.png`;
 };
 
+// pagination
+const currentPage = ref(1)
+const perPage = ref(10)
+
+const paginatedData = computed(() => {
+  const start = (currentPage.value - 1) * perPage.value
+  const end = start + perPage.value
+
+  return dashboardData.overtime.slice(start, end)
+})
+
+const onPageChange = (page) => {
+  currentPage.value = page
+}
+
+const colSpanValue = computed(() => {
+  return userRole.value === "product_manager" ? 6 : 5;
+});
+
 </script>
 
 <style scoped>
@@ -459,8 +492,9 @@ function getStatusIconPath(status) {
 .dashboard-page {
   display: flex;
   flex-direction: column;
-  height: 100%;
-  gap: 4px;
+  height: 100vh;
+  gap: 20px;
+  heght: 100%;
 }
 
 .anjay {
@@ -552,12 +586,18 @@ function getStatusIconPath(status) {
   border-radius: 12px;
   padding: 20px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-  min-height: 600px;
+  height: 700px;
   margin-bottom: 50px;
+
+  display: flex;
+  flex-direction: column;
 }
 
 .overtime-table-wrap {
+  flex: 1 1 auto;
   overflow-x: auto;
+  overflow-y: auto; 
+  width: 100%;
 }
 
 table {
@@ -608,11 +648,32 @@ tbody tr:last-child td {
   border-bottom: none;
 }
 
+
 .status-icon-img {
   height: 18px;
   width: auto;
   display: block;
 }
+.overtime-table-footer {
+  margin-top: auto;
+
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+
+  padding-top: 20px; 
+  border-top: 1px solid #E5E7EB;
+
+}
+.footer-pagination {
+  margin-top: auto;
+  padding-top: 20px; 
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+/* MODAL DETAIL */ 
 
 .modal-status-img {
   height: 18px;

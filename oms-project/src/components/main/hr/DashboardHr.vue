@@ -1,7 +1,7 @@
 <template>
   <div class="dashboard-page">
 
-      <section class="stats-section">
+    <section class="stats-section">
       <div class="stats-grid">
         <div v-for="card in statsCards" :key="card.key" class="stat-card">
           <p class="stat-number">{{ card.value }}</p>
@@ -51,6 +51,11 @@
                   <img :src="getStatusIconPath(row.status)" :alt="row.status" class="status-icon-img" />
                 </td>
               </tr>
+
+              <tr v-if="dashboardData.overtime.length === 0">
+                <td colspan="6" class="text-center">No overtime requests.</td>
+              </tr>
+
             </tbody>
           </table>
         </div>
@@ -494,14 +499,14 @@ const colSpanValue = computed(() => {
   flex-direction: column;
   height: 100vh;
   gap: 20px;
-  heght: 100%;
+  height: 100%;
 }
 
 .anjay {
   display: flex;
   flex-direction: column;
   gap: 20px;
-  margin : 20px;
+  margin : 0 20px ;
   flex: 1;
 }
 
@@ -586,7 +591,7 @@ const colSpanValue = computed(() => {
   border-radius: 12px;
   padding: 20px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-  height: 700px;
+  height: 750px;
   margin-bottom: 50px;
 
   display: flex;
@@ -654,6 +659,7 @@ tbody tr:last-child td {
   width: auto;
   display: block;
 }
+
 .overtime-table-footer {
   margin-top: auto;
 
@@ -667,7 +673,7 @@ tbody tr:last-child td {
 }
 .footer-pagination {
   margin-top: auto;
-  padding-top: 20px; 
+  /* padding-top: 20px;  */
   display: flex;
   justify-content: flex-end;
   align-items: center;

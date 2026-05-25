@@ -118,8 +118,8 @@ const login = async () => {
       window.location.href = "/dashboard";
     } else if (user.role === "product_manager") {
       window.location.href = "/review-approvals";
-      } else if (user.role === "human_resource") {
-        window.location.href = "/dashboard-hr";
+    } else if (user.role === "human_resource") {
+      window.location.href = "/dashboard-hr";
       } 
   } catch (error) {
     alert("Email atau password salah");

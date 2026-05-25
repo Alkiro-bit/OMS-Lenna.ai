@@ -14,9 +14,9 @@
     <div class="anjay">
       <div class="overtime-bar">My Overtime</div>
 
-      <div class="overtime-table-card">
-        <div class="overtime-table-wrap">
-          <table>
+	      <div class="overtime-table-card">
+	        <div class="overtime-table-wrap">
+	          <table>
             <thead>
               <tr>
                 <th v-if="userRole === 'product_manager'">Name</th>
@@ -30,8 +30,8 @@
             </thead>
             <tbody>
               <tr
-                v-for="(row, i) in dashboardData.overtime"
-                :key="i"
+                v-for="(row, i) in paginatedData"
+                :key="row.id || i"
                 class="table-row-clickable"
                 @click="openDetailModal(row)"
                 tabindex="0"
@@ -51,11 +51,28 @@
                   <img :src="getStatusIconPath(row.status)" :alt="row.status" class="status-icon-img" />
                 </td>
               </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
+              
+              <tr v-if="dashboardData.overtime.length === 0">
+                <td colspan="6" class="text-center">No overtime requests.</td>
+              </tr>
+
+	            </tbody>
+	          </table>
+	        </div>
+
+	        <div class="overtime-table-footer">
+	          <div class="footer-pagination">
+	            <Pagination
+	              :currentPage="currentPage"
+	              :perPage="perPage"
+	              :totalRows="dashboardData.overtime.length"
+	              @page-changed="onPageChange"
+	            />
+	          </div>
+	        </div>
+
+	      </div>
+	    </div>
     <!-- MODAL DETAIL -->
     <Teleport to="body">
       <Transition name="overlay-fade">
@@ -228,6 +245,7 @@ import {
 } from "vue";
 import { useRoute } from "vue-router";
 import axios from "axios";
+import Pagination from "../assets/Pagination.vue";
 
 const userRole = ref(window.localStorage.getItem("role"));
 
@@ -455,6 +473,26 @@ function getStatusIconPath(status) {
   return `/icons/status/${normalizedStatus}.png`;
 };
 
+// pagination
+const currentPage = ref(1)
+const perPage = ref(10)
+
+const paginatedData = computed(() => {
+  const start = (currentPage.value - 1) * perPage.value
+  const end = start + perPage.value
+
+  return dashboardData.overtime.slice(start, end)
+})
+
+const onPageChange = (page) => {
+  currentPage.value = page
+}
+
+const colSpanValue = computed(() => {
+  return userRole.value === "product_manager" ? 6 : 5;
+});
+
+
 </script>
 
 <style scoped>
@@ -557,12 +595,18 @@ function getStatusIconPath(status) {
   border-radius: 12px;
   padding: 20px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-  min-height: 600px;
+  height: 750px;
   margin-bottom: 50px;
+  display: flex;
+  flex-direction: column;
 }
 
 .overtime-table-wrap {
+  flex: 1 1 auto;
+  display: block;
   overflow-x: auto;
+  overflow-y: auto;
+  width: 100%;
 }
 
 table {
@@ -592,8 +636,13 @@ tbody td {
   font-size: 13px;
   color: #111;
   font-family: 'Inter', sans-serif;
-  padding: 14px;
+  padding: 0 14px;
   border-bottom: 1px solid #E5E7EB;
+  vertical-align: middle;
+}
+
+tbody tr { 
+  height: 60px; 
 }
 
 .table-row-clickable {
@@ -625,28 +674,28 @@ tbody tr:last-child td {
   display: block;
 }
 
-.detail-btn {
-  background: #1D127D;
-  color: #fff;
-  border: none;
-  padding: 8px 20px;
-  border-radius: 8px;
-  font-size: 12px;
-  font-weight: 600;
-  font-family: 'Inter', sans-serif;
-  cursor: pointer;
-  transition: background 0.15s;
-}
-
-.detail-btn:hover {
-  background: #2563EB;
-}
-
 .text-center {
   text-align: center;
   color: #6B7280;
   font-style: italic;
 }
+
+.overtime-table-footer {
+  margin-top: auto;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding-top: 20px;
+  border-top: 1px solid #E5E7EB;
+  flex-shrink: 0;
+}
+
+.footer-pagination {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
 
 
 /* MODAL STYLE (sama seperti sebelumnya) */

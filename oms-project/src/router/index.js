@@ -11,18 +11,10 @@ const routes = [
   { path: "/", name: "Login", component: LoginPage },
   { path: "/dashboard", name: "Dashboard", component: Dashboard },
   { path: "/form", name: "Form", component: Form },
-  {
-    path: "/review-approvals",
-    name: "Review Approvals",
-    component: ReviewApprovals,
-  },
+  { path: "/review-approvals", name: "Review Approvals", component: ReviewApprovals,},
   { path: "/dashboard-hr", name: "HR Dashboard", component: DashboardHr },
-  {
-    path: "/profile",
-    name: "Profile",
-    component: Profile,
-  },
-  { path: "/Submission", name: "Submission", component: Submission}
+  { path: "/profile", name: "Profile", component: Profile },
+  { path: "/Submission", name: "Submission", component: Submission},
 ];
 
 const router = createRouter({

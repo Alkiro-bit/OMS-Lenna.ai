@@ -190,6 +190,7 @@ const navItems = computed(() => {
       path: "/form",
       icon: "/icons/mdi_form-outline.png",
     },
+    
   ];
 
   if (role === "product_manager") {
@@ -217,7 +218,7 @@ const navItems = computed(() => {
 
     items = [...items.filter((item) => item.name !== "form"),{
       name: "submission",
-      label: "Submission",  
+      label: "Submissions",  
       path: "/Submission",
       icon: "/icons/mdi_checkbox-outline.png",
     }];

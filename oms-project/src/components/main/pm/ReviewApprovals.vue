@@ -8,75 +8,71 @@
       </div>
     </section>
 
-    <!-- FILTER TABS -->
-    <div class="filter-tabs">
-      <button
-        v-for="filter in filters"
-        :key="filter.value"
-        class="filter-pill"
-        :class="{ active: selectedFilter === filter.value }"
-        @click="filterApprovals(filter.value)"
-      >
-        {{ filter.label }}
-      </button>
-    </div>
-
     <!-- TABLE -->
     <div class="anjay"> 
+      <SearchFilter
+        v-model:search="searchQuery"
+        v-model:date-sort="selectedDateSort"
+        v-model:duration-sort="selectedDurationSort"
+        v-model:status-filter="selectedStatusSort"
+        :status-options="statusFilterOptions"
+      />
+
       <div class="table-container">
-        <table>
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Form Title</th>
-              <th>DATE</th>
-              <th>Duration</th>
-              <th>Status</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Form Title</th>
+                <th>DATE</th>
+                <th>Duration</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
 
-          <tbody>
-            <tr
-              v-for="approval in paginatedApprovals"
-              :key="approval.id"
-              class="table-row"
-            >
-              <td>{{ approval.employeeName }}</td>
-              <td>{{ approval.overtime_title }}</td> <!-- ================ TITLE TABLE (ini uda bener belom si?) ================== -->
-              <td>{{ formatDate(approval.overtimeDate) }}</td>
-              <td>{{ approval.duration }}</td>
-              <td>
-                <img
-                  :src="getStatusIcon(approval.status)"
-                  :alt="approval.status"
-                  class="status-icon-img"
-                />
-              </td>
-              <td>
-                <button class="detail-btn" @click="openModal(approval)">
-                  Detail
-                </button>
-              </td>
-            </tr>
-            <tr v-if="filteredApprovals.length === 0">
-              <td colspan="6" class="text-center">Tidak ada pengajuan lembur.</td>
-            </tr>
-          </tbody>
-        </table>
-
-        <div> 
-            <div class="overtime-table-footer">
-                  <div class="footer-pagination fill">            
-                    <Pagination
-                      :currentPage="currentPage"
-                      :perPage="perPage"
-                      :totalRows="filteredApprovals.length"
-                      @page-changed="onPageChange"
+            <tbody>
+              <tr
+                v-for="approval in paginatedApprovals"
+                :key="approval.id"
+                class="table-row"
+              >
+                <td>{{ approval.employeeName }}</td>
+                <td>{{ approval.overtime_title }}</td> <!-- ================ TITLE TABLE (ini uda bener belom si?) ================== -->
+                <td>{{ formatDate(approval.overtimeDate) }}</td>
+                <td>{{ approval.duration }}</td>
+                <td>
+                  <img
+                    :src="getStatusIcon(approval.status)"
+                    :alt="approval.status"
+                    class="status-icon-img"
                   />
-                  </div>
-            </div>
+                </td>
+                <td>
+                  <button class="detail-btn" @click="openModal(approval)">
+                    Detail
+                  </button>
+                </td>
+              </tr>
+
+              <tr v-if="filteredApprovals.length === 0">
+                <td colspan="6" class="text-center">No overtime requests.</td>
+              </tr>
+              
+            </tbody>
+          </table>
+        </div>
+        <div class="overtime-table-footer">
+          <div class="footer-pagination fill">
+            <Pagination
+              :currentPage="currentPage"
+              :perPage="perPage"
+              :totalRows="filteredApprovals.length"
+              @page-changed="onPageChange"
+            />
           </div>
+        </div>
       </div>
     </div>
 
@@ -257,9 +253,10 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, onBeforeMount } from "vue";
+import { ref, computed, watch, onUnmounted, onBeforeMount } from "vue";
 import axios from "axios";
 import Pagination from "../assets/Pagination.vue"
+import SearchFilter from "../assets/SearchFilter.vue"
 
 // ============================================================
 // STATE MANAGEMENT
@@ -283,11 +280,14 @@ async function fetchApprovals() {
   }
 }
 
-const selectedFilter = ref("all");
 const approvals = ref([]);
 const isModalOpen = ref(false);
 const selectedApproval = ref(null);
 const reviewerNotes = ref("");
+const searchQuery = ref("");
+const selectedDateSort = ref("");
+const selectedStatusSort = ref("");
+const selectedDurationSort = ref("");
 
 // ============================================================
 // DUMMY DATA
@@ -298,8 +298,7 @@ const reviewerNotes = ref("");
 // ============================================================
 // FILTER OPTIONS
 // ============================================================
-const filters = [
-  { label: "All", value: "all" },
+const statusFilterOptions = [
   { label: "Pending", value: "pending" },
   { label: "Reviewed", value: "reviewed" },
   { label: "Approved", value: "approved" },
@@ -346,23 +345,72 @@ function hasApprovalNotes(approval = {}) {
   return getApprovalNotes(approval).length > 0;
 }
 
-const filteredApprovals = computed(() => {
-  if (selectedFilter.value === "all") {
-    return approvals.value;
+function getSearchValue(approval = {}) {
+  return [
+    approval.employeeName,
+    approval.overtime_title,
+  ].join(" ").toLowerCase();
+}
+
+function getDurationValue(duration) {
+  if (typeof duration === "number") {
+    return duration;
   }
 
-  return approvals.value.filter(
-    (item) => normalizeStatus(item.status) === selectedFilter.value,
-  );
+  const match = String(duration ?? "").match(/\d+(\.\d+)?/);
+  return match ? Number(match[0]) : 0;
+}
+
+function getDateValue(date) {
+  const time = new Date(date).getTime();
+  return Number.isNaN(time) ? 0 : time;
+}
+
+const filteredApprovals = computed(() => {
+  let data = [...approvals.value];
+
+  const search = searchQuery.value.trim().toLowerCase();
+  if (search) {
+    data = data.filter((item) => getSearchValue(item).includes(search));
+  }
+
+  if (selectedStatusSort.value) {
+    data = data.filter(
+      (item) => normalizeStatus(item.status) === selectedStatusSort.value,
+    );
+  }
+
+  if (selectedDateSort.value || selectedDurationSort.value) {
+    data.sort((a, b) => {
+      let dateCompare = 0;
+      let durationCompare = 0;
+
+      if (selectedDateSort.value === "newest") {
+        dateCompare = getDateValue(b.overtimeDate) - getDateValue(a.overtimeDate);
+      }
+
+      if (selectedDateSort.value === "oldest") {
+        dateCompare = getDateValue(a.overtimeDate) - getDateValue(b.overtimeDate);
+      }
+
+      if (selectedDurationSort.value === "highest") {
+        durationCompare = getDurationValue(b.duration) - getDurationValue(a.duration);
+      }
+
+      if (selectedDurationSort.value === "lowest") {
+        durationCompare = getDurationValue(a.duration) - getDurationValue(b.duration);
+      }
+
+      return dateCompare || durationCompare;
+    });
+  }
+
+  return data;
 });
 
 // ============================================================
 // FUNCTIONS
 // ============================================================
-
-function filterApprovals(status) {
-  selectedFilter.value = status;
-}
 
 function getStatusIcon(status) {
   const icons = {
@@ -497,6 +545,18 @@ function onPageChange(page) {
   currentPage.value = page
 }
 
+watch(
+  [
+    searchQuery,
+    selectedDateSort,
+    selectedDurationSort,
+    selectedStatusSort,
+  ],
+  () => {
+    currentPage.value = 1;
+  },
+);
+
 // ============================================================
 // LIFECYCLE HOOKS
 // ============================================================
@@ -539,14 +599,14 @@ onUnmounted(() => {
   min-height: 100%;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 24px;
 }
 
 .anjay {
   display: flex;
   flex-direction: column;
   gap: 0px;
-  margin : 0px 20px 20px 20px ;
+  margin: 0 20px 20px;
   flex: 1;
 }
 
@@ -583,40 +643,6 @@ onUnmounted(() => {
 
 
 /* ============================================================
-   FILTER TABS
-   ============================================================ */
-.filter-tabs {
-  display: flex;
-  gap: 12px;
-  overflow-x: auto;
-  padding-bottom: 4px;
-  padding: 10px 10px 10px 26px;
-}
-
-.filter-pill {
-  padding: 8px 20px;
-  border-radius: 20px;
-  border: none;
-  background: transparent;
-  color: #6b7280;
-  font-size: 13px;
-  font-weight: 500;
-  font-family: "Inter", sans-serif;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: all 0.15s;
-}
-
-.filter-pill:hover {
-  background: rgba(59, 91, 219, 0.1);
-}
-
-.filter-pill.active {
-  background: #1d127d;
-  color: #fff;
-}
-
-/* ============================================================
    TABLE
    ============================================================ */
 .table-container {
@@ -624,12 +650,20 @@ onUnmounted(() => {
   border-radius: 12px;
   padding: 20px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-  min-height: 700px;
+  min-height: 750px;
   margin-bottom: 50px;
 
   display: flex;
   flex-direction: column;
 }
+
+.table-wrapper { 
+  flex: 1 1 auto;
+  overflow-x: auto;
+  overflow-y: auto; 
+  width: 100%;
+}
+
 
 table {
   width: 100%;

@@ -494,7 +494,7 @@ const colSpanValue = computed(() => {
   flex-direction: column;
   height: 100vh;
   gap: 20px;
-  heght: 100%;
+  height: 100%;
 }
 
 .anjay {

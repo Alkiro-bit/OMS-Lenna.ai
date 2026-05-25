@@ -38,20 +38,12 @@
       <div class="form-section">
         <div class="input-group">
           <label>Full Name</label>
-          <input
-            type="text"
-            v-model="profile.name"
-            disabled
-          />
+          <input type="text" v-model="profile.name" disabled />
         </div>
 
         <div class="input-group">
           <label>Email</label>
-          <input
-            type="email"
-            v-model="profile.email"
-            disabled
-          />
+          <input type="email" v-model="profile.email" disabled />
         </div>
 
         <div class="input-group">
@@ -70,6 +62,7 @@
 <script setup>
 import { ref, onMounted, inject } from "vue";
 import axios from "axios";
+import Swal from "sweetalert2";
 
 const defaultAvatar =
   "https://ui-avatars.com/api/?name=Profile&background=1D127D&color=ffffff";
@@ -130,25 +123,38 @@ const saveProfile = async () => {
       formData.append("profile_picture", selectedFile.value);
     }
 
-    await axios.post(
-      "http://127.0.0.1:8000/api/profile/update",
-      formData,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data",
-        },
-      }
-    );
+    await axios.post("http://127.0.0.1:8000/api/profile/update", formData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "multipart/form-data",
+      },
+    });
 
-    alert("Profile picture updated!");
+    Swal.fire({
+      title: "Profile Updated",
+      text: "Your profile picture has been changed",
+      icon: "success",
+      background: "#ffffff",
+      color: "#111827",
+      confirmButtonColor: "#1D127D",
+      customClass: {
+        popup: "rounded-popup",
+      },
+      timer: 1800,
+      showConfirmButton: false,
+    });
 
     fetchProfile();
 
     await refreshUserData();
   } catch (error) {
     console.error(error);
-    alert("Failed to update profile picture");
+    Swal.fire({
+      title: "Upload Failed",
+      text: "Something went wrong while updating profile",
+      icon: "error",
+      confirmButtonColor: "#ef4444",
+    });
   }
 };
 </script>
@@ -301,5 +307,10 @@ const saveProfile = async () => {
   .image-section {
     width: 100%;
   }
+}
+
+.swal2-popup.rounded-popup {
+  border-radius: 24px;
+  font-family: "Plus Jakarta Sans", sans-serif;
 }
 </style>

@@ -147,6 +147,9 @@ const profileImage = computed(() => {
 
 onBeforeMount(() => {
   getUserData();
+   window.addEventListener(
+    "profile-updated",
+    getUserData);
 });
 
 provide("userData", userData);
@@ -169,11 +172,15 @@ function handleSidebarMouseLeave() {
 }
 
 onUnmounted(() => {
+    window.removeEventListener(
+    "profile-updated",
+    getUserData
+  );
   if (sidebarHoverTimer) clearTimeout(sidebarHoverTimer);
 });
 
 // pakai data asli
-const account = userData;
+const account = computed(() => userData.value);
 
 const navItems = computed(() => {
   const role = window.localStorage.getItem("role");

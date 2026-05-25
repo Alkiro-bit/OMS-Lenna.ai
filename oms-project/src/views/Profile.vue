@@ -38,20 +38,12 @@
       <div class="form-section">
         <div class="input-group">
           <label>Full Name</label>
-          <input
-            type="text"
-            v-model="profile.name"
-            disabled
-          />
+          <input type="text" v-model="profile.name" disabled />
         </div>
 
         <div class="input-group">
           <label>Email</label>
-          <input
-            type="email"
-            v-model="profile.email"
-            disabled
-          />
+          <input type="email" v-model="profile.email" disabled />
         </div>
 
         <div class="input-group">
@@ -61,6 +53,10 @@
 
         <div class="button-group">
           <button class="save-btn" @click="saveProfile">Save Changes</button>
+
+          <!-- <button class="delete-btn" @click="deleteProfilePhoto">
+            Remove Photo
+          </button> -->
         </div>
       </div>
     </div>
@@ -70,6 +66,7 @@
 <script setup>
 import { ref, onMounted, inject } from "vue";
 import axios from "axios";
+import Swal from "sweetalert2";
 
 const defaultAvatar =
   "https://ui-avatars.com/api/?name=Profile&background=1D127D&color=ffffff";
@@ -130,25 +127,88 @@ const saveProfile = async () => {
       formData.append("profile_picture", selectedFile.value);
     }
 
-    await axios.post(
-      "http://127.0.0.1:8000/api/profile/update",
-      formData,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data",
-        },
-      }
-    );
+    await axios.post("http://127.0.0.1:8000/api/profile/update", formData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "multipart/form-data",
+      },
+    });
 
-    alert("Profile picture updated!");
+    Swal.fire({
+      title: "Profile Updated",
+      text: "Your profile picture has been changed",
+      icon: "success",
+      background: "#ffffff",
+      color: "#111827",
+      confirmButtonColor: "#1D127D",
+      customClass: {
+        popup: "rounded-popup",
+      },
+      timer: 1800,
+      showConfirmButton: false,
+    });
 
     fetchProfile();
 
     await refreshUserData();
   } catch (error) {
     console.error(error);
-    alert("Failed to update profile picture");
+    Swal.fire({
+      title: "Upload Failed",
+      text: "Something went wrong while updating profile",
+      icon: "error",
+      confirmButtonColor: "#ef4444",
+    });
+  }
+};
+
+const deleteProfilePhoto = async () => {
+  try {
+    const token = localStorage.getItem("token");
+
+    const result = await Swal.fire({
+      title: "Remove profile photo?",
+      text: "Your profile picture will be reset to default.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#ef4444",
+      cancelButtonColor: "#6b7280",
+      confirmButtonText: "Yes, remove it",
+    });
+
+    if (!result.isConfirmed) return;
+
+    await axios.delete("http://127.0.0.1:8000/api/profile/delete-photo", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    previewImage.value = null;
+    uploadedImage.value = null;
+    profile.value.profile_picture = null;
+
+    await refreshUserData();
+    await fetchProfile();
+
+    window.dispatchEvent(new Event("profile-updated"));
+
+    Swal.fire({
+      title: "Deleted!",
+      text: "Profile photo removed successfully",
+      icon: "success",
+      timer: 1800,
+      showConfirmButton: false,
+    });
+  } catch (error) {
+    console.log(error.response);
+    console.log(error.response.data);
+
+    Swal.fire({
+      title: "Failed",
+      text: "Failed to remove profile photo",
+      icon: "error",
+    });
   }
 };
 </script>
@@ -301,5 +361,28 @@ const saveProfile = async () => {
   .image-section {
     width: 100%;
   }
+}
+
+.swal2-popup.rounded-popup {
+  border-radius: 24px;
+  font-family: "Plus Jakarta Sans", sans-serif;
+}
+
+.delete-btn {
+  background: #ef4444;
+  color: white;
+  border: none;
+  padding: 14px 28px;
+  border-radius: 14px;
+  font-size: 15px;
+  cursor: pointer;
+  font-weight: 555;
+  transition: 0.3s;
+  font-family: "Plus Jakarta Sans";
+  margin-left: 12px;
+}
+
+.delete-btn:hover {
+  background: #dc2626;
 }
 </style>

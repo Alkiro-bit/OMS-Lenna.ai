@@ -119,8 +119,8 @@ const login = async () => {
     } else if (user.role === "product_manager") {
       window.location.href = "/review-approvals";
     } else if (user.role === "human_resource") {
-      window.location.href = "/dashboard-hr";
-    }
+      window.location.href = "/Submission";
+      } 
   } catch (error) {
     console.log(error.response);
 

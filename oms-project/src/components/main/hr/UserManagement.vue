@@ -1,17 +1,16 @@
 <template>
   <div class="review-approvals">
+
     <section class="stats-section">
       <div class="stats-grid">
-        <h1 class="header-title">Overtime Submissions</h1>
-        <p class="header-subtitle">
-          Monitor, track, and manage all employee overtime submissions across
-          the company
-        </p>
+        <h1 class="header-title"> Overtime Histories </h1>
+        <p class="header-subtitle">View the complete historical log of all company-wide overtime submissions and their final status</p>
       </div>
     </section>
 
     <!-- TABLE -->
-    <div class="anjay">
+    <div class="anjay"> 
+
       <SearchFilter
         v-model:search="searchQuery"
         v-model:date-sort="selectedDateSort"
@@ -25,8 +24,8 @@
           <table>
             <thead>
               <tr>
-                <th>Name</th>
                 <th>Form Title</th>
+                <th>Name</th>
                 <th>DATE</th>
                 <th>Duration</th>
                 <th>Status</th>
@@ -40,9 +39,8 @@
                 :key="approval.id"
                 class="table-row"
               >
-                <td>{{ approval.employeeName }}</td>
-                <td>{{ approval.overtime_title }}</td>
-                <!-- ================ TITLE TABLE (ini uda bener belom si?) ================== -->
+                <td>{{ approval.overtime_title }}</td> 
+                <td>{{ approval.employeeName }}</td> 
                 <td>{{ formatDate(approval.overtimeDate) }}</td>
                 <td>{{ approval.duration }}</td>
                 <td>
@@ -58,27 +56,26 @@
                   </button>
                 </td>
               </tr>
-
+              
               <tr v-if="filteredApprovals.length === 0">
-                <td colspan="6" class="text-center-status">
-                  No overtime requests.
-                </td>
+                <td colspan="6" class="text-center-status">No overtime requests.</td>
               </tr>
+
             </tbody>
           </table>
         </div>
-        <div>
-          <div class="overtime-table-footer">
-            <div class="footer-pagination fill">
-              <Pagination
-                :currentPage="currentPage"
-                :perPage="perPage"
-                :totalRows="filteredApprovals.length"
-                @page-changed="onPageChange"
-              />
+        <div> 
+            <div class="overtime-table-footer">
+                  <div class="footer-pagination fill">            
+                    <Pagination
+                      :currentPage="currentPage"
+                      :perPage="perPage"
+                      :totalRows="filteredApprovals.length"
+                      @page-changed="onPageChange"
+                  />
+                  </div>
             </div>
           </div>
-        </div>
       </div>
     </div>
 
@@ -122,7 +119,7 @@
                   <p class="section-label">
                     <i class="ti ti-user"></i> Submitter Information
                   </p>
-                  <div class="field-grid">
+                 <div class="field-grid">
                     <div class="field-group full">
                       <span class="field-label">Name</span>
                       <span class="field-value">
@@ -147,14 +144,15 @@
                     <i class="ti ti-clock"></i> Overtime Information
                   </p>
                   <div class="field-grid">
+                    
                     <!-- ============================ FORM TITLE (itu calling data Arraynya udah bener ga si?)============================ -->
                     <div class="field-group full">
-                      <span class="field-label">FORM TITLE</span>
+                      <span class="field-label">FORM TITLE</span> 
                       <span class="field-value">
                         {{ selectedApproval?.overtime_title }}
                       </span>
                     </div>
-
+                    
                     <div class="field-group">
                       <span class="field-label">Date</span>
                       <span class="field-value">
@@ -224,11 +222,7 @@
                     v-else
                     class="reviewer-notes reviewer-notes-readonly"
                     :value="getApprovalNotes(selectedApproval)"
-                    :placeholder="
-                      hasApprovalNotes(selectedApproval)
-                        ? ''
-                        : 'No reviewer notes available.'
-                    "
+                    :placeholder="hasApprovalNotes(selectedApproval) ? '' : 'No reviewer notes available.'"
                     readonly
                     disabled
                     rows="4"
@@ -236,26 +230,6 @@
                 </div>
               </div>
 
-              <!-- Modal Footer -->
-              <div
-                v-if="!isFinalStatus(selectedApproval?.status)"
-                class="modal-footer"
-              >
-                <button
-                  type="button"
-                  class="btn-reject"
-                  @click="handleReject(selectedApproval?.id)"
-                >
-                  <i class="ti ti-circle-x"></i> Reject
-                </button>
-                <button
-                  type="button"
-                  class="btn-approve"
-                  @click="handleApprove(selectedApproval?.id)"
-                >
-                  <i class="ti ti-circle-check"></i> Approve
-                </button>
-              </div>
             </div>
           </Transition>
         </div>
@@ -267,67 +241,169 @@
 <script setup>
 import { ref, computed, watch, onUnmounted, onBeforeMount } from "vue";
 import axios from "axios";
-import Pagination from "../assets/Pagination.vue";
-import SearchFilter from "../assets/SearchFilter.vue";
+import Pagination from "../assets/Pagination.vue"
+import SearchFilter from "../assets/SearchFilter.vue"
 
 // ============================================================
 // STATE MANAGEMENT
 // ============================================================
 
 async function fetchApprovals() {
-  const token = localStorage.getItem("token");
 
-  try {
-    const response = await axios.get("http://127.0.0.1:8000/api/approvals", {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: "application/json",
-      },
-    });
 
-    approvals.value = response.data.map((item) => ({
-      ...item,
+// =================== INI PAKE DATA HARDCODE ==================
 
-      status: item.status === "rejected" ? "declined" : item.status,
-    }));
+   try {
+    const data = hardcodedApprovals;
+
+    approvals.value = data.filter(item =>
+      ["approved", "declined"].includes(
+        normalizeStatus(item.status)
+      )
+    );
 
     console.log("Approvals:", approvals.value);
+
   } catch (error) {
-    console.error("Gagal ambil approval:", error);
+    console.error(error);
   }
 }
 
+
+    // ============ ini data asli dari API ===============
+
+//   const token = localStorage.getItem("token");
+
+//   try {
+//     const response = await axios.get("http://127.0.0.1:8000/api/approvals", {
+//       headers: {
+//         Authorization: `Bearer ${token}`,
+//         Accept: "application/json",
+//       },
+//     });
+
+//     approvals.value = response.data?.length 
+//         ? response.data 
+//         : hardcodedApprovals;
+
+//     console.log("Approvals:", response.data);
+
+//   } catch (error) {
+//     console.error("Gagal ambil approval:", error);
+
+//     approvals.value = data.filter(item => 
+//         ["approved", "declined"].includes (
+//             normalizeStatus(item.status)
+//         )
+//     )
+//   }
+//}
+
 const selectedFilter = ref("all");
+
+//hardcode data
+const hardcodedApprovals = [
+  {
+    id: 1,
+    employeeName: "Altaf Azka",
+    employeePosition: "Frontend Developer",
+    overtime_title: "UI Fix for Review Page",
+    overtimeDate: "2026-05-20",
+    startTime: "18:00",
+    endTime: "20:00",
+    duration: "2 Hours",
+    status: "approved",
+    notes: "Approved for release prep.",
+    tasks: [
+      {
+        name: "Fix filter integration",
+        description: "Integrate reusable SearchFilter into the history table.",
+      },
+    ],
+  },
+  {
+    id: 2,
+    employeeName: "Afgan Ramadhan",
+    employeePosition: "Backend Developer",
+    overtime_title: "Table Fix for Review Page",
+    overtimeDate: "2026-05-23",
+    startTime: "18:00",
+    endTime: "01:00",
+    duration: "7 Hours",
+    status: "declined",
+    notes: "Approved for release prep.",
+    tasks: [
+      {
+        name: "Fix filter integration",
+        description: "Integrate reusable SearchFilter into the history table.",
+      },
+    ],
+  },
+  {
+    id: 3,
+    employeeName: "Christopher Clay",
+    employeePosition: "UI/UX Designer",
+    overtime_title: "UI/UX Design for Review Page",
+    overtimeDate: "2026-05-25",
+    startTime: "18:00",
+    endTime: "12:00",
+    duration: "6 Hours",
+    status: "approved",
+    notes: "Approved for release prep.",
+    tasks: [
+      {
+        name: "Fix filter integration",
+        description: "Integrate reusable SearchFilter into the history table.",
+      },
+    ],
+  },
+  {
+    id: 4,
+    employeeName: "Christopher Clay",
+    employeePosition: "UI/UX Designer",
+    overtime_title: "UI/UX Design for Review Page",
+    overtimeDate: "2026-05-25",
+    startTime: "18:00",
+    endTime: "12:00",
+    duration: "6 Hours",
+    status: "reviewed",
+    notes: "Approved for release prep.",
+    tasks: [
+      {
+        name: "Fix filter integration",
+        description: "Integrate reusable SearchFilter into the history table.",
+      },
+    ],
+  },
+];
+
 const approvals = ref([]);
+
 const isModalOpen = ref(false);
 const selectedApproval = ref(null);
 const reviewerNotes = ref("");
 
-const searchQuery = ref("");
-const selectedDateSort = ref("");
-const selectedStatusSort = ref("");
-const selectedDurationSort = ref("");
+const searchQuery = ref("")
+const selectedDateSort = ref("")
+const selectedStatusSort = ref("")
+const selectedDurationSort = ref("")
+
 
 const filters = [
   { label: "All", value: "all" },
-  { label: "Pending", value: "pending" },
   { label: "Approved", value: "approved" },
   { label: "Declined", value: "declined" },
 ];
 
 const statusFilterOptions = filters.filter((filter) => filter.value !== "all");
 
+
 // ============================================================
 // COMPUTED PROPERTIES
 // ============================================================
 function normalizeStatus(status = "") {
   const normalized = String(status).trim().toLowerCase();
-
-  if (normalized === "rejected") {
-    return "declined";
-  }
-
-  return normalized;
+  return normalized === "rejected" ? "declined" : normalized;
 }
 
 function isFinalStatus(status = "") {
@@ -363,9 +439,10 @@ function hasApprovalNotes(approval = {}) {
 }
 
 function getSearchValue(approval = {}) {
-  return [approval.employeeName, approval.overtime_title]
-    .join(" ")
-    .toLowerCase();
+  return [
+    approval.employeeName,
+    approval.overtime_title,
+  ].join(" ").toLowerCase();
 }
 
 function getDurationValue(duration) {
@@ -383,58 +460,60 @@ function getDateValue(date) {
 }
 
 const filteredApprovals = computed(() => {
-  let data = [...approvals.value];
+  let data = [...approvals.value]
+
+    data = data.filter(item =>
+    ["approved", "declined"].includes(normalizeStatus(item.status))
+)
 
   // FILTER TABS
   if (selectedFilter.value !== "all") {
     data = data.filter(
-      (item) => normalizeStatus(item.status) === selectedFilter.value,
-    );
+      item =>
+        normalizeStatus(item.status) === selectedFilter.value
+      )
   }
 
-  const search = searchQuery.value.trim().toLowerCase();
+  const search = searchQuery.value.trim().toLowerCase()
   if (search) {
-    data = data.filter((item) => getSearchValue(item).includes(search));
+    data = data.filter((item) => getSearchValue(item).includes(search))
   }
 
   // STATUS DROPDOWN
   if (selectedStatusSort.value) {
     data = data.filter(
-      (item) => normalizeStatus(item.status) === selectedStatusSort.value,
-    );
+      item =>
+        normalizeStatus(item.status) === selectedStatusSort.value
+    )
   }
 
   if (selectedDateSort.value || selectedDurationSort.value) {
     data.sort((a, b) => {
-      let dateCompare = 0;
-      let durationCompare = 0;
+      let dateCompare = 0
+      let durationCompare = 0
 
       if (selectedDateSort.value === "newest") {
-        dateCompare =
-          getDateValue(b.overtimeDate) - getDateValue(a.overtimeDate);
+        dateCompare = getDateValue(b.overtimeDate) - getDateValue(a.overtimeDate)
       }
 
       if (selectedDateSort.value === "oldest") {
-        dateCompare =
-          getDateValue(a.overtimeDate) - getDateValue(b.overtimeDate);
+        dateCompare = getDateValue(a.overtimeDate) - getDateValue(b.overtimeDate)
       }
 
       if (selectedDurationSort.value === "highest") {
-        durationCompare =
-          getDurationValue(b.duration) - getDurationValue(a.duration);
+        durationCompare = getDurationValue(b.duration) - getDurationValue(a.duration)
       }
 
       if (selectedDurationSort.value === "lowest") {
-        durationCompare =
-          getDurationValue(a.duration) - getDurationValue(b.duration);
+        durationCompare = getDurationValue(a.duration) - getDurationValue(b.duration)
       }
 
-      return dateCompare || durationCompare;
-    });
+      return dateCompare || durationCompare
+    })
   }
 
-  return data;
-});
+  return data
+})  
 
 // ============================================================
 // FUNCTIONS
@@ -449,6 +528,7 @@ function getStatusIcon(status) {
     pending: "/icons/status/Pending.png",
     approved: "/icons/status/Approved.png",
     declined: "/icons/status/Declined.png",
+    reviewed: "/icons/status/Reviewed.png",
   };
 
   return icons[normalizeStatus(status)] || "/icons/status/Pending.png";
@@ -489,7 +569,7 @@ async function handleApprove(id) {
 
   try {
     await axios.post(
-      `http://127.0.0.1:8000/api/overtimes/${id}/hr-approve`,
+      `http://127.0.0.1:8000/api/approvals/${id}/approve`,
       {},
       {
         headers: {
@@ -517,7 +597,7 @@ async function handleReject(id) {
 
   try {
     await axios.post(
-      `http://127.0.0.1:8000/api/overtimes/${id}/hr-reject`,
+      `http://127.0.0.1:8000/api/approvals/${id}/reject`,
       { notes: reviewerNotes.value },
       {
         headers: {
@@ -562,18 +642,19 @@ function formatDate(date) {
   return `${day}-${month}-${year}`;
 }
 
-const currentPage = ref(1);
-const perPage = ref(10);
+const currentPage = ref(1)
+const perPage = ref(10)
 
 const paginatedApprovals = computed(() => {
-  const start = (currentPage.value - 1) * perPage.value;
-  const end = start + perPage.value;
+  const start = (currentPage.value - 1) * perPage.value
+  const end = start + perPage.value
 
-  return filteredApprovals.value.slice(start, end);
-});
+  return filteredApprovals.value.slice(start, end)
+})
+
 
 function onPageChange(page) {
-  currentPage.value = page;
+  currentPage.value = page
 }
 
 watch(
@@ -585,9 +666,9 @@ watch(
     selectedStatusSort,
   ],
   () => {
-    currentPage.value = 1;
+    currentPage.value = 1
   },
-);
+)
 
 // ============================================================
 // LIFECYCLE HOOKS
@@ -624,7 +705,7 @@ onUnmounted(() => {
 <style scoped>
 @import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700&family=Inter:wght@400;500;600&display=swap");
 @import url("https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css");
-@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
 
 .review-approvals {
   background: #f4f5f7;
@@ -632,13 +713,13 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   gap: 32px;
-}
+} 
 
 .anjay {
   display: flex;
   flex-direction: column;
   gap: 0px;
-  margin: 0px 20px 20px 20px;
+  margin : 0px 20px 20px 20px ;
   flex: 1;
 }
 
@@ -666,12 +747,13 @@ onUnmounted(() => {
   padding: 56.5px 56.5px 56.5px 26px;
 }
 
-.stats-grid {
+.stats-grid { 
   display: flex;
   flex-direction: column;
   font-size: 18px;
   font-family: "Plus Jakarta Sans";
 }
+
 
 /* ============================================================
    TABLE
@@ -691,7 +773,7 @@ onUnmounted(() => {
 .table-wrapper {
   flex: 1 1 auto;
   overflow-x: auto;
-  overflow-y: auto;
+  overflow-y: auto; 
   width: 100%;
 }
 
@@ -711,24 +793,12 @@ thead th {
   border-bottom: 2px solid #e5e7eb;
 }
 
-thead th:nth-child(1) {
-  width: 15%;
-}
-thead th:nth-child(2) {
-  width: 15%;
-}
-thead th:nth-child(3) {
-  width: 10%;
-}
-thead th:nth-child(4) {
-  width: 10%;
-}
-thead th:nth-child(5) {
-  width: 15%;
-}
-thead th:nth-child(6) {
-  width: 5%;
-}
+thead th:nth-child(1) {width: 20%;}
+thead th:nth-child(2) {width: 20%;}
+thead th:nth-child(3) {width: 15%;}
+thead th:nth-child(4) {width: 10%;}
+thead th:nth-child(5) {width: 10%;}
+thead th:nth-child(6) {width: 5%;}
 
 tbody td {
   font-size: 13px;
@@ -752,8 +822,9 @@ tbody tr:last-child td {
   justify-content: flex-end;
   align-items: center;
 
-  padding-top: 20px;
-  border-top: 1px solid #e5e7eb;
+  padding-top: 20px; 
+  border-top: 1px solid #E5E7EB;
+
 }
 
 .footer-pagination {
@@ -775,7 +846,7 @@ tbody tr:last-child td {
   height: 18px;
   width: auto;
   display: block;
-  margin-left: auto;
+  margin-left     : auto;
 }
 
 .detail-btn {
@@ -801,11 +872,12 @@ tbody tr:last-child td {
   font-style: italic;
 }
 
-.text-center-status {
+.text-center-status { 
   text-align: center;
   color: #6b7280;
   font-style: italic;
 }
+
 
 /* ============================================================
    MODAL

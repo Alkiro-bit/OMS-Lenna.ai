@@ -1,731 +1,378 @@
 <template>
-  <div class="review-approvals">
-
-    <section class="stats-section">
-      <div class="stats-grid">
-        <h1 class="header-title"> Overtime Histories </h1>
-        <p class="header-subtitle">View the complete historical log of all company-wide overtime submissions and their final status</p>
+  <div class="user-management">
+    <section class="hero-section">
+      <div class="hero-grid">
+        <h1 class="header-title">User Management</h1>
+        <p class="header-subtitle">View, create, and update user accounts and their hierarchical roles</p>
       </div>
     </section>
 
     <!-- TABLE -->
-    <div class="anjay"> 
-
-      <SearchFilter
+    <div class="anjay">
+      
+      <UserManagementBar
         v-model:search="searchQuery"
-        v-model:date-sort="selectedDateSort"
-        v-model:duration-sort="selectedDurationSort"
-        v-model:status-filter="selectedStatusSort"
         :status-options="statusFilterOptions"
       />
 
       <div class="table-container">
+
         <div class="table-wrapper">
+
           <table>
+
             <thead>
               <tr>
-                <th>Form Title</th>
                 <th>Name</th>
-                <th>DATE</th>
-                <th>Duration</th>
+                <th>Position</th>
+                <th>Role</th>
                 <th>Status</th>
-                <th>Actions</th>
+                <th>Action</th>
               </tr>
             </thead>
 
             <tbody>
+
               <tr
-                v-for="approval in paginatedApprovals"
-                :key="approval.id"
+                v-for="user in paginatedUsers"
+                :key="user.id"
                 class="table-row"
               >
-                <td>{{ approval.overtime_title }}</td> 
-                <td>{{ approval.employeeName }}</td> 
-                <td>{{ formatDate(approval.overtimeDate) }}</td>
-                <td>{{ approval.duration }}</td>
+
+                <td>{{ user.name }}</td>
+
+                <td>{{ user.position }}</td>
+
+                <td>{{ user.role }}</td>
+
                 <td>
                   <img
-                    :src="getStatusIcon(approval.status)"
-                    :alt="approval.status"
+                    :src="getStatusIcon(user.status)"
+                    :alt="user.status"
                     class="status-icon-img"
                   />
                 </td>
+
                 <td>
-                  <button class="detail-btn" @click="openModal(approval)">
-                    Detail
+                  <button
+                    class="detail-btn"
+                    @click="openModal(user)"
+                  >
+                    Edit User
                   </button>
                 </td>
+
               </tr>
-              
-              <tr v-if="filteredApprovals.length === 0">
-                <td colspan="6" class="text-center-status">No overtime requests.</td>
+
+              <tr v-if="filteredUsers.length === 0">
+                <td colspan="4" class="text-center-status">
+                  No users found.
+                </td>
               </tr>
 
             </tbody>
           </table>
-        </div>
-        <div> 
-            <div class="overtime-table-footer">
-                  <div class="footer-pagination fill">            
-                    <Pagination
-                      :currentPage="currentPage"
-                      :perPage="perPage"
-                      :totalRows="filteredApprovals.length"
-                      @page-changed="onPageChange"
-                  />
+
+          <Teleport to="body">
+
+            <Transition name="overlay-fade">
+
+              <div
+                v-if="isModalOpen"
+                class="modal-overlay"
+                @click="handleOverlayClick"
+              >
+
+                <Transition name="modal-slide">
+
+                  <div
+                    v-if="isModalOpen"
+                    class="modal-content"
+                    role="dialog"
+                    aria-modal="true"
+                    @click.stop
+                  >
+
+                    <!-- HEADER -->
+                    <div class="modal-header">
+
+                      <p class="modal-title">
+                        EDIT USER
+                      </p>
+
+                      <button
+                        class="close-btn"
+                        @click="closeModal"
+                      >
+                        <i class="ti ti-x"></i>
+                      </button>
+
+                    </div>
+
+                    <!-- BODY -->
+                    <div class="modal-body">
+
+                      <div class="field-grid">
+
+                        <!-- NAME -->
+                        <div class="field-group">
+                          <span class="field-label">Name</span>
+
+                          <input
+                            type="text"
+                            class="input-field"
+                            v-model="selectedUser.name"
+                          />
+                        </div>
+
+                        <!-- EMAIL -->
+                        <div class="field-group">
+                          <span class="field-label">Email</span>
+
+                          <input
+                            type="email"
+                            class="input-field"
+                            v-model="selectedUser.email"
+                          />
+                        </div>
+
+                        <!-- PASSWORD -->
+                        <div class="field-group">
+                          <span class="field-label">Password</span>
+
+                          <input
+                            type="password"
+                            class="input-field"
+                            placeholder="Enter new password"
+                          />
+                        </div>
+
+                        <!-- POSITION -->
+                        <div class="field-group">
+                          <span class="field-label">Position</span>
+
+                          <input
+                            type="text"
+                            class="input-field"
+                            v-model="selectedUser.position"
+                          />
+                        </div>
+
+                        <!-- ROLE -->
+                        <div class="field-group">
+                          <span class="field-label">Role</span>
+
+                          <select
+                            class="input-field"
+                            v-model="selectedUser.role"
+                          >
+                            <option value="employee">
+                              Employee
+                            </option>
+
+                            <option value="pm">
+                              PM
+                            </option>
+
+                            <option value="hr">
+                              HR
+                            </option>
+                          </select>
+                        </div>
+
+                        <!-- STATUS -->
+                        <div class="field-group">
+                          <span class="field-label">Status</span>
+
+                          <select
+                            class="input-field"
+                            v-model="selectedUser.status"
+                          >
+                            <option value="active">
+                              Active
+                            </option>
+
+                            <option value="inactive">
+                              Inactive
+                            </option>
+                          </select>
+                        </div>
+
+                        <div class="modal-footer">
+
+                          <button
+                            type="button"
+                            class="btn-confirm"
+                            @click="handleConfirmEdit"
+                          >
+                            <i class="ti ti-check"></i>
+                            Confirm
+                          </button>
+
+                        </div>
+
+                      </div>
+
+                    </div>
+
                   </div>
+
+                </Transition>
+
+              </div>
+
+            </Transition>
+
+          </Teleport>
+
+        </div>
+
+        <!-- PAGINATION -->
+        <div>
+          <div class="overtime-table-footer">
+            <div class="footer-pagination fill">
+
+              <Pagination
+                :currentPage="currentPage"
+                :perPage="perPage"
+                :totalRows="filteredUsers.length"
+                @page-changed="onPageChange"
+              />
+            
             </div>
           </div>
-      </div>
-    </div>
-
-    <!-- MODAL DETAIL -->
-    <Teleport to="body">
-      <Transition name="overlay-fade">
-        <div
-          v-if="isModalOpen"
-          class="modal-overlay"
-          @click="handleOverlayClick"
-        >
-          <Transition name="modal-slide">
-            <div
-              v-if="isModalOpen"
-              class="modal-content"
-              role="dialog"
-              aria-modal="true"
-              @click.stop
-            >
-              <!-- Modal Header -->
-              <div class="modal-header">
-                <p class="modal-title">OVERTIME SUBMISSION DETAILS</p>
-                <img
-                  :src="getStatusIcon(selectedApproval?.status)"
-                  :alt="selectedApproval?.status"
-                  class="modal-status-img"
-                />
-                <button
-                  class="close-btn"
-                  @click="closeModal"
-                  aria-label="Close modal"
-                >
-                  <i class="ti ti-x"></i>
-                </button>
-              </div>
-
-              <!-- Modal Body -->
-              <div class="modal-body">
-                <!-- A. INFORMASI PENGAJU -->
-                <div class="detail-section">
-                  <p class="section-label">
-                    <i class="ti ti-user"></i> Submitter Information
-                  </p>
-                 <div class="field-grid">
-                    <div class="field-group full">
-                      <span class="field-label">Name</span>
-                      <span class="field-value">
-                        {{ selectedApproval?.employeeName }}
-                      </span>
-                    </div>
-
-                    <div class="field-group full">
-                      <span class="field-label">Position</span>
-                      <span class="field-value">
-                        {{ selectedApproval?.employeePosition }}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="detail-divider"></div>
-
-                <!-- B. DETAIL LEMBUR -->
-                <div class="detail-section">
-                  <p class="section-label">
-                    <i class="ti ti-clock"></i> Overtime Information
-                  </p>
-                  <div class="field-grid">
-                    
-                    <!-- ============================ FORM TITLE (itu calling data Arraynya udah bener ga si?)============================ -->
-                    <div class="field-group full">
-                      <span class="field-label">FORM TITLE</span> 
-                      <span class="field-value">
-                        {{ selectedApproval?.overtime_title }}
-                      </span>
-                    </div>
-                    
-                    <div class="field-group">
-                      <span class="field-label">Date</span>
-                      <span class="field-value">
-                        {{ formatDate(selectedApproval?.overtimeDate) }}
-                      </span>
-                    </div>
-
-                    <div class="field-group">
-                      <span class="field-label">Start Time</span>
-                      <span class="field-value">
-                        {{ selectedApproval?.startTime }} WIB
-                      </span>
-                    </div>
-
-                    <div class="field-group">
-                      <span class="field-label">End Time</span>
-                      <span class="field-value">
-                        {{ selectedApproval?.endTime }} WIB
-                      </span>
-                    </div>
-
-                    <div class="field-group">
-                      <span class="field-label">Duration</span>
-                      <span class="field-value">
-                        {{ selectedApproval?.duration }}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="detail-divider"></div>
-
-                <!-- C. DETAIL PEKERJAAN -->
-                <div class="detail-section">
-                  <p class="section-label">
-                    <i class="ti ti-align-left"></i> Task Details
-                  </p>
-                  <div
-                    v-for="(task, index) in selectedApproval?.tasks"
-                    :key="index"
-                    class="task-item"
-                  >
-                    <p class="task-title">
-                      TASK {{ index + 1 }}: {{ task.name }}
-                    </p>
-                    <p class="task-description">{{ task.description }}</p>
-                    <div
-                      v-if="index < selectedApproval.tasks.length - 1"
-                      class="task-divider"
-                    ></div>
-                  </div>
-                </div>
-
-                <div class="detail-divider"></div>
-
-                <!-- D. NOTES REVIEWER -->
-                <div class="detail-section">
-                  <p class="section-label">REVIEWER NOTES</p>
-                  <textarea
-                    v-if="!isFinalStatus(selectedApproval?.status)"
-                    v-model="reviewerNotes"
-                    class="reviewer-notes"
-                    placeholder="Add review notes..."
-                    rows="4"
-                  ></textarea>
-                  <textarea
-                    v-else
-                    class="reviewer-notes reviewer-notes-readonly"
-                    :value="getApprovalNotes(selectedApproval)"
-                    :placeholder="hasApprovalNotes(selectedApproval) ? '' : 'No reviewer notes available.'"
-                    readonly
-                    disabled
-                    rows="4"
-                  ></textarea>
-                </div>
-              </div>
-
-            </div>
-          </Transition>
         </div>
-      </Transition>
-    </Teleport>
+      </div>
+
+
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, watch, onUnmounted, onBeforeMount } from "vue";
-import axios from "axios";
+import { ref, computed } from "vue"
 import Pagination from "../assets/Pagination.vue"
-import SearchFilter from "../assets/SearchFilter.vue"
-
-// ============================================================
-// STATE MANAGEMENT
-// ============================================================
-
-async function fetchApprovals() {
-
-
-// =================== INI PAKE DATA HARDCODE ==================
-
-   try {
-    const data = hardcodedApprovals;
-
-    approvals.value = data.filter(item =>
-      ["approved", "declined"].includes(
-        normalizeStatus(item.status)
-      )
-    );
-
-    console.log("Approvals:", approvals.value);
-
-  } catch (error) {
-    console.error(error);
-  }
-}
-
-
-    // ============ ini data asli dari API ===============
-
-//   const token = localStorage.getItem("token");
-
-//   try {
-//     const response = await axios.get("http://127.0.0.1:8000/api/approvals", {
-//       headers: {
-//         Authorization: `Bearer ${token}`,
-//         Accept: "application/json",
-//       },
-//     });
-
-//     approvals.value = response.data?.length 
-//         ? response.data 
-//         : hardcodedApprovals;
-
-//     console.log("Approvals:", response.data);
-
-//   } catch (error) {
-//     console.error("Gagal ambil approval:", error);
-
-//     approvals.value = data.filter(item => 
-//         ["approved", "declined"].includes (
-//             normalizeStatus(item.status)
-//         )
-//     )
-//   }
-//}
-
-const selectedFilter = ref("all");
-
-//hardcode data
-const hardcodedApprovals = [
-  {
-    id: 1,
-    employeeName: "Altaf Azka",
-    employeePosition: "Frontend Developer",
-    overtime_title: "UI Fix for Review Page",
-    overtimeDate: "2026-05-20",
-    startTime: "18:00",
-    endTime: "20:00",
-    duration: "2 Hours",
-    status: "approved",
-    notes: "Approved for release prep.",
-    tasks: [
-      {
-        name: "Fix filter integration",
-        description: "Integrate reusable SearchFilter into the history table.",
-      },
-    ],
-  },
-  {
-    id: 2,
-    employeeName: "Afgan Ramadhan",
-    employeePosition: "Backend Developer",
-    overtime_title: "Table Fix for Review Page",
-    overtimeDate: "2026-05-23",
-    startTime: "18:00",
-    endTime: "01:00",
-    duration: "7 Hours",
-    status: "declined",
-    notes: "Approved for release prep.",
-    tasks: [
-      {
-        name: "Fix filter integration",
-        description: "Integrate reusable SearchFilter into the history table.",
-      },
-    ],
-  },
-  {
-    id: 3,
-    employeeName: "Christopher Clay",
-    employeePosition: "UI/UX Designer",
-    overtime_title: "UI/UX Design for Review Page",
-    overtimeDate: "2026-05-25",
-    startTime: "18:00",
-    endTime: "12:00",
-    duration: "6 Hours",
-    status: "approved",
-    notes: "Approved for release prep.",
-    tasks: [
-      {
-        name: "Fix filter integration",
-        description: "Integrate reusable SearchFilter into the history table.",
-      },
-    ],
-  },
-  {
-    id: 4,
-    employeeName: "Christopher Clay",
-    employeePosition: "UI/UX Designer",
-    overtime_title: "UI/UX Design for Review Page",
-    overtimeDate: "2026-05-25",
-    startTime: "18:00",
-    endTime: "12:00",
-    duration: "6 Hours",
-    status: "reviewed",
-    notes: "Approved for release prep.",
-    tasks: [
-      {
-        name: "Fix filter integration",
-        description: "Integrate reusable SearchFilter into the history table.",
-      },
-    ],
-  },
-];
-
-const approvals = ref([]);
-
-const isModalOpen = ref(false);
-const selectedApproval = ref(null);
-const reviewerNotes = ref("");
+import UserManagementBar from "../assets/UserManagementBar.vue"
 
 const searchQuery = ref("")
-const selectedDateSort = ref("")
-const selectedStatusSort = ref("")
-const selectedDurationSort = ref("")
+const users = ref([
+  {
+    id: 1,
+    name: "Budi Santoso",
+    email: "budi@example.com",
+    position: "Frontend Developer",
+    role: "employee",
+    status: "active",
+  },
 
+  {
+    id: 2,
+    name: "Siti Amelia",
+    email: "siti@example.com",
+    position: "Project Manager",
+    role: "pm",
+    status: "inactive",
+  },
+])
 
-const filters = [
-  { label: "All", value: "all" },
-  { label: "Approved", value: "approved" },
-  { label: "Declined", value: "declined" },
-];
+const filteredUsers = computed(() => {
+  const search = searchQuery.value.toLowerCase()
 
-const statusFilterOptions = filters.filter((filter) => filter.value !== "all");
-
-
-// ============================================================
-// COMPUTED PROPERTIES
-// ============================================================
-function normalizeStatus(status = "") {
-  const normalized = String(status).trim().toLowerCase();
-  return normalized === "rejected" ? "declined" : normalized;
-}
-
-function isFinalStatus(status = "") {
-  return ["approved", "declined"].includes(normalizeStatus(status));
-}
-
-function getApprovalNotes(approval = {}) {
-  const candidates = [
-    approval?.notes,
-    approval?.note,
-    approval?.review_notes,
-    approval?.reviewer_notes,
-    approval?.rejection_notes,
-    approval?.declined_notes,
-    approval?.review?.notes,
-    approval?.approval?.notes,
-    approval?.metadata?.notes,
-  ];
-
-  const found = candidates.find((value) => {
-    if (typeof value === "string") {
-      return value.trim().length > 0;
-    }
-
-    return Boolean(value);
-  });
-
-  return typeof found === "string" ? found.trim() : found || "";
-}
-
-function hasApprovalNotes(approval = {}) {
-  return getApprovalNotes(approval).length > 0;
-}
-
-function getSearchValue(approval = {}) {
-  return [
-    approval.employeeName,
-    approval.overtime_title,
-  ].join(" ").toLowerCase();
-}
-
-function getDurationValue(duration) {
-  if (typeof duration === "number") {
-    return duration;
-  }
-
-  const match = String(duration ?? "").match(/\d+(\.\d+)?/);
-  return match ? Number(match[0]) : 0;
-}
-
-function getDateValue(date) {
-  const time = new Date(date).getTime();
-  return Number.isNaN(time) ? 0 : time;
-}
-
-const filteredApprovals = computed(() => {
-  let data = [...approvals.value]
-
-    data = data.filter(item =>
-    ["approved", "declined"].includes(normalizeStatus(item.status))
-)
-
-  // FILTER TABS
-  if (selectedFilter.value !== "all") {
-    data = data.filter(
-      item =>
-        normalizeStatus(item.status) === selectedFilter.value
-      )
-  }
-
-  const search = searchQuery.value.trim().toLowerCase()
-  if (search) {
-    data = data.filter((item) => getSearchValue(item).includes(search))
-  }
-
-  // STATUS DROPDOWN
-  if (selectedStatusSort.value) {
-    data = data.filter(
-      item =>
-        normalizeStatus(item.status) === selectedStatusSort.value
-    )
-  }
-
-  if (selectedDateSort.value || selectedDurationSort.value) {
-    data.sort((a, b) => {
-      let dateCompare = 0
-      let durationCompare = 0
-
-      if (selectedDateSort.value === "newest") {
-        dateCompare = getDateValue(b.overtimeDate) - getDateValue(a.overtimeDate)
-      }
-
-      if (selectedDateSort.value === "oldest") {
-        dateCompare = getDateValue(a.overtimeDate) - getDateValue(b.overtimeDate)
-      }
-
-      if (selectedDurationSort.value === "highest") {
-        durationCompare = getDurationValue(b.duration) - getDurationValue(a.duration)
-      }
-
-      if (selectedDurationSort.value === "lowest") {
-        durationCompare = getDurationValue(a.duration) - getDurationValue(b.duration)
-      }
-
-      return dateCompare || durationCompare
-    })
-  }
-
-  return data
-})  
-
-// ============================================================
-// FUNCTIONS
-// ============================================================
-
-function filterApprovals(status) {
-  selectedFilter.value = status;
-}
-
-function getStatusIcon(status) {
-  const icons = {
-    pending: "/icons/status/Pending.png",
-    approved: "/icons/status/Approved.png",
-    declined: "/icons/status/Declined.png",
-    reviewed: "/icons/status/Reviewed.png",
-  };
-
-  return icons[normalizeStatus(status)] || "/icons/status/Pending.png";
-}
-
-function openModal(approval) {
-  selectedApproval.value = approval;
-  isModalOpen.value = true;
-  reviewerNotes.value = "";
-  document.body.style.overflow = "hidden";
-}
-
-function closeModal() {
-  isModalOpen.value = false;
-  selectedApproval.value = null;
-  reviewerNotes.value = "";
-  document.body.style.overflow = "";
-}
-
-function handleOverlayClick(event) {
-  if (event.target === event.currentTarget) {
-    closeModal();
-  }
-}
-
-function handleKeydown(event) {
-  if (event.key === "Escape" && isModalOpen.value) {
-    closeModal();
-  }
-}
-
-async function handleApprove(id) {
-  if (!confirm("Apakah Anda yakin ingin menyetujui pengajuan lembur ini?")) {
-    return;
-  }
-
-  const token = localStorage.getItem("token");
-
-  try {
-    await axios.post(
-      `http://127.0.0.1:8000/api/approvals/${id}/approve`,
-      {},
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: "application/json",
-        },
-      },
-    );
-
-    await fetchApprovals();
-    closeModal();
-  } catch (error) {
-    console.error(error.response?.data || error);
-    alert("Gagal approve pengajuan");
-  }
-}
-
-async function handleReject(id) {
-  if (!reviewerNotes.value.trim()) {
-    alert("Catatan penolakan wajib diisi");
-    return;
-  }
-
-  const token = localStorage.getItem("token");
-
-  try {
-    await axios.post(
-      `http://127.0.0.1:8000/api/approvals/${id}/reject`,
-      { notes: reviewerNotes.value },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: "application/json",
-        },
-      },
-    );
-
-    await fetchApprovals();
-    closeModal();
-  } catch (error) {
-    console.log("ERROR REJECT FULL:", error);
-    console.log("RESPONSE:", error.response);
-    console.log("DATA:", error.response?.data);
-
-    alert(error.response?.data?.message || "Gagal reject pengajuan");
-  }
-}
-
-const MONTHS = [
-  "JAN",
-  "FEB",
-  "MAR",
-  "APR",
-  "MAY",
-  "JUN",
-  "JUL",
-  "AUG",
-  "SEP",
-  "OCT",
-  "NOV",
-  "DEC",
-];
-
-function formatDate(date) {
-  if (!date) return "-";
-  const d = new Date(date);
-  const day = d.getDate();
-  const month = MONTHS[d.getMonth()];
-  const year = String(d.getFullYear()).slice(-2);
-  return `${day}-${month}-${year}`;
-}
-
-const currentPage = ref(1)
-const perPage = ref(10)
-
-const paginatedApprovals = computed(() => {
-  const start = (currentPage.value - 1) * perPage.value
-  const end = start + perPage.value
-
-  return filteredApprovals.value.slice(start, end)
+  return users.value.filter((user) =>
+    user.name.toLowerCase().includes(search)
+  )
 })
 
+const currentPage = ref(1)
+
+const perPage = ref(10)
+
+const paginatedUsers = computed(() => {
+  const start = (currentPage.value - 1) * perPage.value
+
+  const end = start + perPage.value
+
+  return filteredUsers.value.slice(start, end)
+})
 
 function onPageChange(page) {
   currentPage.value = page
 }
 
-watch(
-  [
-    searchQuery,
-    selectedFilter,
-    selectedDateSort,
-    selectedDurationSort,
-    selectedStatusSort,
-  ],
-  () => {
-    currentPage.value = 1
-  },
-)
+// ======================= MODAL STATE ====================
 
-// ============================================================
-// LIFECYCLE HOOKS
-// ============================================================
-onBeforeMount(() => {
-  fetchApprovals();
-  window.addEventListener("keydown", handleKeydown);
-});
+const isModalOpen = ref(false)
+const selectedUser = ref(null)
 
-onUnmounted(() => {
-  window.removeEventListener("keydown", handleKeydown);
-});
+function openModal(user) {
+  selectedUser.value = user
 
-// ============================================================
-// API INTEGRATION (TODO)
-// ============================================================
-// TODO: Uncomment saat backend ready
-// async function fetchApprovals() {
-//   const response = await axios.get('/overtime/pending-approvals', {
-//     params: { pm_id: currentPmId }
-//   })
-//   approvals.value = response.data
-// }
+  isModalOpen.value = true
 
-// async function approveRequest(id, notes) {
-//   await axios.post(`/overtime/${id}/approve`, { notes })
-// }
+  document.body.style.overflow = "hidden"
+}
 
-// async function rejectRequest(id, notes) {
-//   await axios.post(`/overtime/${id}/reject`, { notes })
-// }
+
+function closeModal() {
+  isModalOpen.value = false
+
+  selectedUser.value = null
+
+  document.body.style.overflow = ""
+}
+
+function handleOverlayClick(event) {
+  if (event.target === event.currentTarget) {
+    closeModal()
+  }
+}
+
+function getStatusIcon(status) {
+  const icons = {
+    active: "/icons/status/Active.png",
+    inactive: "/icons/status/Inactive.png",
+  }
+
+  return icons[status]
+}
+
+function handleConfirmEdit() {
+  console.log("USER UPDATED:", selectedUser.value)
+
+  closeModal()
+}
+
 </script>
 
 <style scoped>
-@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700&family=Inter:wght@400;500;600&display=swap");
-@import url("https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css");
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
-
-.review-approvals {
+.user-management {
   background: #f4f5f7;
   min-height: 100%;
   display: flex;
   flex-direction: column;
   gap: 32px;
-} 
+}
 
 .anjay {
   display: flex;
   flex-direction: column;
   gap: 0px;
-  margin : 0px 20px 20px 20px ;
+  margin: 0px 20px 20px 20px;
   flex: 1;
 }
 
-/* ============================================================
-   HEADER SECTION
-   ============================================================ */
+/*HEADER SECTION*/
+.hero-section {
+  background: linear-gradient(135deg, #1d127d, #397cfa);
+  padding: 56.5px 56.5px 56.5px 26px;
+}
+
+.hero-grid {
+  display: flex;
+  flex-direction: column;
+  font-size: 18px;
+  font-family: "Plus Jakarta Sans";
+}
 
 .header-title {
   font-size: 26x;
@@ -742,22 +389,7 @@ onUnmounted(() => {
   margin: 0;
 }
 
-.stats-section {
-  background: linear-gradient(135deg, #1d127d, #397cfa);
-  padding: 56.5px 56.5px 56.5px 26px;
-}
-
-.stats-grid { 
-  display: flex;
-  flex-direction: column;
-  font-size: 18px;
-  font-family: "Plus Jakarta Sans";
-}
-
-
-/* ============================================================
-   TABLE
-   ============================================================ */
+ /*.====================== TABLE CONTAINER ==================*/ 
 .table-container {
   background: #fff;
   border-radius: 12px;
@@ -773,7 +405,7 @@ onUnmounted(() => {
 .table-wrapper {
   flex: 1 1 auto;
   overflow-x: auto;
-  overflow-y: auto; 
+  overflow-y: auto;
   width: 100%;
 }
 
@@ -793,12 +425,11 @@ thead th {
   border-bottom: 2px solid #e5e7eb;
 }
 
-thead th:nth-child(1) {width: 20%;}
-thead th:nth-child(2) {width: 20%;}
-thead th:nth-child(3) {width: 15%;}
-thead th:nth-child(4) {width: 10%;}
-thead th:nth-child(5) {width: 10%;}
-thead th:nth-child(6) {width: 5%;}
+thead th:nth-child(1) { width: 10%;}
+thead th:nth-child(2) { width: 10%;}
+thead th:nth-child(3) { width: 10%; }
+thead th:nth-child(4) { width: 10%; }
+thead th:nth-child(5) { width: 5%; }
 
 tbody td {
   font-size: 13px;
@@ -811,10 +442,6 @@ tbody tr:hover {
   background: #f9fafb;
 }
 
-tbody tr:last-child td {
-  border-bottom: none;
-}
-
 .overtime-table-footer {
   margin-top: auto;
 
@@ -822,9 +449,8 @@ tbody tr:last-child td {
   justify-content: flex-end;
   align-items: center;
 
-  padding-top: 20px; 
-  border-top: 1px solid #E5E7EB;
-
+  padding-top: 20px;
+  border-top: 1px solid #e5e7eb;
 }
 
 .footer-pagination {
@@ -840,13 +466,6 @@ tbody tr:last-child td {
   width: auto;
   display: flex;
   nav-right: auto;
-}
-
-.modal-status-img {
-  height: 18px;
-  width: auto;
-  display: block;
-  margin-left     : auto;
 }
 
 .detail-btn {
@@ -872,16 +491,16 @@ tbody tr:last-child td {
   font-style: italic;
 }
 
-.text-center-status { 
+.text-center-status {
   text-align: center;
   color: #6b7280;
   font-style: italic;
 }
 
+/* =================================================================
+    MODAL
+   ================================================================*/ 
 
-/* ============================================================
-   MODAL
-   ============================================================ */
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -924,6 +543,7 @@ tbody tr:last-child td {
   margin: 0;
 }
 
+
 .close-btn {
   background: transparent;
   border: none;
@@ -946,162 +566,100 @@ tbody tr:last-child td {
   padding: 24px;
   overflow-y: auto;
   flex: 1;
+  font: 14px "Plus Jakarta Sans"; 
 }
 
-.detail-section {
-  margin-bottom: 16px;
-}
-
-.section-label {
-  font-size: 10px;
-  font-weight: 600;
-  color: #888;
-  text-transform: uppercase;
-  letter-spacing: 0.6px;
-  font-family: "Plus Jakarta Sans", sans-serif;
-  margin: 0 0 10px 0;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-
-.field-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-}
-
-.field-group {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.field-group.full {
-  grid-column: 1 / -1;
-}
-
-.field-label {
-  font-size: 10px;
-  color: #888;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  font-weight: 500;
-  font-family: "Inter", sans-serif;
-}
-
-.field-value {
-  font-size: 13px;
-  color: #111;
-  font-weight: 500;
-  background: #f7f7f8;
-  border-radius: 7px;
-  padding: 10px 12px;
-  min-height: 36px;
-  line-height: 1.5;
-  font-family: "Inter", sans-serif;
-}
-
-.detail-divider {
-  height: 1px;
-  background: #e5e7eb;
-  margin: 16px 0;
-}
-
-.task-item {
-  margin-bottom: 12px;
-}
-
-.task-title {
-  font-size: 12px;
-  font-weight: 700;
-  color: #1d127d;
-  font-family: "Plus Jakarta Sans", sans-serif;
-  text-transform: uppercase;
-  margin: 0 0 6px 0;
-}
-
-.task-description {
-  font-size: 13px;
-  color: #111;
-  line-height: 1.6;
-  font-family: "Inter", sans-serif;
-  margin: 0;
-}
-
-.task-divider {
-  height: 1px;
-  background: #e5e7eb;
-  margin: 12px 0;
-}
-
-.reviewer-notes {
+.input-field {
   width: 100%;
-  min-height: 80px;
-  background: #f9fafb;
-  border: 1.5px solid #e5e7eb;
+  height: 42px;
+  border: 1px solid #d1d5db;
   border-radius: 8px;
-  padding: 10px 12px;
+  padding: 0 12px;
   font-size: 13px;
   font-family: "Inter", sans-serif;
-  line-height: 1.6;
-  resize: vertical;
+  background: #fff;
   transition: border-color 0.15s;
 }
 
-.reviewer-notes:focus {
+.input-field:focus {
   outline: none;
-  border-color: #3b82f6;
+  border-color: #2563eb;
 }
 
-.reviewer-notes-readonly {
-  background: #f3f4f6;
-  color: #111;
-  cursor: not-allowed;
-}
-
-.reviewer-notes-readonly:disabled {
-  opacity: 1;
-  -webkit-text-fill-color: #111;
-}
 
 .modal-footer {
   padding: 16px 24px;
   border-top: 1px solid #e5e7eb;
   display: flex;
   justify-content: flex-end;
-  gap: 12px;
 }
 
-.btn-reject,
-.btn-approve {
+.btn-confirm {
+  height: 42px;
   padding: 0 24px;
-  height: 40px;
-  border-radius: 8px;
   border: none;
+  border-radius: 8px;
+  background: #1d127d;
+  color: #fff;
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 600;
   font-family: "Plus Jakarta Sans", sans-serif;
   cursor: pointer;
+  transition: background 0.15s;
+}
+
+.btn-confirm:hover {
+  background: #2563eb;
+}
+
+.modal-footer {
+  padding: 16px 24px;
+
+  border-top: 1px solid #e5e7eb;
+
   display: flex;
+
+  justify-content: flex-end;
+}
+
+.btn-confirm {
+  height: 42px;
+
+  padding: 0 24px;
+
+  border: none;
+
+  border-radius: 8px;
+
+  background: #1d127d;
+
+  color: #fff;
+
+  font-size: 13px;
+
+  font-weight: 700;
+
+  font-family: "Plus Jakarta Sans", sans-serif;
+
+  display: flex;
+
   align-items: center;
+
   gap: 6px;
-  transition: opacity 0.15s;
+
+  cursor: pointer;
+
+  transition:
+    background 0.15s,
+    transform 0.15s;
 }
 
-.btn-reject:hover,
-.btn-approve:hover {
-  opacity: 0.9;
+.btn-confirm:hover {
+  background: #2563eb;
 }
 
-.btn-reject {
-  background: #dc2626;
-  color: #fff;
-}
-
-.btn-approve {
-  background: #16a34a;
-  color: #fff;
+.btn-confirm:active {
+  transform: scale(0.98);
 }
 
 /* ============================================================
@@ -1112,11 +670,6 @@ tbody tr:last-child td {
   transition: opacity 0.25s ease;
 }
 
-.overlay-fade-enter-from,
-.overlay-fade-leave-to {
-  opacity: 0;
-}
-
 .modal-slide-enter-active,
 .modal-slide-leave-active {
   transition:
@@ -1124,47 +677,4 @@ tbody tr:last-child td {
     opacity 0.25s ease;
 }
 
-.modal-slide-enter-from {
-  transform: translateY(20px) scale(0.97);
-  opacity: 0;
-}
-
-.modal-slide-leave-to {
-  transform: translateY(20px) scale(0.97);
-  opacity: 0;
-}
-
-/* ============================================================
-   RESPONSIVE
-   ============================================================ */
-@media (max-width: 768px) {
-  .review-approvals {
-    padding: 16px;
-  }
-
-  .header {
-    padding: 20px;
-  }
-
-  .table-container {
-    padding: 16px;
-  }
-
-  .modal-content {
-    max-width: 100%;
-    border-radius: 12px;
-  }
-
-  .modal-body {
-    padding: 16px;
-  }
-
-  .modal-footer {
-    padding: 12px 16px;
-  }
-
-  .field-grid {
-    grid-template-columns: 1fr;
-  }
-}
 </style>

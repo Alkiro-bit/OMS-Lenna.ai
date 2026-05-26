@@ -236,21 +236,24 @@
                 </div>
               </div>
 
-              <div v-if="!isFinalStatus(selectedApproval?.status)" class="modal-footer">
+              <!-- Modal Footer -->
+              <div
+                v-if="!isFinalStatus(selectedApproval?.status)"
+                class="modal-footer"
+              >
                 <button
                   type="button"
                   class="btn-reject"
-                  @click="handleInvalid(selectedApproval?.id)"
+                  @click="handleReject(selectedApproval?.id)"
                 >
-                  <i class="ti ti-circle-x"></i> Invalid
+                  <i class="ti ti-circle-x"></i> Reject
                 </button>
-
                 <button
                   type="button"
                   class="btn-approve"
-                  @click="handleValid(selectedApproval?.id)"
+                  @click="handleApprove(selectedApproval?.id)"
                 >
-                  <i class="ti ti-circle-check"></i> Valid
+                  <i class="ti ti-circle-check"></i> Approve
                 </button>
               </div>
             </div>
@@ -295,174 +298,7 @@ async function fetchApprovals() {
 }
 
 const selectedFilter = ref("all");
-const approvals = ref([
-{
-    id: 1,
-    employeeName: "Budi Santoso",
-    employeePosition: "Frontend Developer",
-
-    overtime_title: "Website Dashboard Revision",
-
-    overtimeDate: "2026-05-20",
-
-    startTime: "18:00",
-    endTime: "22:00",
-
-    duration: "4 Hours",
-
-    status: "reviewed",
-
-    notes: "",
-
-    tasks: [
-      {
-        name: "Dashboard UI Improvement",
-        description:
-          "Melakukan revisi tampilan dashboard admin sesuai feedback dari tim QA dan Project Manager.",
-      },
-      {
-        name: "Responsive Fix",
-        description:
-          "Memperbaiki tampilan mobile pada halaman analytics dan report.",
-      },
-    ],
-  },
-
-  {
-    id: 2,
-    employeeName: "Siti Amelia",
-    employeePosition: "Backend Developer",
-
-    overtime_title: "API Optimization",
-
-    overtimeDate: "2026-05-21",
-
-    startTime: "19:00",
-    endTime: "23:30",
-
-    duration: "4.5 Hours",
-
-    status: "approved",
-
-    notes: "Valid lembur sesuai kebutuhan deployment production.",
-
-    tasks: [
-      {
-        name: "Database Query Optimization",
-        description:
-          "Mengurangi response time pada endpoint laporan overtime dan payroll.",
-      },
-      {
-        name: "Server Deployment",
-        description:
-          "Melakukan deployment API ke server production dan testing endpoint.",
-      },
-    ],
-  },
-
-  {
-    id: 3,
-    employeeName: "Andi Wijaya",
-    employeePosition: "UI/UX Designer",
-
-    overtime_title: "Mobile App Redesign",
-
-    overtimeDate: "2026-05-18",
-
-    startTime: "17:30",
-    endTime: "21:00",
-
-    duration: "3.5 Hours",
-
-    status: "declined",
-
-    notes:
-      "Pengajuan lembur tidak valid karena pekerjaan dapat diselesaikan pada jam kerja normal.",
-
-    tasks: [
-      {
-        name: "Redesign Login Screen",
-        description:
-          "Membuat redesign halaman login aplikasi mobile perusahaan.",
-      },
-      {
-        name: "Prototype Revision",
-        description:
-          "Melakukan revisi prototype berdasarkan feedback stakeholder.",
-      },
-    ],
-  },
-
-  {
-    id: 4,
-    employeeName: "Kevin Pratama",
-    employeePosition: "DevOps Engineer",
-
-    overtime_title: "Production Server Maintenance",
-
-    overtimeDate: "2026-05-22",
-
-    startTime: "20:00",
-    endTime: "01:00",
-
-    duration: "5 Hours",
-
-    status: "reviewed",
-
-    notes: "",
-
-    tasks: [
-      {
-        name: "Server Monitoring",
-        description:
-          "Melakukan monitoring penggunaan resource server production.",
-      },
-      {
-        name: "Security Patch Update",
-        description:
-          "Melakukan update security patch pada server Linux production.",
-      },
-      {
-        name: "Backup Database",
-        description:
-          "Melakukan backup database sebelum maintenance sistem.",
-      },
-    ],
-  },
-
-  {
-    id: 5,
-    employeeName: "Clara Angelia",
-    employeePosition: "Quality Assurance",
-
-    overtime_title: "Regression Testing Sprint 12",
-
-    overtimeDate: "2026-05-23",
-
-    startTime: "18:30",
-    endTime: "22:30",
-
-    duration: "4 Hours",
-
-    status: "pending",
-
-    notes: "",
-
-    tasks: [
-      {
-        name: "Manual Testing",
-        description:
-          "Melakukan regression testing untuk seluruh fitur payroll dan overtime.",
-      },
-      {
-        name: "Bug Documentation",
-        description:
-          "Mendokumentasikan bug dan issue yang ditemukan selama testing.",
-      },
-    ],
-  },
-
-]);
+const approvals = ref([]);
 const isModalOpen = ref(false);
 const selectedApproval = ref(null);
 const reviewerNotes = ref("");
@@ -644,8 +480,8 @@ function handleKeydown(event) {
   }
 }
 
-async function handleValid(id) {
-  if (!confirm("Apakah Anda yakin ingin memvalidasi pengajuan lembur ini?")) {
+async function handleApprove(id) {
+  if (!confirm("Apakah Anda yakin ingin menyetujui pengajuan lembur ini?")) {
     return;
   }
 
@@ -653,7 +489,7 @@ async function handleValid(id) {
 
   try {
     await axios.post(
-      `http://127.0.0.1:8000/api/submissions/${id}/approve`,
+      `http://127.0.0.1:8000/api/overtimes/${id}/hr-approve`,
       {},
       {
         headers: {
@@ -667,13 +503,13 @@ async function handleValid(id) {
     closeModal();
   } catch (error) {
     console.error(error.response?.data || error);
-    alert("Gagal validasi pengajuan");
+    alert("Gagal approve pengajuan");
   }
 }
 
-async function handleInvalid(id) {
+async function handleReject(id) {
   if (!reviewerNotes.value.trim()) {
-    alert("Catatan invalid wajib diisi");
+    alert("Catatan penolakan wajib diisi");
     return;
   }
 
@@ -681,10 +517,8 @@ async function handleInvalid(id) {
 
   try {
     await axios.post(
-      `http://127.0.0.1:8000/api/submissions/${id}/decline`,
-      {
-        notes: reviewerNotes.value,
-      },
+      `http://127.0.0.1:8000/api/overtimes/${id}/hr-reject`,
+      { notes: reviewerNotes.value },
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -696,9 +530,11 @@ async function handleInvalid(id) {
     await fetchApprovals();
     closeModal();
   } catch (error) {
-    console.error(error.response?.data || error);
+    console.log("ERROR REJECT FULL:", error);
+    console.log("RESPONSE:", error.response);
+    console.log("DATA:", error.response?.data);
 
-    alert(error.response?.data?.message || "Gagal invalidasi pengajuan");
+    alert(error.response?.data?.message || "Gagal reject pengajuan");
   }
 }
 
@@ -757,7 +593,7 @@ watch(
 // LIFECYCLE HOOKS
 // ============================================================
 onBeforeMount(() => {
- //  fetchApprovals();
+  fetchApprovals();
   window.addEventListener("keydown", handleKeydown);
 });
 
@@ -875,12 +711,24 @@ thead th {
   border-bottom: 2px solid #e5e7eb;
 }
 
-thead th:nth-child(1) { width: 15%;}
-thead th:nth-child(2) { width: 15%;}
-thead th:nth-child(3) { width: 10%; }
-thead th:nth-child(4) { width: 10%; }
-thead th:nth-child(5) { width: 15%; }
-thead th:nth-child(6) { width: 5%; }
+thead th:nth-child(1) {
+  width: 15%;
+}
+thead th:nth-child(2) {
+  width: 15%;
+}
+thead th:nth-child(3) {
+  width: 10%;
+}
+thead th:nth-child(4) {
+  width: 10%;
+}
+thead th:nth-child(5) {
+  width: 15%;
+}
+thead th:nth-child(6) {
+  width: 5%;
+}
 
 tbody td {
   font-size: 13px;

@@ -188,7 +188,7 @@ const navItems = computed(() => {
     {
       name: "dashboard",
       label: "Dashboard",
-      path: role === "human_resource" ? "/dashboard-hr" : "/dashboard",
+      path: "/dashboard",
       icon: "/icons/material-symbols_dashboard-rounded.png",
     },
     {
@@ -197,16 +197,16 @@ const navItems = computed(() => {
       path: "/form",
       icon: "/icons/mdi_form-outline.png",
     },
-    
+    { 
+      name: "histories",
+      label: "Histories",
+      path: "/histories",
+      icon: "/icons/material-symbols_history.png",
+    }
+
   ];
 
   if (role === "product_manager") {
-    // items = items.unshift({
-    //   name: "review-approvals",
-    //   label: "Review",
-    //   path: "/review-approvals",
-    //   icon: "/icons/mdi_checkbox-outline.png",
-    // });
 
     items = [{
       name: "review-approvals",
@@ -215,20 +215,30 @@ const navItems = computed(() => {
       icon: "/icons/mdi_checkbox-outline.png",
     }, ...items];
   } 
-    if (role === "human_resource") {
-    // items = items.filter((item) => item.name !== "form").push({
-    //   name: "submission",
-    //   label: "Submission",
-    //   path: "/Submission",
-    //   icon: "/icons/mdi_checkbox-outline.png",
-    // });
+    
+  if (role === "human_resource") {
 
-    items = [...items.filter((item) => item.name !== "form"),{
+    items = [
+    {
       name: "submission",
       label: "Submissions",  
       path: "/Submission",
       icon: "/icons/mdi_checkbox-outline.png",
-    }];
+    },
+    {
+      name: "Histories-hr",
+      label: "Histories",  
+      path: "/histories-hr",
+      icon: "/icons/material-symbols_history.png",
+    },
+    {
+      name: "user-management",
+      label: "User Management",  
+      path: "/user-management",
+      icon: "/icons/mdi_users.png",
+    },
+    ...items.filter((item) => item.name !== "form" && item.name !== "dashboard" && item.name !== "histories"),
+  ];
   } 
 
   return items;

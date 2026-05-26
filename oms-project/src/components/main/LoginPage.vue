@@ -120,10 +120,11 @@ const login = async () => {
       window.location.href = "/review-approvals";
     } else if (user.role === "human_resource") {
       window.location.href = "/dashboard-hr";
-      } 
+    }
   } catch (error) {
-    alert("Email atau password salah");
-    console.log(error);
+    console.log(error.response);
+
+    alert(error.response?.data?.message || "Terjadi kesalahan");
   }
 };
 </script>

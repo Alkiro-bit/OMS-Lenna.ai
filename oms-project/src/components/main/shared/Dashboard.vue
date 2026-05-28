@@ -10,9 +10,20 @@
       </div>
     </section>
 
-    <div class="anjay">
+    <div class="table-header">
       <div class="overtime-bar">My Overtime</div>
 
+      <SearchFilter 
+        v-model:search="searchQuery" 
+        v-model:dateSort="selectedDateSort"
+        v-model:durationSort="selectedDurationSort"
+        v-model:statusFilter="selectedStatusSort"
+        :status-options="statusFilterOptions"
+      />
+    
+    </div>
+
+    <div class="anjay">
       <div class="overtime-table-card">
         <div class="overtime-table-wrap">
           <table>
@@ -67,7 +78,7 @@
             <Pagination
               :currentPage="currentPage"
               :perPage="perPage"
-              :totalRows="dashboardData.overtime.length"
+              :totalRows="filteredData.length"
               @page-changed="onPageChange"
             />
           </div>
@@ -178,9 +189,9 @@
                   <div
                     class="field-grid"
                     v-if="
-                      selectedOvertime.detail_task &&
-                      selectedOvertime.detail_task.length > 0
-                    "
+                    Array.isArray(selectedOvertime.detail_task) &&
+                    selectedOvertime.detail_task.length > 0
+                  "
                   >
                     <div
                       class="field-group full"
@@ -247,17 +258,14 @@ import {
   onMounted,
   onUnmounted,
   onBeforeMount,
+  watch,
 } from "vue";
 import { useRoute } from "vue-router";
 import axios from "axios";
 import Pagination from "../assets/Pagination.vue";
+import SearchFilter from "../assets/SearchFilter.vue";
 
 const userRole = ref(window.localStorage.getItem("role"));
-
-// Kita perlu akses account dari parent? Atau gunakan state management / provide-inject?
-// Solusi sederhana: defineProps atau bisa juga pake composable.
-// Tapi karena account ada di App.vue (parent), kita bisa terima via props.
-// Atau pindahkan account ke store Pinia. Untuk sekarang, kita buat props dulu.
 
 const props = defineProps({
   account: {
@@ -310,6 +318,79 @@ const statsCards = computed(() => {
     },
   ];
 });
+
+//SearchFilter.vue states 
+
+const searchQuery = ref("")
+const selectedDateSort = ref("")
+const selectedStatusSort = ref("")
+const selectedDurationSort = ref("")
+
+const filters = [
+  { label: "All", value: "all" },
+  { label: "Approved", value: "approved" },
+  { label: "Declined", value: "declined" },
+  { label: "Pending", value: "pending" },
+  { label: "Reviewed", value: "reviewed" },
+]
+
+const statusFilterOptions = filters.filter(
+  (filter) => filter.value !== "all"
+)
+
+const filteredData = computed(() => {
+  let data = [...dashboardData.overtime]
+
+  if (searchQuery.value) {
+    data = data.filter(item =>
+      (
+        item.pm_name +
+        " " +
+        item.overtime_title
+      )
+      .toLowerCase()
+      .includes(searchQuery.value.toLowerCase())
+    )
+  }
+
+  if (selectedStatusSort.value) {
+    data = data.filter(item =>
+      normalizeStatus(item.status) === selectedStatusSort.value
+    )
+  }
+
+  // SORT DATE
+  if (selectedDateSort.value === "newest") {
+    data.sort((a, b) => new Date(b.date) - new Date(a.date))
+  }
+
+  if (selectedDateSort.value === "oldest") {
+    data.sort((a, b) => new Date(a.date) - new Date(b.date))
+  }
+
+  // SORT DURATION
+  if (selectedDurationSort.value === "highest") {
+    data.sort((a, b) => b.duration - a.duration)
+  }
+
+  if (selectedDurationSort.value === "lowest") {
+    data.sort((a, b) => a.duration - b.duration)
+  }
+
+  return data
+})
+
+watch(
+  [
+    searchQuery,
+    selectedDateSort,
+    selectedDurationSort,
+    selectedStatusSort,
+  ],
+  () => {
+    currentPage.value = 1
+  },
+)
 
 // Modal state
 const isDetailModalOpen = ref(false);
@@ -476,11 +557,11 @@ const currentPage = ref(1);
 const perPage = ref(10);
 
 const paginatedData = computed(() => {
-  const start = (currentPage.value - 1) * perPage.value;
-  const end = start + perPage.value;
+  const start = (currentPage.value - 1) * perPage.value
+  const end = start + perPage.value
 
-  return dashboardData.overtime.slice(start, end);
-});
+  return filteredData.value.slice(start, end)
+})
 
 const onPageChange = (page) => {
   currentPage.value = page;
@@ -500,6 +581,14 @@ const colSpanValue = computed(() => {
   flex-direction: column;
   height: 100%;
   gap: 4px;
+}
+
+.table-header {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin: 20px 20px 0 20px;
+  flex: 1;
 }
 
 .anjay {
@@ -860,6 +949,25 @@ tbody tr:last-child td {
   align-items: center;
   gap: 6px;
   transition: background 0.15s;
+  margin-left: 10px;
+}
+
+.btn-edit-modal {
+  padding: 0 24px;
+  height: 36px;
+  border-radius: 8px;
+  background: #FFC300;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: "Plus Jakarta Sans", sans-serif;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: background 0.15s;
+  margin-left: 10px;
 }
 
 .btn-close-modal:hover {

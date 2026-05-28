@@ -197,12 +197,12 @@ const navItems = computed(() => {
       path: "/form",
       icon: "/icons/mdi_form-outline.png",
     },
-    { 
-      name: "histories",
-      label: "Histories",
-      path: "/histories",
-      icon: "/icons/material-symbols_history.png",
-    }
+    // { 
+    //   name: "histories",
+    //   label: "Histories",
+    //   path: "/histories",
+    //   icon: "/icons/material-symbols_history.png",
+    // }
 
   ];
 

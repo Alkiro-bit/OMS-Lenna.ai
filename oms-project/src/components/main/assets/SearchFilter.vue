@@ -105,7 +105,8 @@ const emit = defineEmits([
   padding: 20px 22px;
   border-radius: 12px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-  margin-bottom: 24px;
+  margin-bottom: 0px;
+  margin-top: 10px;
   min-height: 84px;
   display: flex;
   align-items: center;

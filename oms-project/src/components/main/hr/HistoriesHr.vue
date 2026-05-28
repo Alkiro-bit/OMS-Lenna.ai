@@ -11,13 +11,16 @@
     <!-- TABLE -->
     <div class="anjay"> 
 
-      <SearchFilter
-        v-model:search="searchQuery"
-        v-model:date-sort="selectedDateSort"
-        v-model:duration-sort="selectedDurationSort"
-        v-model:status-filter="selectedStatusSort"
-        :status-options="statusFilterOptions"
-      />
+      
+      <div class="table-search"> 
+        <SearchFilter
+          v-model:search="searchQuery"
+          v-model:date-sort="selectedDateSort"
+          v-model:duration-sort="selectedDurationSort"
+          v-model:status-filter="selectedStatusSort"
+          :status-options="statusFilterOptions"
+        />
+      </div>
 
       <div class="table-container">
         <div class="table-wrapper">
@@ -721,6 +724,11 @@ onUnmounted(() => {
   gap: 0px;
   margin : 0px 20px 20px 20px ;
   flex: 1;
+}
+
+.table-search {
+  margin-bottom: 20px;
+  margin-top: -10px;
 }
 
 /* ============================================================

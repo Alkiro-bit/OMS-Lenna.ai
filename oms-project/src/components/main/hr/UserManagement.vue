@@ -148,6 +148,7 @@
                           <input
                             type="password"
                             class="input-field"
+                            v-model="selectedUser.password"
                             placeholder="Enter user password"
                           />
                         </div>
@@ -256,30 +257,43 @@
 </template>
 
 <script setup>
-import { ref, computed } from "vue"
+import { ref, computed, onMounted } from "vue"
 import Pagination from "../assets/Pagination.vue"
 import UserManagementBar from "../assets/UserManagementBar.vue"
+import axios from "axios"
 
 const searchQuery = ref("")
-const users = ref([
-  {
-    id: 1,
-    name: "Budi Santoso",
-    email: "budi@example.com",
-    position: "Frontend Developer",
-    role: "employee",
-    status: "active",
-  },
+const users = ref([])
 
-  {
-    id: 2,
-    name: "Siti Amelia",
-    email: "siti@example.com",
-    position: "Project Manager",
-    role: "pm",
-    status: "inactive",
-  },
-])
+async function fetchUsers() {
+
+  try {
+
+    const token = localStorage.getItem("token")
+
+    const response = await axios.get(
+      "http://127.0.0.1:8000/api/hr/users",
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    )
+
+    users.value = response.data
+
+    console.log("USERS :", response.data)
+
+  } catch (error) {
+
+    console.error(error)
+
+  }
+}
+
+onMounted(() => {
+  fetchUsers()
+})
 
 const filteredUsers = computed(() => {
   const search = searchQuery.value.toLowerCase()
@@ -343,34 +357,69 @@ function openCreateModal() {
   document.body.style.overflow = "hidden"
 }
 
-function handleConfirmEdit() {
+async function handleConfirmEdit() {
 
-  // CREATE USER
-  if (!selectedUser.value.id) {
+  try {
 
-    users.value.push({
-      ...selectedUser.value,
-      id: Date.now(),
-    })
+    const token = localStorage.getItem("token")
 
-    console.log("USER CREATED")
-  }
+    // ================= CREATE =================
+    if (!selectedUser.value.id) {
 
-  // UPDATE USER
-  else {
+      await axios.post(
+        "http://127.0.0.1:8000/api/hr/users",
+        {
+          name: selectedUser.value.name,
+          email: selectedUser.value.email,
+          password: selectedUser.value.password,
+          position: selectedUser.value.position,
+          role: selectedUser.value.role,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      )
 
-    const index = users.value.findIndex(
-      user => user.id === selectedUser.value.id
-    )
-
-    if (index !== -1) {
-      users.value[index] = { ...selectedUser.value }
+      console.log("USER CREATED")
     }
 
-    console.log("USER UPDATED")
-  }
+    // ================= UPDATE =================
+    else {
 
-  closeModal()
+      await axios.put(
+        `http://127.0.0.1:8000/api/hr/users/${selectedUser.value.id}`,
+        {
+          name: selectedUser.value.name,
+          email: selectedUser.value.email,
+          position: selectedUser.value.position,
+          role: selectedUser.value.role,
+          status: selectedUser.value.status,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      )
+
+      console.log("USER UPDATED")
+    }
+
+    await fetchUsers()
+
+    closeModal()
+
+  } catch (error) {
+
+    console.error(error)
+
+    alert(
+      error.response?.data?.message ||
+      "Terjadi kesalahan"
+    )
+  }
 }
 
 function closeModal() {

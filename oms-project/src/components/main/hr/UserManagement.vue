@@ -333,7 +333,7 @@ const selectedUser = ref({
 })
 
 function openModal(user) {
-  selectedUser.value = { ...user }
+  selectedUser.value = { ...user,  password: "",}
 
   isModalOpen.value = true
 
@@ -374,6 +374,7 @@ async function handleConfirmEdit() {
           password: selectedUser.value.password,
           position: selectedUser.value.position,
           role: selectedUser.value.role,
+          status: selectedUser.value.status,
         },
         {
           headers: {
@@ -393,6 +394,7 @@ async function handleConfirmEdit() {
         {
           name: selectedUser.value.name,
           email: selectedUser.value.email,
+          password: selectedUser.value.password,
           position: selectedUser.value.position,
           role: selectedUser.value.role,
           status: selectedUser.value.status,

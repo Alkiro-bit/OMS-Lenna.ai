@@ -238,6 +238,14 @@
               </div>
 
               <div class="detail-footer">
+
+                <button 
+                    v-if="selectedOvertime.status?.toLowerCase() === 'declined'"
+                    class="btn-edit-modal" 
+                    @click="handleEdit(selectedOvertime)">
+                  <i class="fa-solid fa-pen"></i> Edit
+                </button>
+
                 <button class="btn-close-modal" @click="closeDetailModal">
                   <i class="fa-solid fa-xmark"></i> Close
                 </button>
@@ -256,15 +264,17 @@ import {
   reactive,
   computed,
   onMounted,
-  onUnmounted,
   onBeforeMount,
+  onUnmounted,
   watch,
 } from "vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import axios from "axios";
 import Pagination from "../assets/Pagination.vue";
 import SearchFilter from "../assets/SearchFilter.vue";
+import { useOvertime } from "@/store/useOvertime.js";
 
+const router = useRouter();
 const userRole = ref(window.localStorage.getItem("role"));
 
 const props = defineProps({
@@ -275,7 +285,8 @@ const props = defineProps({
   },
 });
 
-const route = useRoute();
+const data = useOvertime(); 
+
 
 const dashboardData = reactive({
   summary: {
@@ -396,6 +407,7 @@ watch(
 const isDetailModalOpen = ref(false);
 const selectedOvertime = ref({});
 
+
 const openDetailModal = (rowData) => {
   selectedOvertime.value = rowData;
   isDetailModalOpen.value = true;
@@ -407,6 +419,13 @@ const closeDetailModal = () => {
   selectedOvertime.value = {};
   document.body.style.overflow = "";
 };
+
+
+const handleEdit = (rowData) => { 
+  data.setOvertimeValue(rowData)
+  closeDetailModal();
+  router.push("/form");
+}
 
 const handleOverlayClick = (event) => {
   if (event.target === event.currentTarget) {

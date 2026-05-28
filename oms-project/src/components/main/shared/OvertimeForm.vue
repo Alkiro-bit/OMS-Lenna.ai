@@ -55,7 +55,7 @@
               <input
                 type="date"
                 class="form-input"
-                v-model="formData.tanggal"
+                v-model="formData.date"
                 @change="validateTime"
                 required
               />
@@ -79,7 +79,7 @@
               <input
                 type="time"
                 class="form-input"
-                v-model="formData.jamMulai"
+                v-model="formData.start_time"
                 @change="validateTime"
                 required
               />
@@ -91,7 +91,7 @@
               <input
                 type="time"
                 class="form-input"
-                v-model="formData.jamSelesai"
+                v-model="formData.end_time"
                 @change="validateTime"
                 required
               />
@@ -101,7 +101,7 @@
           <!-- PIC / Project Manager -->
           <div class="form-group full">
             <label class="form-label required">PIC</label>
-            <select class="form-select" v-model="formData.pic" required>
+            <select class="form-select" v-model="formData.product_manager_id" required>
               <option value="" disabled>Choose PIC</option>
               <option v-for="pm in pmList" :key="pm.id" :value="pm.id">
                 {{ pm.name }}
@@ -112,14 +112,14 @@
           <!-- TASK LIST (dynamic) -->
           <div class="task-section">
             <div
-              v-for="(task, index) in formData.tasks"
+              v-for="(task, index) in formData.detail_task"
               :key="task.id"
               class="task-item"
             >
               <div class="task-header">
                 <span class="task-number">Task {{ index + 1 }}</span>
                 <button
-                  v-if="formData.tasks.length > 1"
+                  v-if="formData.detail_task.length > 1"
                   type="button"
                   class="btn-remove-task"
                   @click="removeTask(index)"
@@ -134,7 +134,7 @@
                 <input
                   type="text"
                   class="form-input"
-                  v-model="task.name"
+                  v-model="task.task_title"
                   placeholder="Example: Debugging, Deployment, Testing"
                   required
                 />
@@ -144,7 +144,7 @@
                 <label class="form-label required">Description</label>
                 <textarea
                   class="form-textarea"
-                  v-model="task.description"
+                  v-model="task.task_description"
                   rows="4"
                   placeholder="Describe the details of the work to be done..."
                   required
@@ -216,10 +216,12 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, onUnmounted, watch, } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { pmList } from "../../../store/overtimeStore";
 import axios from "axios";
+
+import { useOvertime } from "@/store/useOvertime";
 
 // ── ROUTER ─────────────────────────────────────────────────────────────
 const router = useRouter();
@@ -227,6 +229,10 @@ const route = useRoute();
 
 const overtimeId = route.params.id;
 const isEditMode = computed(() => !!overtimeId);
+
+const data = useOvertime();
+console.log("OVERTIME DATA FROM STORE:x", data.$state.overtimeData);
+
 
 // ── USER DATA ──────────────────────────────────────────────────────────
 const account = ref({
@@ -237,15 +243,15 @@ const account = ref({
 // ── FORM DATA ──────────────────────────────────────────────────────────
 const formData = ref({
   overtime_title: "",
-  tanggal: "",
-  jamMulai: "",
-  jamSelesai: "",
-  pic: "",
-  tasks: [
+  date: "",
+  start_time: "",
+  end_time: "",
+  product_manager_id: "",
+  detail_task: [
     {
       id: Date.now(),
-      name: "",
-      description: "",
+      task_title: "",
+      task_description: "",
     },
   ],
 });
@@ -298,20 +304,7 @@ async function fetchOvertimeDetail() {
 
     const overtime = response.data.data;
 
-    formData.value = {
-      overtime_title: overtime.overtime_title || "",
-      tanggal: overtime.date || "",
-      jamMulai: overtime.start_time || "",
-      jamSelesai: overtime.end_time || "",
-      pic: overtime.product_manager_id || "",
-
-      tasks:
-        overtime.tasks?.map((task) => ({
-          id: task.id,
-          name: task.task_title,
-          description: task.task_description,
-        })) || [],
-    };
+    formData.value = overtime;
   } catch (error) {
     console.error("Gagal ambil detail overtime:", error);
   }
@@ -321,19 +314,26 @@ async function fetchOvertimeDetail() {
 onMounted(() => {
   fetchUserData();
   fetchOvertimeDetail();
+  if (data.$state.overtimeData) {
+    formData.value = data.$state.overtimeData;
+  }
 });
+
+onUnmounted(() => { 
+  data.resetOvertime();
+})
 
 // ── TASK MANAGEMENT ────────────────────────────────────────────────────
 function addTask() {
-  formData.value.tasks.push({
+  formData.value.detail_task.push({
     id: Date.now(),
-    name: "",
-    description: "",
+    task_title: "",
+    task_description: "",
   });
 }
 
 function removeTask(index) {
-  if (formData.value.tasks.length === 1) {
+  if (formData.value.detail_task.length === 1) {
     alert("Minimal harus ada 1 task.");
     return;
   }
@@ -344,7 +344,7 @@ function removeTask(index) {
 
 function confirmDeleteTask() {
   if (taskToDelete.value !== null) {
-    formData.value.tasks.splice(taskToDelete.value, 1);
+    formData.value.detail_task.splice(taskToDelete.value, 1);
   }
 
   closeDeleteModal();
@@ -362,12 +362,12 @@ function toMinutes(h, m) {
 
 // ── CALCULATED DURATION ────────────────────────────────────────────────
 const calculatedDuration = computed(() => {
-  const { jamMulai, jamSelesai } = formData.value;
+  const { start_time, end_time } = formData.value;
 
-  if (!jamMulai || !jamSelesai) return "";
+  if (!start_time || !end_time) return "";
 
-  const [startH, startM] = jamMulai.split(":").map(Number);
-  const [endH, endM] = jamSelesai.split(":").map(Number);
+  const [startH, startM] = start_time.split(":").map(Number);
+  const [endH, endM] = end_time.split(":").map(Number);
 
   const startAbs = toMinutes(startH, startM);
 
@@ -390,14 +390,14 @@ const calculatedDuration = computed(() => {
 async function validateTime() {
   timeError.value = "";
 
-  const { jamMulai, jamSelesai, tanggal } = formData.value;
+  const { start_time, end_time, date } = formData.value;
 
-  if (!jamMulai || !jamSelesai || !tanggal) {
+  if (!start_time || !end_time || !date) {
     return false;
   }
 
-  const [startHour, startMin] = jamMulai.split(":").map(Number);
-  const [endHour, endMin] = jamSelesai.split(":").map(Number);
+  const [startHour, startMin] = start_time.split(":").map(Number);
+  const [endHour, endMin] = end_time.split(":").map(Number);
 
   const startAbs = toMinutes(startHour, startMin);
 
@@ -411,9 +411,9 @@ async function validateTime() {
   const durationMinutes = endAbs - startAbs;
 
   // cek weekend
-  const [year, month, date] = tanggal.split("-").map(Number);
+  const [year, month, tanggal] = date.split("-").map(Number);
 
-  const day = new Date(year, month - 1, date).getDay();
+  const day = new Date(year, month - 1, tanggal).getDay();
 
   const isWeekend = day === 0 || day === 6;
 
@@ -441,24 +441,24 @@ const isFormValid = computed(() => {
 
   if (
     !data.overtime_title ||
-    !data.tanggal ||
-    !data.jamMulai ||
-    !data.jamSelesai ||
-    !data.pic
+    !data.date ||
+    !data.start_time ||
+    !data.end_time ||
+    !data.product_manager_id
   ) {
     return false;
   }
 
   // task kosong
-  const hasEmptyTasks = data.tasks.some(
-    (task) => !task.name.trim() || !task.description.trim(),
+  const hasEmptyTasks = data.detail_task.some(
+    (task) => !task.task_title.trim() || !task.task_description.trim(),
   );
 
   if (hasEmptyTasks) return false;
 
-  const [startHour, startMin] = data.jamMulai.split(":").map(Number);
+  const [startHour, startMin] = data.start_time.split(":").map(Number);
 
-  const [endHour, endMin] = data.jamSelesai.split(":").map(Number);
+  const [endHour, endMin] = data.end_time.split(":").map(Number);
 
   const startAbs = toMinutes(startHour, startMin);
 
@@ -471,7 +471,7 @@ const isFormValid = computed(() => {
   const durationMinutes = endAbs - startAbs;
 
   // cek weekend
-  const [year, month, date] = data.tanggal.split("-").map(Number);
+  const [year, month, date] = data.date.split("-").map(Number);
 
   const day = new Date(year, month - 1, date).getDay();
 
@@ -506,18 +506,18 @@ async function handleSubmit() {
     return;
   }
 
-  const payload = {
-    overtime_title: formData.value.overtime_title,
-    date: formData.value.tanggal,
-    start_time: formData.value.jamMulai,
-    end_time: formData.value.jamSelesai,
-    product_manager_id: Number(formData.value.pic),
+  // const payload = {
+  //   overtime_title: formData.value.overtime_title,
+  //   date: formData.value.tanggal,
+  //   start_time: formData.value.jamMulai,
+  //   end_time: formData.value.jamSelesai,
+  //   product_manager_id: Number(formData.value.pic),
 
-    tasks: formData.value.tasks.map((task) => ({
-      name: task.name,
-      description: task.description,
-    })),
-  };
+  //   tasks: formData.value.tasks.map((task) => ({
+  //     name: task.name,
+  //     description: task.description,
+  //   })),
+  // };
 
   try {
     let response;
@@ -526,7 +526,7 @@ async function handleSubmit() {
     if (isEditMode.value) {
       response = await axios.put(
         `http://127.0.0.1:8000/api/overtimes/${overtimeId}/resubmit`,
-        payload,
+        formData.value,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -534,11 +534,12 @@ async function handleSubmit() {
           },
         },
       );
+      data.resetOvertime();
     }
 
     // CREATE MODE
     else {
-      response = await axios.post("http://127.0.0.1:8000/api/form", payload, {
+      response = await axios.post("http://127.0.0.1:8000/api/form", formData.value, {
         headers: {
           Authorization: `Bearer ${token}`,
           Accept: "application/json",
@@ -566,20 +567,19 @@ async function handleSubmit() {
 // ── RESET FORM ─────────────────────────────────────────────────────────
 function resetForm() {
   formData.value = {
-    overtime_title: "",
-    tanggal: "",
-    jamMulai: "",
-    jamSelesai: "",
-    pic: "",
-
-    tasks: [
-      {
-        id: Date.now(),
-        name: "",
-        description: "",
-      },
-    ],
-  };
+  overtime_title: "",
+  date: "",
+  start_time: "",
+  end_time: "",
+  product_manager_id: "",
+  detail_task: [
+    {
+      id: Date.now(),
+      task_title: "",
+      task_description: "",
+    },
+  ],
+};
 
   timeError.value = "";
 }

@@ -272,7 +272,7 @@ import { useRoute, useRouter } from "vue-router";
 import axios from "axios";
 import Pagination from "../assets/Pagination.vue";
 import SearchFilter from "../assets/SearchFilter.vue";
-import { useOvertime } from "@/store/useOvertime.js";
+// import { useOvertime } from "@/store/useOvertime.js";
 
 const router = useRouter();
 const userRole = ref(window.localStorage.getItem("role"));
@@ -285,7 +285,7 @@ const props = defineProps({
   },
 });
 
-const data = useOvertime(); 
+// const data = useOvertime(); 
 
 
 const dashboardData = reactive({
@@ -421,11 +421,11 @@ const closeDetailModal = () => {
 };
 
 
-const handleEdit = (rowData) => { 
-  data.setOvertimeValue(rowData)
+const handleEdit = (rowData) => {
   closeDetailModal();
-  router.push("/form");
-}
+
+  router.push(`/form/${rowData.id}`);
+};
 
 const handleOverlayClick = (event) => {
   if (event.target === event.currentTarget) {

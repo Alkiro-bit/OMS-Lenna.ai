@@ -101,7 +101,11 @@
           <!-- PIC / Project Manager -->
           <div class="form-group full">
             <label class="form-label required">PIC</label>
-            <select class="form-select" v-model="formData.product_manager_id" required>
+            <select
+              class="form-select"
+              v-model="formData.product_manager_id"
+              required
+            >
               <option value="" disabled>Choose PIC</option>
               <option v-for="pm in pmList" :key="pm.id" :value="pm.id">
                 {{ pm.name }}
@@ -216,7 +220,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, watch, } from "vue";
+import { ref, computed, onMounted, onUnmounted, watch } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { pmList } from "../../../store/overtimeStore";
 import axios from "axios";
@@ -232,7 +236,6 @@ const isEditMode = computed(() => !!overtimeId);
 
 const data = useOvertime();
 console.log("OVERTIME DATA FROM STORE:x", data.$state.overtimeData);
-
 
 // ── USER DATA ──────────────────────────────────────────────────────────
 const account = ref({
@@ -294,7 +297,7 @@ async function fetchOvertimeDetail() {
 
   try {
     const response = await axios.get(
-      `http://127.0.0.1:8000/api/overtimes/${overtimeId}`,
+      `http://127.0.0.1:8000/api/hr/overtimes/${overtimeId}`,
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -304,7 +307,20 @@ async function fetchOvertimeDetail() {
 
     const overtime = response.data.data;
 
-    formData.value = overtime;
+    formData.value = {
+      overtime_title: overtime.overtime_title,
+      date: overtime.date,
+      start_time: overtime.start_time,
+      end_time: overtime.end_time,
+      product_manager_id: overtime.product_manager_id,
+
+      detail_task:
+        overtime.tasks?.map((task) => ({
+          id: task.id,
+          task_title: task.task_title,
+          task_description: task.task_description,
+        })) || [],
+    };
   } catch (error) {
     console.error("Gagal ambil detail overtime:", error);
   }
@@ -314,14 +330,14 @@ async function fetchOvertimeDetail() {
 onMounted(() => {
   fetchUserData();
   fetchOvertimeDetail();
-  if (data.$state.overtimeData) {
-    formData.value = data.$state.overtimeData;
-  }
+  // if (data.$state.overtimeData) {
+  //   formData.value = data.$state.overtimeData;
+  // }
 });
 
-onUnmounted(() => { 
-  data.resetOvertime();
-})
+// onUnmounted(() => {
+//   data.resetOvertime();
+// })
 
 // ── TASK MANAGEMENT ────────────────────────────────────────────────────
 function addTask() {
@@ -534,17 +550,21 @@ async function handleSubmit() {
           },
         },
       );
-      data.resetOvertime();
+      // data.resetOvertime();
     }
 
     // CREATE MODE
     else {
-      response = await axios.post("http://127.0.0.1:8000/api/form", formData.value, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: "application/json",
+      response = await axios.post(
+        "http://127.0.0.1:8000/api/form",
+        formData.value,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+          },
         },
-      });
+      );
     }
 
     console.log("Submit success:", response.data);
@@ -567,19 +587,19 @@ async function handleSubmit() {
 // ── RESET FORM ─────────────────────────────────────────────────────────
 function resetForm() {
   formData.value = {
-  overtime_title: "",
-  date: "",
-  start_time: "",
-  end_time: "",
-  product_manager_id: "",
-  detail_task: [
-    {
-      id: Date.now(),
-      task_title: "",
-      task_description: "",
-    },
-  ],
-};
+    overtime_title: "",
+    date: "",
+    start_time: "",
+    end_time: "",
+    product_manager_id: "",
+    detail_task: [
+      {
+        id: Date.now(),
+        task_title: "",
+        task_description: "",
+      },
+    ],
+  };
 
   timeError.value = "";
 }

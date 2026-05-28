@@ -11,6 +11,7 @@
     <div class="anjay">
       
       <UserManagementBar
+        @add-user="openCreateModal"
         v-model:search="searchQuery"
         :status-options="statusFilterOptions"
       />
@@ -97,7 +98,7 @@
                     <div class="modal-header">
 
                       <p class="modal-title">
-                        EDIT USER
+                        {{ selectedUser?.id ? "EDIT USER" : "CREATE USER" }}
                       </p>
 
                       <button
@@ -116,14 +117,17 @@
 
                         <!-- NAME -->
                         <div class="field-group">
-                          <span class="field-label">Name</span>
 
-                          <input
-                            type="text"
-                            class="input-field"
-                            v-model="selectedUser.name"
-                          />
-                        </div>
+                          <p class="section-label"> User Information </p>
+                            <span class="field-label">Name</span>
+                              <input
+                                type="text"
+                                class="input-field"
+                                v-model="selectedUser.name"
+                                placeholder="Enter full name"
+                              />
+
+                      
 
                         <!-- EMAIL -->
                         <div class="field-group">
@@ -133,6 +137,7 @@
                             type="email"
                             class="input-field"
                             v-model="selectedUser.email"
+                            placeholder="Enter email address"
                           />
                         </div>
 
@@ -143,7 +148,7 @@
                           <input
                             type="password"
                             class="input-field"
-                            placeholder="Enter new password"
+                            placeholder="Enter user password"
                           />
                         </div>
 
@@ -197,6 +202,7 @@
                             </option>
                           </select>
                         </div>
+                        </div> 
 
                         <div class="modal-footer">
 
@@ -206,7 +212,7 @@
                             @click="handleConfirmEdit"
                           >
                             <i class="ti ti-check"></i>
-                            Confirm
+                            {{  selectedUser?.id ? "Save Changes" : "Create User" }}
                           </button>
 
                         </div>
@@ -302,16 +308,70 @@ function onPageChange(page) {
 // ======================= MODAL STATE ====================
 
 const isModalOpen = ref(false)
-const selectedUser = ref(null)
+const selectedUser = ref({
+  id: null,
+  name: "",
+  email: "",
+  password: "",
+  position: "",
+  role: "employee",
+  status: "active",
+})
 
 function openModal(user) {
-  selectedUser.value = user
+  selectedUser.value = { ...user }
 
   isModalOpen.value = true
 
   document.body.style.overflow = "hidden"
 }
 
+function openCreateModal() {
+
+  selectedUser.value = {
+    id: null,
+    name: "",
+    email: "",
+    password: "",
+    position: "",
+    role: "employee",
+    status: "active",
+  }
+
+  isModalOpen.value = true
+
+  document.body.style.overflow = "hidden"
+}
+
+function handleConfirmEdit() {
+
+  // CREATE USER
+  if (!selectedUser.value.id) {
+
+    users.value.push({
+      ...selectedUser.value,
+      id: Date.now(),
+    })
+
+    console.log("USER CREATED")
+  }
+
+  // UPDATE USER
+  else {
+
+    const index = users.value.findIndex(
+      user => user.id === selectedUser.value.id
+    )
+
+    if (index !== -1) {
+      users.value[index] = { ...selectedUser.value }
+    }
+
+    console.log("USER UPDATED")
+  }
+
+  closeModal()
+}
 
 function closeModal() {
   isModalOpen.value = false
@@ -336,11 +396,6 @@ function getStatusIcon(status) {
   return icons[status]
 }
 
-function handleConfirmEdit() {
-  console.log("USER UPDATED:", selectedUser.value)
-
-  closeModal()
-}
 
 </script>
 
@@ -568,16 +623,56 @@ tbody tr:hover {
   flex: 1;
   font: 14px "Plus Jakarta Sans"; 
 }
+.field-grid {
+  display: grid;
+  /* grid-template-columns: 1fr 1fr; */
+  gap: 10px;
+}
+
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.field-label {
+  font-size: 10px;
+  color: #999;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 500;
+  font-family: "Inter", sans-serif;
+}
+
+.detail-divider {
+  height: 1px;
+  background: #e0e0e0;
+  margin: 16px 0;
+}
+
+.section-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: #999;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  font-family: "Plus Jakarta Sans", sans-serif;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 10px;
+}
 
 .input-field {
   width: 100%;
   height: 42px;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
+  border: 1px solid transparent;
+  border-radius: 7px;
   padding: 0 12px;
   font-size: 13px;
   font-family: "Inter", sans-serif;
-  background: #fff;
+  background: #f7f7f8;
   transition: border-color 0.15s;
 }
 

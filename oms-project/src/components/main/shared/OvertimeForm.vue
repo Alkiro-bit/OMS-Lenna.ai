@@ -1,19 +1,5 @@
 <template>
   <div class="page-body">
-    <!-- SUCCESS MESSAGE (muncul setelah submit berhasil) -->
-    <Transition name="alert-slide">
-      <div v-if="showSuccessAlert" class="success-alert">
-        <i class="fa-solid fa-circle-check"></i>
-        <span
-          >Pengajuan lembur berhasil dikirim! Status:
-          <strong>Pending Approval</strong></span
-        >
-        <button class="alert-close" @click="showSuccessAlert = false">
-          <i class="fa-solid fa-xmark"></i>
-        </button>
-      </div>
-    </Transition>
-
     <!-- FORM CARD -->
     <div class="form-card">
       <!-- HEADER -->
@@ -184,39 +170,6 @@
     </div>
   </div>
 
-  <Teleport to="body">
-    <Transition name="overlay-fade">
-      <div
-        v-if="showDeleteModal"
-        class="delete-overlay"
-        @click="closeDeleteModal"
-      >
-        <Transition name="modal-slide">
-          <div v-if="showDeleteModal" class="delete-modal" @click.stop>
-            <div class="delete-header">
-              <i class="fa-solid fa-triangle-exclamation"></i>
-              <h3>Delete Task</h3>
-            </div>
-
-            <p class="delete-text">
-              Are you sure you want to delete this task? This action cannot be
-              undone.
-            </p>
-
-            <div class="delete-actions">
-              <button class="btn-cancel" @click="closeDeleteModal">
-                Cancel
-              </button>
-
-              <button class="btn-delete" @click="confirmDeleteTask">
-                Delete
-              </button>
-            </div>
-          </div>
-        </Transition>
-      </div>
-    </Transition>
-  </Teleport>
 </template>
 
 <script setup>
@@ -224,6 +177,13 @@ import { ref, computed, onMounted, onUnmounted, watch } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { pmList } from "../../../store/overtimeStore";
 import axios from "axios";
+import {
+  showConfirmDialog,
+  showErrorAlert,
+  showSuccessAlert,
+  showSuccessToast,
+  showWarningAlert,
+} from "@/utils/sweetAlert";
 
 import { useOvertime } from "@/store/useOvertime";
 
@@ -261,10 +221,6 @@ const formData = ref({
 
 // ── STATES ─────────────────────────────────────────────────────────────
 const timeError = ref("");
-const showSuccessAlert = ref(false);
-
-const showDeleteModal = ref(false);
-const taskToDelete = ref(null);
 
 // ── FETCH USER ─────────────────────────────────────────────────────────
 async function fetchUserData() {
@@ -273,7 +229,7 @@ async function fetchUserData() {
   if (!token) return;
 
   try {
-    const response = await axios.get("http://127.0.0.1:8000/api/me", {
+    const response = await axios.get("http://oms-backend.test:8080/api/me", {
       headers: {
         Authorization: `Bearer ${token}`,
         Accept: "application/json",
@@ -297,7 +253,7 @@ async function fetchOvertimeDetail() {
 
   try {
     const response = await axios.get(
-      `http://127.0.0.1:8000/api/hr/overtimes/${overtimeId}`,
+      `http://oms-backend.test:8080/api/hr/overtimes/${overtimeId}`,
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -348,27 +304,24 @@ function addTask() {
   });
 }
 
-function removeTask(index) {
+async function removeTask(index) {
   if (formData.value.detail_task.length === 1) {
-    alert("Minimal harus ada 1 task.");
+    await showWarningAlert("Minimal harus ada 1 task.", {
+      title: "Task tidak bisa dihapus",
+    });
     return;
   }
 
-  taskToDelete.value = index;
-  showDeleteModal.value = true;
-}
+  const isConfirmed = await showConfirmDialog({
+    title: "Hapus task ini?",
+    text: "Task yang dihapus harus diisi ulang jika masih dibutuhkan.",
+    confirmButtonText: "Ya, hapus",
+  });
 
-function confirmDeleteTask() {
-  if (taskToDelete.value !== null) {
-    formData.value.detail_task.splice(taskToDelete.value, 1);
+  if (isConfirmed) {
+    formData.value.detail_task.splice(index, 1);
+    await showSuccessToast("Task berhasil dihapus");
   }
-
-  closeDeleteModal();
-}
-
-function closeDeleteModal() {
-  showDeleteModal.value = false;
-  taskToDelete.value = null;
 }
 
 // ── TIME HELPERS ───────────────────────────────────────────────────────
@@ -511,14 +464,18 @@ async function handleSubmit() {
   const isValid = await validateTime();
 
   if (!isValid) {
-    alert(timeError.value);
+    await showWarningAlert(timeError.value, {
+      title: "Validasi waktu gagal",
+    });
     return;
   }
 
   const token = localStorage.getItem("token");
 
   if (!token) {
-    alert("Session expired, login ulang");
+    await showErrorAlert("Session expired, login ulang", {
+      title: "Sesi berakhir",
+    });
     return;
   }
 
@@ -541,7 +498,7 @@ async function handleSubmit() {
     // EDIT MODE
     if (isEditMode.value) {
       response = await axios.put(
-        `http://127.0.0.1:8000/api/overtimes/${overtimeId}/resubmit`,
+        `http://oms-backend.test:8080/api/overtimes/${overtimeId}/resubmit`,
         formData.value,
         {
           headers: {
@@ -556,7 +513,7 @@ async function handleSubmit() {
     // CREATE MODE
     else {
       response = await axios.post(
-        "http://127.0.0.1:8000/api/form",
+        "http://oms-backend.test:8080/api/form",
         formData.value,
         {
           headers: {
@@ -569,18 +526,26 @@ async function handleSubmit() {
 
     console.log("Submit success:", response.data);
 
-    showSuccessAlert.value = true;
+    await showSuccessAlert(
+      isEditMode.value
+        ? "Pengajuan lembur berhasil diperbarui dan dikirim ulang."
+        : "Pengajuan lembur berhasil dikirim dengan status Pending Approval.",
+      {
+        title: isEditMode.value ? "Resubmit berhasil" : "Submission berhasil",
+        timer: 1800,
+        showConfirmButton: false,
+      },
+    );
 
     resetForm();
 
-    setTimeout(() => {
-      showSuccessAlert.value = false;
-      router.push("/dashboard");
-    }, 1500);
+    router.push("/dashboard");
   } catch (error) {
     console.error(error.response?.data || error);
 
-    alert(error.response?.data?.message || "Submit gagal");
+    await showErrorAlert(error.response?.data?.message || "Submit gagal", {
+      title: "Pengajuan gagal",
+    });
   }
 }
 
@@ -635,57 +600,6 @@ function handleLogout() {
   align-items: center;
   gap: 16px;
   background: linear-gradient(135deg, #1d127d, #397cfa);
-}
-
-/* ── SUCCESS ALERT ──────────────────────────────────────────────────── */
-.success-alert {
-  width: 100%;
-  max-width: 720px;
-  background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
-  border: 1.5px solid #66bb6a;
-  border-radius: 10px;
-  padding: 14px 18px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  color: #1b5e20;
-  font-size: 13px;
-  font-weight: 500;
-  box-shadow: 0 2px 8px rgba(76, 175, 80, 0.15);
-}
-.success-alert i:first-child {
-  font-size: 20px;
-  flex-shrink: 0;
-}
-.alert-close {
-  margin-left: auto;
-  background: transparent;
-  border: none;
-  color: #1b5e20;
-  font-size: 18px;
-  cursor: pointer;
-  padding: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 4px;
-  transition: background 0.15s;
-}
-.alert-close:hover {
-  background: rgba(27, 94, 32, 0.1);
-}
-
-.alert-slide-enter-active,
-.alert-slide-leave-active {
-  transition: all 0.3s ease;
-}
-.alert-slide-enter-from {
-  opacity: 0;
-  transform: translateY(-12px);
-}
-.alert-slide-leave-to {
-  opacity: 0;
-  transform: translateY(-12px);
 }
 
 /* ── FORM CARD ──────────────────────────────────────────────────────── */

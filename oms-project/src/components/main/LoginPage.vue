@@ -73,26 +73,25 @@
 
 <script setup>
 import { ref } from "vue";
-import { useRouter } from "vue-router";
 import axios from "axios";
-
-const router = useRouter();
+import { showErrorAlert, showWarningAlert } from "@/utils/sweetAlert";
 
 const email = ref("");
 const password = ref("");
-const remember = ref(false);
 
 const login = async () => {
   localStorage.removeItem("role");
   localStorage.removeItem("name");
   localStorage.removeItem("email");
   if (!email.value || !password.value) {
-    alert("Please fill in both email and password.");
+    await showWarningAlert("Please fill in both email and password.", {
+      title: "Incomplete login form",
+    });
     return;
   }
 
   try {
-    const response = await axios.post("http://127.0.0.1:8000/api/login", {
+    const response = await axios.post("http://oms-backend.test:8080/api/login", {
       email: email.value,
       password: password.value,
     });
@@ -124,7 +123,9 @@ const login = async () => {
   } catch (error) {
     console.log(error.response);
 
-    alert(error.response?.data?.message || "Terjadi kesalahan");
+    await showErrorAlert(error.response?.data?.message || "Terjadi kesalahan", {
+      title: "Login gagal",
+    });
   }
 };
 </script>

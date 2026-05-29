@@ -123,7 +123,7 @@ const getUserData = async () => {
   }
 
   try {
-    const response = await axios.get("http://127.0.0.1:8000/api/me", {
+    const response = await axios.get("http://oms-backend.test:8080/api/me", {
       headers: {
         Authorization: "Bearer " + token,
       },
@@ -139,7 +139,7 @@ const getUserData = async () => {
 
 const profileImage = computed(() => {
   if (account.value.profile_picture) {
-    return `http://127.0.0.1:8000/storage/profile_pictures/${account.value.profile_picture}`;
+    return `http://oms-backend.test:8080/storage/profile_pictures/${account.value.profile_picture}`;
   }
 
   return null;

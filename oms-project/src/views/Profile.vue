@@ -66,7 +66,11 @@
 <script setup>
 import { ref, onMounted, inject } from "vue";
 import axios from "axios";
-import Swal from "sweetalert2";
+import {
+  showConfirmDialog,
+  showErrorAlert,
+  showSuccessToast,
+} from "@/utils/sweetAlert";
 
 const defaultAvatar =
   "https://ui-avatars.com/api/?name=Profile&background=1D127D&color=ffffff";
@@ -85,7 +89,7 @@ const fetchProfile = async () => {
   try {
     const token = localStorage.getItem("token");
 
-    const response = await axios.get("http://127.0.0.1:8000/api/me", {
+    const response = await axios.get("http://oms-backend.test:8080/api/me", {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -95,7 +99,7 @@ const fetchProfile = async () => {
 
     // tampilkan foto kalau ada
     if (profile.value.profile_picture) {
-      previewImage.value = `http://127.0.0.1:8000/storage/profile_pictures/${profile.value.profile_picture}`;
+      previewImage.value = `http://oms-backend.test:8080/storage/profile_pictures/${profile.value.profile_picture}`;
     }
   } catch (error) {
     console.error(error);
@@ -127,25 +131,16 @@ const saveProfile = async () => {
       formData.append("profile_picture", selectedFile.value);
     }
 
-    await axios.post("http://127.0.0.1:8000/api/profile/update", formData, {
+    await axios.post("http://oms-backend.test:8080/api/profile/update", formData, {
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "multipart/form-data",
       },
     });
 
-    Swal.fire({
-      title: "Profile Updated",
-      text: "Your profile picture has been changed",
-      icon: "success",
-      background: "#ffffff",
-      color: "#111827",
-      confirmButtonColor: "#1D127D",
-      customClass: {
-        popup: "rounded-popup",
-      },
+    await showSuccessToast("Profile updated", {
+      text: "Your profile picture has been changed.",
       timer: 1800,
-      showConfirmButton: false,
     });
 
     fetchProfile();
@@ -153,11 +148,8 @@ const saveProfile = async () => {
     await refreshUserData();
   } catch (error) {
     console.error(error);
-    Swal.fire({
-      title: "Upload Failed",
-      text: "Something went wrong while updating profile",
-      icon: "error",
-      confirmButtonColor: "#ef4444",
+    await showErrorAlert("Something went wrong while updating profile", {
+      title: "Upload failed",
     });
   }
 };
@@ -166,19 +158,16 @@ const deleteProfilePhoto = async () => {
   try {
     const token = localStorage.getItem("token");
 
-    const result = await Swal.fire({
+    const isConfirmed = await showConfirmDialog({
       title: "Remove profile photo?",
       text: "Your profile picture will be reset to default.",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#ef4444",
-      cancelButtonColor: "#6b7280",
       confirmButtonText: "Yes, remove it",
+      cancelButtonText: "Cancel",
     });
 
-    if (!result.isConfirmed) return;
+    if (!isConfirmed) return;
 
-    await axios.delete("http://127.0.0.1:8000/api/profile/delete-photo", {
+    await axios.delete("http://oms-backend.test:8080/api/profile/delete-photo", {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -193,21 +182,16 @@ const deleteProfilePhoto = async () => {
 
     window.dispatchEvent(new Event("profile-updated"));
 
-    Swal.fire({
-      title: "Deleted!",
-      text: "Profile photo removed successfully",
-      icon: "success",
+    await showSuccessToast("Profile photo removed successfully", {
+      title: "Deleted",
       timer: 1800,
-      showConfirmButton: false,
     });
   } catch (error) {
     console.log(error.response);
     console.log(error.response.data);
 
-    Swal.fire({
+    await showErrorAlert("Failed to remove profile photo", {
       title: "Failed",
-      text: "Failed to remove profile photo",
-      icon: "error",
     });
   }
 };

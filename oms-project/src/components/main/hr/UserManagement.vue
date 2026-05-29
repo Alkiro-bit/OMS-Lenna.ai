@@ -261,6 +261,7 @@ import { ref, computed, onMounted } from "vue"
 import Pagination from "../assets/Pagination.vue"
 import UserManagementBar from "../assets/UserManagementBar.vue"
 import axios from "axios"
+import { showErrorAlert, showSuccessToast } from "@/utils/sweetAlert"
 
 const searchQuery = ref("")
 const users = ref([])
@@ -272,7 +273,7 @@ async function fetchUsers() {
     const token = localStorage.getItem("token")
 
     const response = await axios.get(
-      "http://127.0.0.1:8000/api/hr/users",
+      "http://oms-backend.test:8080/api/hr/users",
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -367,7 +368,7 @@ async function handleConfirmEdit() {
     if (!selectedUser.value.id) {
 
       await axios.post(
-        "http://127.0.0.1:8000/api/hr/users",
+        "http://oms-backend.test:8080/api/hr/users",
         {
           name: selectedUser.value.name,
           email: selectedUser.value.email,
@@ -390,7 +391,7 @@ async function handleConfirmEdit() {
     else {
 
       await axios.put(
-        `http://127.0.0.1:8000/api/hr/users/${selectedUser.value.id}`,
+        `http://oms-backend.test:8080/api/hr/users/${selectedUser.value.id}`,
         {
           name: selectedUser.value.name,
           email: selectedUser.value.email,
@@ -409,17 +410,25 @@ async function handleConfirmEdit() {
       console.log("USER UPDATED")
     }
 
+    const isEditing = Boolean(selectedUser.value.id)
+
     await fetchUsers()
 
     closeModal()
+    await showSuccessToast(
+      isEditing ? "User berhasil diperbarui" : "User berhasil dibuat",
+    )
 
   } catch (error) {
 
     console.error(error)
 
-    alert(
+    await showErrorAlert(
       error.response?.data?.message ||
-      "Terjadi kesalahan"
+      "Terjadi kesalahan",
+      {
+        title: "Gagal menyimpan user",
+      },
     )
   }
 }

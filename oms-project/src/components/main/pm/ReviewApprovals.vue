@@ -260,6 +260,12 @@ import { ref, computed, watch, onUnmounted, onBeforeMount } from "vue";
 import axios from "axios";
 import Pagination from "../assets/Pagination.vue"
 import SearchFilter from "../assets/SearchFilter.vue"
+import {
+  showConfirmDialog,
+  showErrorAlert,
+  showSuccessToast,
+  showWarningAlert,
+} from "@/utils/sweetAlert";
 
 // ============================================================
 // STATE MANAGEMENT
@@ -269,7 +275,7 @@ async function fetchApprovals() {
   const token = localStorage.getItem("token");
 
   try {
-    const response = await axios.get("http://127.0.0.1:8000/api/approvals", {
+    const response = await axios.get("http://oms-backend.test:8080/api/approvals", {
       headers: {
         Authorization: `Bearer ${token}`,
         Accept: "application/json",
@@ -453,7 +459,13 @@ function handleKeydown(event) {
 }
 
 async function handleApprove(id) {
-  if (!confirm("Apakah Anda yakin ingin menyetujui pengajuan lembur ini?")) {
+  const isConfirmed = await showConfirmDialog({
+    title: "Setujui pengajuan lembur?",
+    text: "Pengajuan akan berpindah ke tahap review berikutnya.",
+    confirmButtonText: "Ya, setujui",
+  });
+
+  if (!isConfirmed) {
     return;
   }
 
@@ -461,7 +473,7 @@ async function handleApprove(id) {
 
   try {
     await axios.post(
-      `http://127.0.0.1:8000/api/approvals/${id}/approve`,
+      `http://oms-backend.test:8080/api/approvals/${id}/approve`,
       {},
       {
         headers: {
@@ -473,15 +485,20 @@ async function handleApprove(id) {
 
     await fetchApprovals();
     closeModal();
+    await showSuccessToast("Pengajuan lembur berhasil disetujui");
   } catch (error) {
     console.error(error.response?.data || error);
-    alert("Gagal approve pengajuan");
+    await showErrorAlert("Gagal approve pengajuan", {
+      title: "Approve gagal",
+    });
   }
 }
 
 async function handleReject(id) {
   if (!reviewerNotes.value.trim()) {
-    alert("Catatan penolakan wajib diisi");
+    await showWarningAlert("Catatan penolakan wajib diisi", {
+      title: "Catatan belum diisi",
+    });
     return;
   }
 
@@ -489,7 +506,7 @@ async function handleReject(id) {
 
   try {
     await axios.post(
-      `http://127.0.0.1:8000/api/approvals/${id}/reject`,
+      `http://oms-backend.test:8080/api/approvals/${id}/reject`,
       { notes: reviewerNotes.value },
       {
         headers: {
@@ -501,12 +518,18 @@ async function handleReject(id) {
 
     await fetchApprovals();
     closeModal();
+    await showSuccessToast("Pengajuan lembur berhasil ditolak");
   } catch (error) {
     console.log("ERROR REJECT FULL:", error);
     console.log("RESPONSE:", error.response);
     console.log("DATA:", error.response?.data);
 
-    alert(error.response?.data?.message || "Gagal reject pengajuan");
+    await showErrorAlert(
+      error.response?.data?.message || "Gagal reject pengajuan",
+      {
+        title: "Reject gagal",
+      },
+    );
   }
 }
 

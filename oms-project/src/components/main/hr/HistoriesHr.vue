@@ -212,7 +212,7 @@
                 <div class="detail-divider"></div>
 
                 <!-- D. NOTES REVIEWER -->
-                <div class="detail-section">
+                <!-- <div class="detail-section">
                   <p class="section-label">REVIEWER NOTES</p>
                   <textarea
                     v-if="!isFinalStatus(selectedApproval?.status)"
@@ -230,7 +230,7 @@
                     disabled
                     rows="4"
                   ></textarea>
-                </div>
+                </div> -->
 
                 <div class="detail-divider"> </div>
 
@@ -255,8 +255,14 @@
                           </div>
                         </div> -->
 
-                        <div class="field-grid-edit">
+                        <img
+                          :src="getStatusIcon(selectedApproval?.status)"
+                          :alt="selectedApproval?.status"
+                          class="modal-status-img"
+                          style="margin-left: unset !important; margin-top: 15px; margin-bottom: 10px"
+                        />
 
+                        <div class="field-grid-edit">
                           <div class="field-group">
                           <span class="field-label-edit">Date</span>
                           <span class="field-value-edit">
@@ -265,25 +271,25 @@
                         </div>
 
                         <div class="field-group">
-                          <span class="field-label-edit">Start Time</span>
+                          <span class="field-label-edit">Declined By</span>
                           <span class="field-value-edit">
                             {{ history.overtime_start_time }} WIB <!-- ganti pake API histories -->
                           </span>
                         </div>
 
-                        <div class="field-group">
+                        <!-- <div class="field-group">
                           <span class="field-label-edit">End Time</span>
                           <span class="field-value-edit">
-                            {{ history.overtime_end_time }} WIB <!-- ganti pake API histories -->
+                            {{ history.overtime_end_time }} WIB 
                           </span>
                         </div>
 
                         <div class="field-group">
                           <span class="field-label-edit">Duration</span>
                           <span class="field-value-edit">
-                            {{ history.overtime_duration }}  <!-- ganti pake API histories -->
+                            {{ history.overtime_duration }} 
                           </span>
-                        </div>
+                        </div> -->
 
                       </div>
 

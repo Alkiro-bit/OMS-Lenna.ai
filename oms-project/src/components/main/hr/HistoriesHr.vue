@@ -231,7 +231,86 @@
                     rows="4"
                   ></textarea>
                 </div>
-              </div>
+
+                <div class="detail-divider"> </div>
+
+                  <div class="detail-history-status"
+                    v-if="normalizeStatus(selectedApproval?.status) === 'declined' && 
+                    selectedApproval?.edit_histories?.length > 0 " 
+                  >
+                  <!-- edit_histories = nanti ganti sama nama table yang di API  -->
+                    <p class="section-label-edit">
+                      <i class="ti ti-user"></i> Edit Histories
+                    </p>
+                      <div
+                        v-for="(history, index) in selectedApproval?.edit_histories"
+                        :key="index"
+                      >
+                        <!-- <div class="field-title-edit">
+                          <div class="field-group full">
+                            <span class="field-label-edit">FORM TITLE</span> 
+                            <span class="field-value-edit">
+                              {{ history.overtime_title}}
+                            </span>
+                          </div>
+                        </div> -->
+
+                        <div class="field-grid-edit">
+
+                          <div class="field-group">
+                          <span class="field-label-edit">Date</span>
+                          <span class="field-value-edit">
+                            {{ formatDate(history.overtime_date) }} <!-- ganti pake API histories -->
+                          </span>
+                        </div>
+
+                        <div class="field-group">
+                          <span class="field-label-edit">Start Time</span>
+                          <span class="field-value-edit">
+                            {{ history.overtime_start_time }} WIB <!-- ganti pake API histories -->
+                          </span>
+                        </div>
+
+                        <div class="field-group">
+                          <span class="field-label-edit">End Time</span>
+                          <span class="field-value-edit">
+                            {{ history.overtime_end_time }} WIB <!-- ganti pake API histories -->
+                          </span>
+                        </div>
+
+                        <div class="field-group">
+                          <span class="field-label-edit">Duration</span>
+                          <span class="field-value-edit">
+                            {{ history.overtime_duration }}  <!-- ganti pake API histories -->
+                          </span>
+                        </div>
+
+                      </div>
+
+                        <p class="section-label-edit">
+                            <i></i> REVIEWER NOTES 
+                        </p>
+
+                        <textarea
+                          v-if="!isFinalStatus(selectedApproval?.status)"
+                          v-model="reviewerNotes"
+                          class="reviewer-notes"
+                          placeholder="Add review notes..."
+                          rows="4"
+                        ></textarea>
+
+                        <textarea
+                          v-else
+                          class="reviewer-notes reviewer-notes-readonly"
+                          :value="history.overtime_notes"  
+                          readonly
+                          disabled
+                          rows="4"
+                        ></textarea>
+
+                    </div> 
+                  </div>
+            </div>
 
             </div>
           </Transition>
@@ -317,6 +396,7 @@ const hardcodedApprovals = [
     duration: "2 Hours",
     status: "approved",
     notes: "Approved for release prep.",
+
     tasks: [
       {
         name: "Fix filter integration",
@@ -324,6 +404,7 @@ const hardcodedApprovals = [
       },
     ],
   },
+
   {
     id: 2,
     employeeName: "Afgan Ramadhan",
@@ -334,14 +415,39 @@ const hardcodedApprovals = [
     endTime: "01:00",
     duration: "7 Hours",
     status: "declined",
-    notes: "Approved for release prep.",
+    notes: "Need revision on overtime details.",
+
     tasks: [
       {
         name: "Fix filter integration",
         description: "Integrate reusable SearchFilter into the history table.",
       },
     ],
+
+    edit_histories: [
+      {
+        overtime_title: "Revision Table Fix",
+        overtime_date: "2026-05-24",
+        overtime_start_time: "19:00",
+        overtime_end_time: "22:00",
+        overtime_duration: "3 Hours",
+        overtime_notes: "Updated with new API endpoint, but still facing issues.",
+
+        tasks: [
+          {
+            name: "Fix Modal",
+            description: "Fix modal looping issue and rendering bug.",
+          },
+          {
+            name: "Fix History Loop",
+            description: "Repair edit history task mapping.",
+          },
+        ],
+      },
+
+    ],
   },
+
   {
     id: 3,
     employeeName: "Christopher Clay",
@@ -353,6 +459,7 @@ const hardcodedApprovals = [
     duration: "6 Hours",
     status: "approved",
     notes: "Approved for release prep.",
+
     tasks: [
       {
         name: "Fix filter integration",
@@ -360,6 +467,7 @@ const hardcodedApprovals = [
       },
     ],
   },
+
   {
     id: 4,
     employeeName: "Christopher Clay",
@@ -371,6 +479,7 @@ const hardcodedApprovals = [
     duration: "6 Hours",
     status: "reviewed",
     notes: "Approved for release prep.",
+
     tasks: [
       {
         name: "Fix filter integration",
@@ -960,6 +1069,27 @@ tbody tr:last-child td {
   margin-bottom: 16px;
 }
 
+.detail-history-status {
+  margin-top: 12px;
+  padding: 10px;
+  border: 1.5px solid #FF0000;
+  background: #FFEDED;
+  border-radius: 12px;
+}
+
+.section-label-edit {
+  font-size: 10px;
+  font-weight: 600;
+  color: #000000;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  font-family: "Plus Jakarta Sans", sans-serif;
+  margin: 6px 0 10px 0;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
 .section-label {
   font-size: 10px;
   font-weight: 600;
@@ -977,6 +1107,13 @@ tbody tr:last-child td {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
+}
+
+.field-grid-edit {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 10px;
 }
 
 .field-group {
@@ -1003,6 +1140,33 @@ tbody tr:last-child td {
   color: #111;
   font-weight: 500;
   background: #f7f7f8;
+  border: 1px solid #e5e7eb;
+  border-radius: 7px;
+  padding: 10px 12px;
+  min-height: 36px;
+  line-height: 1.5;
+  font-family: "Inter", sans-serif;
+}
+
+.field-title-edit {
+  margin-bottom: 6px;
+}
+
+.field-label-edit {
+  font-size: 10px;
+  color: #000000;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 500;
+  font-family: "Inter", sans-serif;
+}
+
+.field-value-edit {
+  font-size: 13px;
+  color: #111;
+  font-weight: 500;
+  background: #FFFFFF;
+  border: 0.5px solid #FF0000;
   border-radius: 7px;
   padding: 10px 12px;
   min-height: 36px;
